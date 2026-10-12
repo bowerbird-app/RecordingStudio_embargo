@@ -55,7 +55,9 @@ module RecordingStudioEmbargo
     end
 
     def audience_fields
-      actions.map { |action| audience_field(action) }
+      RecordingStudioEmbargo.configuration.action_definitions_for(recording).map do |definition|
+        audience_field(definition)
+      end
     end
 
     def fallback_options
@@ -80,11 +82,13 @@ module RecordingStudioEmbargo
       [label, zone&.name || name]
     end
 
-    def audience_field(action)
+    def audience_field(definition)
+      action = definition[:action]
       {
         action: action,
         input_name: "embargo[early_access][#{action}]",
-        label: action.to_s,
+        label: definition[:label].presence || action.to_s,
+        description: definition[:description].presence,
         value: embargo.early_access_for(action).presence || "granted",
         options: audience_options(action)
       }

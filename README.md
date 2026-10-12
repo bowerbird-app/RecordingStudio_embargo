@@ -27,7 +27,10 @@ Expiry is read at authorization time. `LiftTransitionJob` only emits `:embargo_l
 class Page < ApplicationRecord
   recording_studio_recordable label: "Page", root: false
   include RecordingStudio::Capabilities::Embargo.to(
-    actions: [ :"pages.show", :"pages.download" ],
+    actions: [
+      { action: :"pages.show", label: "View the page", description: "Who can open the page before release." },
+      { action: :"pages.download", label: "Download the page" }
+    ],
     fallbacks: %w[preview hidden],
     manage_role: :edit
   )
@@ -36,7 +39,7 @@ end
 
 Configure those same actions on Accessible before enabling an embargo. One action's early-access audience does not cover another action. Copying a recording must call `RecordingStudioEmbargo.attributes_for_duplicate`, which clears the window and the early-access list.
 
-The editor at `/recording_studio_embargo/recordings/:id/embargo/edit` renders the actions and fallbacks supplied by the capability. It does not know about press kits.
+The editor at `/recording_studio_embargo/recordings/:id/embargo/edit` renders the actions and fallbacks supplied by the capability. Each action may include a `label` and an optional `description`; a bare key is shown as itself. It does not know about press kits.
 
 ## Host follow-ups
 

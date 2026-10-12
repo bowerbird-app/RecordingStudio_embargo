@@ -59,11 +59,13 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     assert_includes response.body, 'name="embargo[time_zone]"'
     assert_includes response.body, 'value="Eastern Time (US &amp; Canada)" selected="selected"'
     refute_includes response.body, 'value="America/New_York"'
-    assert_select "#embargo-action-pages-show"
-    assert_select "#embargo-action-pages-download"
+    assert_select "#embargo-action-pages-show legend", text: "View the page"
+    assert_select "#embargo-action-pages-download legend", text: "Download the page"
+    assert_includes response.body, "Who can open this page before the release time."
+    assert_includes response.body, "Who can download before the release time."
+    assert_select "#embargo-action-pages-show legend", text: "pages.show", count: 0
+    assert_select "#embargo-action-pages-download legend", text: "pages.download", count: 0
     assert_select "input[name='embargo[fallback]'][value='preview']"
-    assert_includes response.body, "pages.show"
-    assert_includes response.body, "pages.download"
     assert_includes response.body, "2026-11-02T09:00"
   end
 

@@ -47,4 +47,22 @@ class EmbargoCapabilityTest < Minitest::Test
       RecordingStudio.capability_options(:embargo, for: Probe::HostType)
     )
   end
+
+  def test_host_labels_are_stored_and_a_bare_key_falls_back_to_itself
+    Probe::OtherType.include RecordingStudio::Capabilities::Embargo.to(
+      actions: [
+        { action: :"pages.show", label: "View the page", description: "Before release." },
+        :"pages.download"
+      ]
+    )
+
+    stored = RecordingStudio.capability_options(:embargo, for: Probe::OtherType).fetch(:actions)
+    definitions = RecordingStudioEmbargo::ActionCatalog.definitions_for(stored)
+
+    assert_equal %i[pages.show pages.download], RecordingStudioEmbargo::ActionCatalog.keys_for(stored)
+    assert_equal "View the page", definitions.first[:label]
+    assert_equal "Before release.", definitions.first[:description]
+    assert_equal "pages.download", definitions.last[:label]
+    assert_nil definitions.last[:description]
+  end
 end

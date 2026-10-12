@@ -7,7 +7,7 @@ module RecordingStudio
 
       def self.to(actions: [], fallbacks: [], manage_role: :edit)
         options = {
-          actions: normalize_actions(actions),
+          actions: RecordingStudioEmbargo::ActionCatalog.normalize(actions),
           fallbacks: normalize_fallbacks(fallbacks),
           manage_role: manage_role.to_sym
         }
@@ -27,10 +27,6 @@ module RecordingStudio
       def self.registered_type?
         Array(RecordingStudio.configuration.recordable_types).map { |type| type.is_a?(Class) ? type.name : type.to_s }
                                                              .include?(CHILD_TYPE)
-      end
-
-      def self.normalize_actions(actions)
-        Array(actions).filter_map { |action| action.to_s.strip.presence&.to_sym }.uniq
       end
 
       def self.normalize_fallbacks(fallbacks)

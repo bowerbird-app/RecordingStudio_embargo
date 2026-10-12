@@ -158,7 +158,23 @@ recording.embargo_set!(
 )
 ```
 
-Include the capability on the press kit recordable with those two actions and fallbacks `preview` and `hidden`. The generic editor in this gem is the reference implementation. Do not hardcode press kit actions inside the gem, and do not merge this screen with the visibility or download editors.
+Include the capability on the press kit recordable with those two actions and fallbacks `preview` and `hidden`. Supply a label and an optional description for each action; the editor shows the key when a label is omitted.
+
+```ruby
+include RecordingStudio::Capabilities::Embargo.to(
+  actions: [
+    {
+      action: :"presskits.kit_view_full",
+      label: "View the kit",
+      description: "Who can open the full kit before release."
+    },
+    { action: :"presskits.kit_download", label: "Download the kit" }
+  ],
+  fallbacks: %w[preview hidden]
+)
+```
+
+The generic editor in this gem is the reference implementation. Do not hardcode press kit actions inside the gem, and do not merge this screen with the visibility or download editors.
 
 ## Copying recordings
 

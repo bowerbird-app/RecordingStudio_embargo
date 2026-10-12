@@ -68,6 +68,7 @@
                   <%= render FlatPack::RadioGroup::Component.new(
                     name: field[:input_name],
                     label: field[:label],
+                    help_text: field[:description],
                     value: field[:value],
                     options: field[:options]
                   ) %>

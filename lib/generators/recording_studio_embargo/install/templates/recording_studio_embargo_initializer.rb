@@ -7,7 +7,10 @@
 #
 #   class Page < ApplicationRecord
 #     include RecordingStudio::Capabilities::Embargo.to(
-#       actions: [:"pages.show", :"pages.download"],
+#       actions: [
+#         { action: :"pages.show", label: "View the page", description: "Who can open the page before release." },
+#         :"pages.download"
+#       ],
 #       fallbacks: %w[preview hidden],
 #       manage_role: :edit
 #     )

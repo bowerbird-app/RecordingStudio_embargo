@@ -81,10 +81,10 @@ class RecordingStudioTemplateTest < ActiveSupport::TestCase
     refute RecordingStudio.capability_enabled?(:accessible, for: Page)
     assert RecordingStudio.capability_enabled?(:embargo, for: Page)
     refute RecordingStudio.capability_enabled?(:embargo, for: Workspace)
-    assert_equal(
-      [ :"pages.show", :"pages.download" ],
-      RecordingStudio.capability_options(:embargo, for: Page).fetch(:actions)
-    )
+    stored_actions = RecordingStudio.capability_options(:embargo, for: Page).fetch(:actions)
+    assert_equal %i[pages.show pages.download], RecordingStudioEmbargo::ActionCatalog.keys_for(stored_actions)
+    assert_equal "View the page", stored_actions.first[:label]
+    assert_equal "Download the page", stored_actions.second[:label]
     assert_equal [ "Page" ], RecordingStudio.configuration.enabled_recordable_types_for(:embargo)
     assert_includes ApplicationController.ancestors, RecordingStudio::UsesDefaultLayout
   end
