@@ -40,7 +40,22 @@ begin
 
   folder_recording = find_or_record_child.call(folder, root_recording, root_recording)
 
-  find_or_record_child.call(page, root_recording, folder_recording)
+  page_recording = find_or_record_child.call(page, root_recording, folder_recording)
+
+  unless RecordingStudioAccessible.authorized?(actor: user, recording: root_recording, role: :admin)
+    RecordingStudioAccessible.bootstrap_owner_access!(recording: root_recording, actor: user)
+  end
+
+  page_recording.embargo_set!(
+    {
+      enabled: true,
+      lifts_at: 3.days.from_now,
+      time_zone: "America/New_York",
+      early_access: { "pages.show" => "granted", "pages.download" => "granted" },
+      fallback: "preview"
+    },
+    actor: user
+  )
 ensure
   Current.actor = previous_actor
 end

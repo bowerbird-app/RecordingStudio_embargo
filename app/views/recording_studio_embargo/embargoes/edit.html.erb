@@ -1,0 +1,106 @@
+<% if respond_to?(:recording_studio_page_nav) %>
+  <% recording_studio_page_nav(
+    title: t("recording_studio_embargo.editor.title"),
+    page_nav_back_url: main_app.root_path,
+    page_nav_back_label: "Home"
+  ) %>
+<% end %>
+
+<div id="embargo-editor" class="mx-auto flex w-full max-w-2xl flex-col gap-6">
+  <%= render FlatPack::PageTitle::Component.new(
+    title: t("recording_studio_embargo.editor.title"),
+    subtitle: t("recording_studio_embargo.editor.subtitle"),
+    variant: :h1
+  ) %>
+
+  <div id="embargo-status" class="flex flex-wrap items-center gap-3">
+    <%= render FlatPack::Badge::Component.new(text: @editor.status_label, style: @editor.status_style, size: :md) %>
+    <p class="text-sm leading-6">
+      <span class="font-medium"><%= t("recording_studio_embargo.editor.release_label") %>:</span>
+      <%= @editor.release_text %>
+    </p>
+  </div>
+
+  <% if @editor.actions.empty? %>
+    <%= render FlatPack::Alert::Component.new(
+      description: t("recording_studio_embargo.editor.empty_actions"),
+      style: :warning
+    ) %>
+  <% end %>
+
+  <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
+    <% card.body do %>
+      <%= form_with url: recording_embargo_path(@recording), method: :patch, id: "embargo-form", class: "flex flex-col gap-6" do %>
+        <%= hidden_field_tag "embargo[enabled]", "0" %>
+        <%= render FlatPack::Switch::Component.new(
+          name: "embargo[enabled]",
+          checked: @editor.enabled?,
+          label: t("recording_studio_embargo.editor.enable"),
+          help_text: t("recording_studio_embargo.editor.enable_help")
+        ) %>
+
+        <%= render FlatPack::DateTimeInput::Component.new(
+          name: "embargo[lifts_at]",
+          label: t("recording_studio_embargo.editor.lifts_at"),
+          value: @editor.lifts_at_value,
+          placeholder: "2026-11-02T09:00"
+        ) %>
+
+        <%= render FlatPack::Select::Component.new(
+          name: "embargo[time_zone]",
+          label: t("recording_studio_embargo.editor.time_zone"),
+          placeholder: t("recording_studio_embargo.editor.time_zone_placeholder"),
+          value: @editor.time_zone_value,
+          options: @editor.time_zone_options
+        ) %>
+
+        <% if @editor.audience_fields.any? %>
+          <div id="embargo-audiences" class="flex flex-col gap-5">
+            <%= render FlatPack::PageTitle::Component.new(
+              title: t("recording_studio_embargo.editor.audiences"),
+              subtitle: t("recording_studio_embargo.editor.audiences_help"),
+              variant: :h3
+            ) %>
+
+            <% @editor.audience_fields.each do |field| %>
+              <div id="embargo-action-<%= field[:action].to_s.parameterize %>">
+                <% if field[:options].any? %>
+                  <%= render FlatPack::RadioGroup::Component.new(
+                    name: field[:input_name],
+                    label: field[:label],
+                    value: field[:value],
+                    options: field[:options]
+                  ) %>
+                <% else %>
+                  <%= render FlatPack::Alert::Component.new(
+                    description: t("recording_studio_embargo.editor.no_audiences"),
+                    style: :info
+                  ) %>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+
+        <% if @editor.fallback_options.any? %>
+          <%= render FlatPack::RadioGroup::Component.new(
+            name: "embargo[fallback]",
+            label: t("recording_studio_embargo.editor.fallback"),
+            help_text: t("recording_studio_embargo.editor.fallback_help"),
+            value: @editor.fallback_value,
+            options: @editor.fallback_options
+          ) %>
+        <% end %>
+
+        <div id="embargo-actions">
+          <%= render FlatPack::Button::Component.new(
+            text: t("recording_studio_embargo.editor.save"),
+            style: :primary,
+            size: :md,
+            type: "submit"
+          ) %>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

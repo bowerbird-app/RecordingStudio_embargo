@@ -63,23 +63,29 @@ class RecordingStudioTemplateTest < ActiveSupport::TestCase
     Current.actor = nil
   end
 
-  test "workspace opts into accessible and the example mixin without enabling them globally" do
+  test "workspace opts into accessible and pages opt into embargo" do
     workspace_source = File.read(Rails.root.join("app/models/workspace.rb"))
-    example_source = File.read(GemTemplate::Engine.root.join("lib/gem_template/capabilities/example.rb"))
+    page_source = File.read(Rails.root.join("app/models/page.rb"))
+    capability_source = File.read(
+      RecordingStudioEmbargo::Engine.root.join("lib/recording_studio/capabilities/embargo.rb")
+    )
 
-    assert_includes workspace_source, "include RecordingStudio::Capabilities::Example.to(label: \"dummy workspace\")"
-    assert_includes example_source, "RecordingStudio::Capabilities.include_for(:example, **)"
-    refute_includes example_source, "enable_capability"
-    refute_includes example_source, "set_capability_options"
+    assert_includes workspace_source, "RecordingStudio.enable_capability(:accessible, on: self)"
+    assert_includes page_source, "include RecordingStudio::Capabilities::Embargo.to("
+    assert_includes capability_source, "RecordingStudio::Capabilities.include_for(:embargo, **options)"
+    refute_includes capability_source, "enable_capability"
+    refute_includes capability_source, "set_capability_options"
 
     assert RecordingStudio.capability_enabled?(:accessible, for: Workspace)
-    assert RecordingStudio.capability_enabled?(:example, for: Workspace)
-    assert_equal({ label: "dummy workspace" }, RecordingStudio.capability_options(:example, for: Workspace))
     refute RecordingStudio.capability_enabled?(:accessible, for: Folder)
     refute RecordingStudio.capability_enabled?(:accessible, for: Page)
-    refute RecordingStudio.capability_enabled?(:example, for: Folder)
-    refute RecordingStudio.capability_enabled?(:example, for: Page)
-    assert_equal [ "Workspace" ], RecordingStudio.configuration.enabled_recordable_types_for(:example)
+    assert RecordingStudio.capability_enabled?(:embargo, for: Page)
+    refute RecordingStudio.capability_enabled?(:embargo, for: Workspace)
+    assert_equal(
+      [ :"pages.show", :"pages.download" ],
+      RecordingStudio.capability_options(:embargo, for: Page).fetch(:actions)
+    )
+    assert_equal [ "Page" ], RecordingStudio.configuration.enabled_recordable_types_for(:embargo)
     assert_includes ApplicationController.ancestors, RecordingStudio::UsesDefaultLayout
   end
 end
