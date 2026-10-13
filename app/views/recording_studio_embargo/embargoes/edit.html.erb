@@ -1,0 +1,64 @@
+<% if respond_to?(:recording_studio_page_nav) %>
+  <% recording_studio_page_nav(
+    title: t("recording_studio_embargo.editor.title"),
+    page_nav_back_url: main_app.root_path,
+    page_nav_back_label: "Home"
+  ) %>
+<% end %>
+
+<div id="embargo-editor" class="mx-auto flex w-full max-w-2xl flex-col gap-6">
+  <%= render FlatPack::PageTitle::Component.new(
+    title: t("recording_studio_embargo.editor.title"),
+    subtitle: t("recording_studio_embargo.editor.subtitle"),
+    variant: :h1
+  ) %>
+
+  <% if @editor.actions.empty? %>
+    <%= render FlatPack::Alert::Component.new(
+      description: t("recording_studio_embargo.editor.empty_actions"),
+      style: :warning
+    ) %>
+  <% end %>
+
+  <%= form_with url: recording_embargo_path(@recording), method: :patch, id: "embargo-form", class: "flex flex-col gap-6" do %>
+    <%= hidden_field_tag "embargo[enabled]", "0" %>
+    <%= render FlatPack::Switch::Component.new(
+      name: "embargo[enabled]",
+      checked: @editor.enabled?,
+      label: t("recording_studio_embargo.editor.enable"),
+      help_text: t("recording_studio_embargo.editor.enable_help")
+    ) %>
+
+    <%= render FlatPack::DateTimeInput::Component.new(
+      name: "embargo[lifts_at]",
+      label: t("recording_studio_embargo.editor.lifts_at"),
+      value: @editor.lifts_at_value,
+      placeholder: "2026-11-02T09:00"
+    ) %>
+
+    <%= render FlatPack::Select::Component.new(
+      name: "embargo[time_zone]",
+      label: t("recording_studio_embargo.editor.time_zone"),
+      placeholder: t("recording_studio_embargo.editor.time_zone_placeholder"),
+      value: @editor.time_zone_value,
+      options: @editor.time_zone_options
+    ) %>
+
+    <%= hidden_field_tag "embargo[early_access]", "0" %>
+    <%= render FlatPack::Switch::Component.new(
+      name: "embargo[early_access]",
+      checked: @editor.early_access?,
+      label: t("recording_studio_embargo.editor.early_access"),
+      help_text: t("recording_studio_embargo.editor.early_access_help")
+    ) %>
+
+    <div id="embargo-actions">
+      <%= render FlatPack::Button::Component.new(
+        text: t("recording_studio_embargo.editor.save"),
+        style: :primary,
+        size: :md,
+        type: "submit"
+      ) %>
+    </div>
+  <% end %>
+</div>

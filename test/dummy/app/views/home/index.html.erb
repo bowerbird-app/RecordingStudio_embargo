@@ -1,18 +1,24 @@
-<% dummy_page_nav(title: "Template Demo", back_url: root_path) %>
+<% dummy_page_nav(title: "Embargo", back_url: root_path) %>
 
 <div class="flex w-full flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
-    title: "Template Demo",
-    subtitle: "This dummy app is the browser-facing demo surface for the template.",
+    title: "Embargo",
+    subtitle: "Hold a page until a release time, and optionally let people with access through early.",
     variant: :h1
   ) %>
+
+  <% if @page_recording %>
+    <div id="open-embargo-editor" class="inline-flex">
+      <%= render_embargo_button(@page_recording) %>
+    </div>
+  <% end %>
 
   <div class="grid gap-6 lg:grid-cols-2">
     <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
       <% card.header do %>
         <%= render FlatPack::PageTitle::Component.new(
           title: "What's working",
-          subtitle: "Core template capabilities already wired into the dummy app.",
+          subtitle: "Embargo behavior already wired into the dummy app.",
           variant: :h3,
           class: "mb-0 pb-0"
         ) %>
@@ -20,9 +26,9 @@
 
       <% card.body do %>
         <ul class="space-y-3 text-sm leading-6">
-          <li>Rails engine routes are mounted and responding.</li>
-          <li>PostgreSQL UUID-oriented migrations are included in the engine.</li>
-          <li>Tailwind sources can be wired into a host app through the install generator.</li>
+          <li>The editor holds a page private until a release date.</li>
+          <li>Early access lets people who already have access see it before the release date. Everyone else has to wait.</li>
+          <li>Expiry is read when the request is authorized.</li>
           <li>The dummy app exercises authentication, the Recording Studio default layout, and FlatPack.</li>
         </ul>
       <% end %>
@@ -31,8 +37,8 @@
     <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
       <% card.header do %>
         <%= render FlatPack::PageTitle::Component.new(
-          title: "Next steps",
-          subtitle: "The usual first moves when turning the template into a real addon.",
+          title: "Host setup",
+          subtitle: "What a host app does after adding the gem.",
           variant: :h3,
           class: "mb-0 pb-0"
         ) %>
@@ -40,10 +46,10 @@
 
       <% card.body do %>
         <ol class="space-y-3 text-sm leading-6 list-decimal pl-5">
-          <li>Run <code>bin/rename_gem your_addon_name</code> when you are ready to rename the engine.</li>
-          <li>Replace the sample migration with your addon tables and install them into the host app.</li>
-          <li>Configure Recording Studio recordable types and capabilities in the host app initializer.</li>
-          <li>Use the dummy app to validate layout, asset scanning, and authentication flows.</li>
+          <li>Mount the engine and run the install generator.</li>
+          <li>Copy the embargo migration into the host and migrate.</li>
+          <li>Opt a recordable in with <code>RecordingStudio::Capabilities::Embargo.to</code>.</li>
+          <li>Configure the same actions on Accessible, including view and download separately.</li>
         </ol>
       <% end %>
     <% end %>
@@ -91,8 +97,8 @@
       <% card.body do %>
         <ul class="space-y-3 text-sm leading-6">
           <li>Add the gem to your host app and run <code>bundle install</code>.</li>
-          <li>Run <code>rails generate gem_template:install</code> to mount the engine and add configuration.</li>
-          <li>Run <code>rails generate gem_template:migrations</code> to copy engine migrations into the host app.</li>
+          <li>Run <code>rails generate recording_studio_embargo:install</code> to mount the engine and add configuration.</li>
+          <li>Run <code>rails generate recording_studio_embargo:migrations</code> to copy engine migrations into the host app.</li>
           <li>Rebuild Tailwind if needed with <code>bin/rails tailwindcss:build</code>.</li>
         </ul>
       <% end %>

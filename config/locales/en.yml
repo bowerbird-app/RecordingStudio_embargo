@@ -1,0 +1,25 @@
+en:
+  recording_studio_embargo:
+    editor:
+      title: Embargo
+      subtitle: Embargoes give journalists advance notice of upcoming news, allowing them to plan and prepare their stories before the official release.
+      saved: Embargo saved
+      enable: Embargo enabled
+      enable_help: Display your press kit as a preview marked for embargo
+      lifts_at: Release date and time
+      time_zone: Time zone
+      time_zone_placeholder: Choose a time zone
+      early_access: Early access
+      early_access_help: Only journalists you give access to will see it early. Embargoes work on an honour system. Journalists receive early access and agree not to publish until the release date. For example, sharing award winners in advance gives journalists time to prepare their stories before the announcement.
+      save: Save embargo
+      empty_actions: Nothing is set up to hold back yet.
+    button:
+      add: "+ Embargo"
+      embargoed: Embargoed
+    errors:
+      unauthorized: You are not allowed to change this embargo.
+      parent_required: A recording is required.
+      lifts_at_invalid: Enter a real release date and time in the selected time zone.
+      lifts_at_required: A release time is required to enable an embargo.
+      lifts_at_future: The release time must be in the future.
+      time_zone_invalid: Choose a known time zone.

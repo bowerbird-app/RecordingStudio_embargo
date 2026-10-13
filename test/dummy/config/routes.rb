@@ -6,6 +6,10 @@ Rails.application.routes.draw do
   get "/recording_studio", to: redirect("/"), as: nil
   mount RecordingStudio::Engine, at: "/recording_studio"
   mount RecordingStudioRootSwitchable::Engine, at: "/recording_studio_root_switchable"
+  mount RecordingStudioEmbargo::Engine, at: "/recording_studio_embargo"
+
+  get "samples/recordings/:id", to: "embargo_samples#show", as: :embargo_sample
+  get "samples/recordings/:id/download", to: "embargo_samples#download", as: :embargo_sample_download
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 

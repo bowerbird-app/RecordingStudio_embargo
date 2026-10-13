@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_12_044328) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_12_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -73,6 +73,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_044328) do
     t.index ["depends_on_recording_id"], name: "index_recording_studio_accesses_on_depends_on_recording_id"
   end
 
+  create_table "recording_studio_embargo_embargoes", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.boolean "enabled", default: false, null: false
+    t.datetime "lifts_at"
+    t.string "time_zone", default: "UTC", null: false
+    t.boolean "early_access", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["lifts_at"], name: "index_recording_studio_embargo_embargoes_on_lifts_at"
+  end
+
   create_table "recording_studio_events", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "action", null: false
     t.uuid "actor_id"
@@ -104,6 +114,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_044328) do
     t.datetime "trashed_at"
     t.datetime "updated_at", null: false
     t.index ["parent_recording_id"], name: "index_recording_studio_recordings_on_parent_recording_id"
+    t.index ["parent_recording_id"], name: "index_rs_embargo_child_per_parent", unique: true, where: "(((recordable_type)::text = 'RecordingStudioEmbargo::Embargo'::text) AND (trashed_at IS NULL))"
     t.index ["recordable_type", "recordable_id", "parent_recording_id", "trashed_at"], name: "index_recording_studio_recordings_on_recordable_parent_trashed"
     t.index ["recordable_type", "recordable_id"], name: "index_recording_studio_recordings_on_recordable"
     t.index ["recordable_type", "recordable_id"], name: "index_rs_unique_root_recording_per_recordable", unique: true, where: "(parent_recording_id IS NULL)"

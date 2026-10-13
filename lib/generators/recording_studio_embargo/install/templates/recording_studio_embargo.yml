@@ -1,0 +1,12 @@
+default: &default
+  default_time_zone: UTC
+  manage_role: edit
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+
+production:
+  <<: *default
