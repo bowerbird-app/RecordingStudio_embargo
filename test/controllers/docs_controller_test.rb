@@ -74,6 +74,7 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
   test "recordings tree page renders successfully" do
     workspace = Workspace.create!(name: "Tree Workspace")
     root_recording = RecordingStudio.root_recording_for(workspace)
+    RecordingStudioAccessible.bootstrap_owner_access!(recording: root_recording, actor: @user)
     folder = Folder.create!(name: "Reference")
     folder_recording = record_child(folder, root_recording, root_recording)
     page = Page.create!(title: "API")

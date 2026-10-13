@@ -1,6 +1,12 @@
 # frozen_string_literal: true
 
 class DocsController < ApplicationController
+  ACCESS_RECORDABLE_TYPES = %w[
+    RecordingStudio::Access
+    RecordingStudio::AccessConstraint
+    RecordingStudio::AccessRule
+  ].freeze
+
   def install
   end
 
@@ -18,6 +24,7 @@ class DocsController < ApplicationController
 
   def recordings_tree
     recordings = RecordingStudio::Recording.includes(:recordable).reorder(:created_at, :id).to_a
+    recordings = recordings.reject { |recording| ACCESS_RECORDABLE_TYPES.include?(recording.recordable_type) }
     recordings_by_parent_id = recordings.group_by(&:parent_recording_id)
 
     @recording_tree = recordings_by_parent_id.fetch(nil, []).map do |recording|
