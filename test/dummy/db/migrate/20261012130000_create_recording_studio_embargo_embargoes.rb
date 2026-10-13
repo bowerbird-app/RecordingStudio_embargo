@@ -9,8 +9,7 @@ class CreateRecordingStudioEmbargoEmbargoes < ActiveRecord::Migration[8.1]
       t.boolean :enabled, null: false, default: false
       t.datetime :lifts_at
       t.string :time_zone, null: false, default: "UTC"
-      t.jsonb :early_access, null: false, default: {}
-      t.string :fallback
+      t.boolean :early_access, null: false, default: false
 
       t.timestamps
     end

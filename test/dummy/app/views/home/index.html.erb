@@ -3,7 +3,7 @@
 <div class="flex w-full flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
     title: "Embargo",
-    subtitle: "Hold a page until a release time, and let an early-access audience through.",
+    subtitle: "Hold a page until a release time, and optionally let people with access through early.",
     variant: :h1
   ) %>
 
@@ -26,8 +26,8 @@
 
       <% card.body do %>
         <ul class="space-y-3 text-sm leading-6">
-          <li>The editor holds named actions until a release time.</li>
-          <li>Early access uses Accessible audiences, one audience per action.</li>
+          <li>The editor holds listed actions until a release time.</li>
+          <li>Early access is one switch. People with access are checked per action.</li>
           <li>Expiry is read when the request is authorized.</li>
           <li>The dummy app exercises authentication, the Recording Studio default layout, and FlatPack.</li>
         </ul>

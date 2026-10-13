@@ -81,7 +81,7 @@ module RecordingStudioEmbargo
           if embargo.blank?
             return Embargo.new(
               enabled: false,
-              early_access: {},
+              early_access: false,
               time_zone: RecordingStudioEmbargo.configuration.default_time_zone
             )
           end

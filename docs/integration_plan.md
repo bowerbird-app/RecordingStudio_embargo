@@ -12,7 +12,8 @@ decision = RecordingStudioEmbargo.restriction_for(recording:, action:, actor:)
 ```
 
 - Active means `enabled` and `Time.current < lifts_at`. At `lifts_at` the decision is `:not_applicable` with no job.
-- Only actions present in `early_access` are restricted. A host that wants both view and download held must list both.
+- Only actions passed to `Embargo.to(actions:)` are restricted. A host that wants both view and download held must list both. `early_access` is a boolean on the embargo, not a per-action audience.
+- Early access on evaluates Accessible's `:granted` audience for that action. A view grant does not satisfy an action whose granted roles are edit or admin. Early access off denies every actor.
 - `:deny` restricts the action even when the baseline audience is `:public`. Do not implement this as `authorized_action? && early_access`. `authorized_action?` is true for every actor when the baseline is `:public`, so that expression lets the public audience through.
 - `:allow` means the actor passes early access only. The host still checks publication, the baseline audience, and domain authorization.
 - `:not_applicable` means embargo has nothing to say. Use the normal policy.
@@ -97,7 +98,7 @@ def presentation_for(actor:, kit:, purpose: :public)
   end
 
   if embargo_denies?(actor, recording)
-    return embargo_fallback_for(recording)
+    return policy_for(recording).fetch(:fallback)
   end
 
   return :full if authorized_full?(actor, recording)
@@ -114,17 +115,9 @@ def embargo_denies?(actor, recording)
     actor: actor
   ) == :deny
 end
-
-def embargo_fallback_for(recording)
-  fallback = recording.respond_to?(:current_embargo) ? recording.current_embargo&.fallback : nil
-  name = fallback.to_s.to_sym
-  return name if %i[preview hidden].include?(name)
-
-  :preview
-end
 ```
 
-`ACTION` stays `:"presskits.kit_view_full"`. Do not change `effective_audience` storage. Early access lives on the embargo row.
+`ACTION` stays `:"presskits.kit_view_full"`. Do not change `effective_audience` storage. Early access is the boolean on the embargo row. Preview and hidden stay on the kit's existing visibility fallback. The embargo editor does not store a presentation.
 
 `Visibility.discoverable?` already calls `presentation_for`. `KitQuery.discoverable_for` in `lib/recording_studio_presskits/kit_query.rb` calls `discoverable?`, so the listing becomes embargo-aware without a second policy. Hidden and unavailable stay out of that list. Preview stays in it.
 
@@ -136,7 +129,7 @@ end
 
 ### Downloads
 
-Press kit ZIP routes are Downloadable's package routes. The Downloadable change above is what blocks generate, fetch, and status. Presskits still registers `KitDownload::ACTION`. The kit's embargo `early_access` must include `:"presskits.kit_download"` or download is not restricted.
+Press kit ZIP routes are Downloadable's package routes. The Downloadable change above is what blocks generate, fetch, and status. Presskits still registers `KitDownload::ACTION`. The kit's embargo capability must list `:"presskits.kit_download"` or download is not restricted. Early access on uses that action's granted roles.
 
 ### Editor
 
@@ -148,34 +141,22 @@ recording.embargo_set!(
     enabled: params[:enabled],
     lifts_at: params[:lifts_at],
     time_zone: params[:time_zone],
-    early_access: {
-      "presskits.kit_view_full" => params[:view_audience],
-      "presskits.kit_download" => params[:download_audience]
-    },
-    fallback: params[:fallback]
+    early_access: params[:early_access]
   },
   actor: current_actor
 )
 ```
 
-Include the capability on the press kit recordable with those two actions and fallbacks `preview` and `hidden`. Supply a label and an optional description for each action; the editor shows the key when a label is omitted.
+Include the capability on the press kit recordable with both actions. Keep preview and hidden on the kit visibility screen.
 
 ```ruby
 include RecordingStudio::Capabilities::Embargo.to(
-  actions: [
-    {
-      action: :"presskits.kit_view_full",
-      label: "View the kit",
-      description: "Who can open the full kit before release."
-    },
-    { action: :"presskits.kit_download", label: "Download the kit" }
-  ],
-  fallbacks: %w[preview hidden]
+  actions: [ :"presskits.kit_view_full", :"presskits.kit_download" ]
 )
 ```
 
-The generic editor in this gem is the reference implementation. Do not hardcode press kit actions inside the gem, and do not merge this screen with the visibility or download editors.
+The generic editor in this gem is the reference implementation: enable, release time, time zone, and one early-access switch. Do not hardcode press kit actions inside the gem, and do not merge this screen with the visibility or download editors.
 
 ## Copying recordings
 
-`revise` keeps history on the same child recording. A new parent recording, the product copy, must start from `RecordingStudioEmbargo.attributes_for_duplicate`: `enabled: false`, `lifts_at: nil`, `early_access: {}`, `fallback: nil`. Do not copy Accessible grants as part of embargo. Grants belong to Accessible and are not duplicated by this gem.
+`revise` keeps history on the same child recording. A new parent recording, the product copy, must start from `RecordingStudioEmbargo.attributes_for_duplicate`: `enabled: false`, `lifts_at: nil`, `early_access: false`. Do not copy Accessible grants as part of embargo. Grants belong to Accessible and are not duplicated by this gem.

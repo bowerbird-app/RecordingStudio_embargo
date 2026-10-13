@@ -118,7 +118,7 @@ class RecordingStudioEmbargoTest < Minitest::Test
   def test_embargo_capability_wraps_include_for_and_is_not_enabled_globally
     source = File.read(File.expand_path("../lib/recording_studio/capabilities/embargo.rb", __dir__))
 
-    assert_includes source, "def self.to(actions: [], fallbacks: [], manage_role: :edit)"
+    assert_includes source, "def self.to(actions: [], manage_role: :edit)"
     assert_includes source, "RecordingStudio::Capabilities.include_for(:embargo, **options)"
     refute_includes source, "enable_capability"
     refute_includes source, "set_capability_options"

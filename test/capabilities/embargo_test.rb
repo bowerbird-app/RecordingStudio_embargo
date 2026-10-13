@@ -23,7 +23,7 @@ class EmbargoCapabilityTest < Minitest::Test
   def test_to_is_the_include_for_wrapper
     source = File.read(File.expand_path("../../lib/recording_studio/capabilities/embargo.rb", __dir__))
 
-    assert_includes source, "def self.to(actions: [], fallbacks: [], manage_role: :edit)"
+    assert_includes source, "def self.to(actions: [], manage_role: :edit)"
     assert_includes source, "RecordingStudio::Capabilities.include_for(:embargo, **options)"
     refute_includes source, "enable_capability"
     refute_includes source, "set_capability_options"
@@ -32,7 +32,6 @@ class EmbargoCapabilityTest < Minitest::Test
   def test_including_to_enables_the_capability_and_stores_actions
     Probe::HostType.include RecordingStudio::Capabilities::Embargo.to(
       actions: %i[pages.show pages.download],
-      fallbacks: %w[preview hidden],
       manage_role: :admin
     )
 
@@ -41,28 +40,9 @@ class EmbargoCapabilityTest < Minitest::Test
     assert_equal(
       {
         actions: %i[pages.show pages.download],
-        fallbacks: %w[preview hidden],
         manage_role: :admin
       },
       RecordingStudio.capability_options(:embargo, for: Probe::HostType)
     )
-  end
-
-  def test_host_labels_are_stored_and_a_bare_key_falls_back_to_itself
-    Probe::OtherType.include RecordingStudio::Capabilities::Embargo.to(
-      actions: [
-        { action: :"pages.show", label: "View the page", description: "Before release." },
-        :"pages.download"
-      ]
-    )
-
-    stored = RecordingStudio.capability_options(:embargo, for: Probe::OtherType).fetch(:actions)
-    definitions = RecordingStudioEmbargo::ActionCatalog.definitions_for(stored)
-
-    assert_equal %i[pages.show pages.download], RecordingStudioEmbargo::ActionCatalog.keys_for(stored)
-    assert_equal "View the page", definitions.first[:label]
-    assert_equal "Before release.", definitions.first[:description]
-    assert_equal "pages.download", definitions.last[:label]
-    assert_nil definitions.last[:description]
   end
 end

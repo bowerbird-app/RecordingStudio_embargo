@@ -66,7 +66,7 @@ module RecordingStudioEmbargo
       @recording.current_embargo || Embargo.new(
         enabled: false,
         time_zone: RecordingStudioEmbargo.configuration.default_time_zone,
-        early_access: {}
+        early_access: false
       )
     end
 
@@ -79,19 +79,8 @@ module RecordingStudioEmbargo
       current_or_new_embargo
     end
 
-    def early_access_param(access)
-      return {} if access.blank?
-      return access.to_unsafe_h if access.respond_to?(:to_unsafe_h)
-      return access.to_h if access.respond_to?(:to_h)
-
-      {}
-    end
-
     def embargo_params
-      raw = params.require(:embargo)
-      permitted = raw.permit(:enabled, :lifts_at, :time_zone, :fallback).to_h
-      permitted[:early_access] = early_access_param(raw[:early_access])
-      permitted
+      params.require(:embargo).permit(:enabled, :lifts_at, :time_zone, :early_access).to_h
     end
   end
 end

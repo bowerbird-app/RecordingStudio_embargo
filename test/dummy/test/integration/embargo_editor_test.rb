@@ -6,9 +6,6 @@ require "devise/test/integration_helpers"
 class EmbargoEditorTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
 
-  SHOW = :"pages.show"
-  DOWNLOAD = :"pages.download"
-
   setup do
     @owner = User.create!(
       email: "editor-owner-#{SecureRandom.hex(4)}@example.com",
@@ -34,8 +31,7 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
         enabled: true,
         lifts_at: ActiveSupport::TimeZone["America/New_York"].parse("2026-11-02 09:00"),
         time_zone: "America/New_York",
-        early_access: { SHOW => "granted", DOWNLOAD => "granted" },
-        fallback: "preview"
+        early_access: true
       },
       actor: @owner
     )
@@ -45,28 +41,26 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     Current.actor = nil
   end
 
-  test "editor renders host actions, release time, and status" do
+  test "editor renders the release fields and one early-access switch" do
     sign_in @owner
 
     get recording_studio_embargo.edit_recording_embargo_path(@page)
 
     assert_response :success
     assert_select "#embargo-editor"
-    assert_select "#embargo-status", text: /Active/
+    assert_select "#embargo-status", count: 0
     assert_select "#embargo-form"
     assert_select "input[name='embargo[enabled]']"
+    assert_select "input[name='embargo[early_access]']"
     assert_select "input[name='embargo[lifts_at]']"
     assert_includes response.body, 'name="embargo[time_zone]"'
     assert_includes response.body, 'value="Eastern Time (US &amp; Canada)" selected="selected"'
     refute_includes response.body, 'value="America/New_York"'
-    assert_select "#embargo-action-pages-show legend", text: "View the page"
-    assert_select "#embargo-action-pages-download legend", text: "Download the page"
-    assert_includes response.body, "Who can open this page before the release time."
-    assert_includes response.body, "Who can download before the release time."
-    assert_select "#embargo-action-pages-show legend", text: "pages.show", count: 0
-    assert_select "#embargo-action-pages-download legend", text: "pages.download", count: 0
-    assert_select "input[name='embargo[fallback]'][value='preview']"
+    refute_includes response.body, "Anyone"
+    refute_includes response.body, "Restricted presentation"
+    assert_select "input[name='embargo[fallback]']", count: 0
     assert_includes response.body, "2026-11-02T09:00"
+    assert_includes response.body, "a view grant does not include download"
   end
 
   test "saving updates the embargo and an invalid release is rejected" do
@@ -76,8 +70,7 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     patch recording_studio_embargo.recording_embargo_path(@page), params: embargo_params(
       lifts_at: release.strftime("%Y-%m-%dT%H:%M"),
       time_zone: "America/Chicago",
-      fallback: "hidden",
-      early_access: { "pages.show" => "signed_in", "pages.download" => "granted" }
+      early_access: "0"
     )
 
     assert_redirected_to recording_studio_embargo.edit_recording_embargo_path(@page)
@@ -85,8 +78,7 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Embargo saved"
     embargo = @page.reload.current_embargo
     assert_equal "America/Chicago", embargo.time_zone
-    assert_equal "hidden", embargo.fallback
-    assert_equal "signed_in", embargo.early_access_for(SHOW)
+    refute embargo.early_access?
     assert embargo.active?
 
     patch recording_studio_embargo.recording_embargo_path(@page), params: embargo_params(
@@ -112,8 +104,8 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
 
   test "sample responses follow embargo composition and drop the restriction after release" do
     get embargo_sample_path(@page)
-    assert_response :success
-    assert_equal "preview", response.body
+    assert_response :not_found
+    assert_equal "hidden", response.body
     assert_equal "private, no-store", response.headers["Cache-Control"]
     assert response.headers["X-Embargo-Expires-In"].to_i.positive?
     anonymous_key = response.headers["X-Embargo-Cache-Key"]
@@ -145,14 +137,13 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
 
   private
 
-  def embargo_params(lifts_at:, time_zone: "America/New_York", fallback: "preview", early_access: nil)
+  def embargo_params(lifts_at:, time_zone: "America/New_York", early_access: "1")
     {
       embargo: {
         enabled: "1",
         lifts_at: lifts_at,
         time_zone: time_zone,
-        fallback: fallback,
-        early_access: early_access || { "pages.show" => "granted", "pages.download" => "granted" }
+        early_access: early_access
       }
     }
   end

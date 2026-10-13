@@ -2,37 +2,21 @@ en:
   recording_studio_embargo:
     editor:
       title: Embargo
-      subtitle: Hold named actions until a release time. Early-access audiences come from Accessible.
-      status_label: Status
-      release_label: Releases
-      release_missing: No release time yet
+      subtitle: Hold listed actions until a release time.
       saved: Embargo saved
       enable: Embargo enabled
       enable_help: While this is on, listed actions stay restricted until the release time.
       lifts_at: Release date and time
       time_zone: Time zone
       time_zone_placeholder: Choose a time zone
-      audiences: Early access
-      audiences_help: Each action is independent. A view grant does not include download.
-      fallback: Restricted presentation
-      fallback_help: Hosts use this when an actor does not have early access. Preview and hidden are Press Kit values.
+      early_access: Early access
+      early_access_help: People who already have access can use each listed action before the release time. Access is checked per action, so a view grant does not include download.
       save: Save embargo
       empty_actions: This recordable has no embargo actions yet. Pass actions when including the capability.
-      no_audiences: No Accessible audiences are configured for this action.
-      status:
-        active: Active
-        expired: Expired
-        inactive: Off
     errors:
       unauthorized: You are not allowed to change this embargo.
       parent_required: A recording is required.
       lifts_at_invalid: Enter a real release date and time in the selected time zone.
       lifts_at_required: A release time is required to enable an embargo.
       lifts_at_future: The release time must be in the future.
-      early_access_required: Choose an early-access audience for at least one action.
-      early_access_invalid: Early access must list actions and audiences.
       time_zone_invalid: Choose a known time zone.
-      unknown_actions: "%{actions} are not embargo actions for this recording."
-      audience_unregistered: "%{audience} is not a registered audience for %{action}."
-      audience_not_allowed: "%{audience} is not allowed for %{action}."
-      fallback_not_allowed: "%{fallback} is not one of the host fallback options."

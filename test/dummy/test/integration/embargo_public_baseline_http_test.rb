@@ -35,8 +35,7 @@ class EmbargoPublicBaselineHttpTest < ActionDispatch::IntegrationTest
         enabled: true,
         lifts_at: @lifts_at,
         time_zone: "UTC",
-        early_access: { DOWNLOAD => "granted" },
-        fallback: "hidden"
+        early_access: true
       },
       actor: @owner
     )

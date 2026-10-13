@@ -1,14 +1,14 @@
 # RecordingStudio Embargo
 
-Recording Studio capability that holds named actions until a release time. Early access uses Accessible audiences. Embargo does not publish, grant access, or build downloads.
+Recording Studio capability that holds listed actions until a release time. Early access is one switch for people who already have access. Embargo does not publish, grant access, or build downloads.
 
 ## What it decides
 
 `RecordingStudioEmbargo.restriction_for(recording:, action:, actor:)` returns:
 
-- `:not_applicable` when no enabled embargo lists that action, or `Time.current` is at or after `lifts_at`
-- `:allow` when the actor satisfies that action's early-access audience
-- `:deny` otherwise, including when the baseline audience is `:public`
+- `:not_applicable` when the embargo is off, the action is not one the host listed, or `Time.current` is at or after `lifts_at`
+- `:allow` when early access is on and the actor satisfies Accessible's `:granted` audience for that action
+- `:deny` otherwise, including when the baseline audience is `:public` and when early access is off
 
 `:allow` does not authorize the action. Hosts still enforce publication, the baseline audience, and domain rules. `:deny` does restrict the action. A public baseline is not combined with early access, because a public audience is true for every actor and would skip the embargo.
 
@@ -17,7 +17,7 @@ RecordingStudioEmbargo.action_permitted?(recording:, action:, actor:)
 RecordingStudioEmbargo.presskit_presentation(recording:, actor:, view_action:)
 ```
 
-`action_permitted?` is false when Publishable says the recording is not currently published, when the embargo denies the actor, or when the baseline audience denies the actor. `presskit_presentation` keeps the Presskits order: unpublished stays `:unavailable` (editors with view access still get `:full`), an embargo denial uses the configured `preview` or `hidden` fallback, and everyone else uses the normal visibility result.
+`action_permitted?` is false when Publishable says the recording is not currently published, when the embargo denies the actor, or when the baseline audience denies the actor. `presskit_presentation` keeps the Presskits order: unpublished stays `:unavailable` (editors with view access still get `:full`). An embargo denial uses the fallback the host passes in, which is the host's own preview or hidden setting.
 
 Expiry is read at authorization time. `LiftTransitionJob` only emits `:embargo_lifted`, and it no-ops unless the stored `lifts_at` still matches the scheduled instant.
 
@@ -27,19 +27,15 @@ Expiry is read at authorization time. `LiftTransitionJob` only emits `:embargo_l
 class Page < ApplicationRecord
   recording_studio_recordable label: "Page", root: false
   include RecordingStudio::Capabilities::Embargo.to(
-    actions: [
-      { action: :"pages.show", label: "View the page", description: "Who can open the page before release." },
-      { action: :"pages.download", label: "Download the page" }
-    ],
-    fallbacks: %w[preview hidden],
+    actions: [ :"pages.show", :"pages.download" ],
     manage_role: :edit
   )
 end
 ```
 
-Configure those same actions on Accessible before enabling an embargo. One action's early-access audience does not cover another action. Copying a recording must call `RecordingStudioEmbargo.attributes_for_duplicate`, which clears the window and the early-access list.
+Configure those same actions on Accessible before enabling an embargo. Early access uses each action's granted roles, so a view grant does not include download. Copying a recording must call `RecordingStudioEmbargo.attributes_for_duplicate`, which clears the window and turns early access off.
 
-The editor at `/recording_studio_embargo/recordings/:id/embargo/edit` renders the actions and fallbacks supplied by the capability. Each action may include a `label` and an optional `description`; a bare key is shown as itself. It does not know about press kits.
+The editor at `/recording_studio_embargo/recordings/:id/embargo/edit` is an enable switch, a release time, a time zone, and one early-access switch. Preview and hidden stay on the host. The editor does not know about press kits.
 
 ## Host follow-ups
 

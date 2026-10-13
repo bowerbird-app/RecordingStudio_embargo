@@ -10,8 +10,7 @@ module RecordingStudioEmbargo
         embargo.enabled?,
         lifts_at&.utc&.iso8601,
         embargo.time_zone,
-        embargo.early_access.to_h.sort.to_h,
-        embargo.fallback
+        embargo.early_access?
       ].join("|")
     end
 
@@ -25,8 +24,7 @@ module RecordingStudioEmbargo
         enabled: embargo.enabled?,
         lifts_at: embargo.lifts_at,
         time_zone: embargo.time_zone,
-        early_access: embargo.early_access.to_h,
-        fallback: embargo.fallback,
+        early_access: embargo.early_access?,
         fingerprint: fingerprint_for(embargo)
       )
     end

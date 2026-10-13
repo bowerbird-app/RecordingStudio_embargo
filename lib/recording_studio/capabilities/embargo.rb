@@ -5,10 +5,9 @@ module RecordingStudio
     module Embargo
       CHILD_TYPE = "RecordingStudioEmbargo::Embargo"
 
-      def self.to(actions: [], fallbacks: [], manage_role: :edit)
+      def self.to(actions: [], manage_role: :edit)
         options = {
-          actions: RecordingStudioEmbargo::ActionCatalog.normalize(actions),
-          fallbacks: normalize_fallbacks(fallbacks),
+          actions: normalize_actions(actions),
           manage_role: manage_role.to_sym
         }
         RecordingStudio::Capabilities.include_for(:embargo, **options) do |_base|
@@ -29,8 +28,8 @@ module RecordingStudio
                                                              .include?(CHILD_TYPE)
       end
 
-      def self.normalize_fallbacks(fallbacks)
-        Array(fallbacks).filter_map { |fallback| fallback.to_s.strip.presence }.uniq
+      def self.normalize_actions(actions)
+        Array(actions).filter_map { |action| action.to_s.strip.presence&.to_sym }.uniq
       end
 
       module RecordingMethods

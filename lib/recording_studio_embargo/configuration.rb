@@ -49,17 +49,7 @@ module RecordingStudioEmbargo
     end
 
     def actions_for(recording)
-      RecordingStudioEmbargo::ActionCatalog.keys_for(stored_actions(recording))
-    end
-
-    def action_definitions_for(recording)
-      RecordingStudioEmbargo::ActionCatalog.definitions_for(stored_actions(recording))
-    end
-
-    def fallbacks_for(recording)
-      Array(capability_options_for(recording)[:fallbacks]).map(&:to_s)
-    rescue StandardError
-      []
+      stored_actions(recording).filter_map { |action| action.to_s.strip.presence&.to_sym }
     end
 
     private

@@ -2,7 +2,7 @@
 
 module RecordingStudioEmbargo
   class Attributes
-    KEYS = %i[enabled lifts_at time_zone early_access fallback].freeze
+    KEYS = %i[enabled lifts_at time_zone early_access].freeze
 
     def self.parse(parent_recording:, raw:)
       new(parent_recording, raw).parse
@@ -30,15 +30,13 @@ module RecordingStudioEmbargo
         enabled: current&.enabled || false,
         lifts_at: current&.lifts_at,
         time_zone: current&.time_zone.presence || RecordingStudioEmbargo.configuration.default_time_zone,
-        early_access: stringify_access(current&.early_access),
-        fallback: current&.fallback
+        early_access: current&.early_access? || false
       }
     end
 
     def assign_provided(merged)
       assign_enabled(merged)
       assign_time_zone(merged)
-      assign_fallback(merged)
       assign_early_access(merged)
       merged[:lifts_at] = raw[:lifts_at] if raw.key?(:lifts_at)
     end
@@ -53,12 +51,8 @@ module RecordingStudioEmbargo
       merged[:time_zone] = raw[:time_zone].presence || merged[:time_zone]
     end
 
-    def assign_fallback(merged)
-      merged[:fallback] = raw[:fallback].presence if raw.key?(:fallback)
-    end
-
     def assign_early_access(merged)
-      merged[:early_access] = stringify_access(raw[:early_access]) if raw.key?(:early_access)
+      merged[:early_access] = boolean_cast(raw[:early_access]) if raw.key?(:early_access)
     end
 
     def coerce_time(value, time_zone)
@@ -93,16 +87,6 @@ module RecordingStudioEmbargo
       return false if false_values.include?(value)
 
       true
-    end
-
-    def stringify_access(value)
-      hashify(value).each_with_object({}) do |(action, audience), result|
-        action_name = action.to_s.strip
-        audience_name = audience.to_s.strip
-        next if action_name.empty? || audience_name.empty?
-
-        result[action_name] = audience_name
-      end
     end
 
     def hashify(value)

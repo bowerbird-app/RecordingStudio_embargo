@@ -15,7 +15,6 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
     @owner = create_user("owner")
     @viewer = create_user("viewer")
     @editor = create_user("editor")
-    @press = create_user("reporter", email: "reporter@press.example")
     @workspace = Workspace.create!(name: "Embargo #{SecureRandom.hex(4)}")
     @root = RecordingStudio.root_recording_for(@workspace)
     @page = @root.record(Page, actor: @owner, parent_recording: @root) do |page|
@@ -32,7 +31,7 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
   end
 
   test "an active embargo denies a public baseline and admits a granted actor" do
-    activate!(early_access: { SHOW => "granted", DOWNLOAD => "granted" })
+    activate!
     set_baseline(SHOW, :public)
 
     assert_equal :public, RecordingStudioAccessible.effective_audience(recording: @page, action: SHOW)
@@ -42,66 +41,35 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
     assert permitted?(actor: @viewer, action: SHOW)
   end
 
-  test "early access of public does not restrict a public baseline" do
-    activate!(early_access: { SHOW => "public" })
+  test "early access off denies a granted actor until the release" do
+    activate!(early_access: false)
+    set_baseline(SHOW, :public)
 
-    assert_equal :allow, restriction(actor: nil, action: SHOW)
-    assert permitted?(actor: nil, action: SHOW)
+    assert_equal :deny, restriction(actor: nil, action: SHOW)
+    assert_equal :deny, restriction(actor: @viewer, action: SHOW)
+    refute permitted?(actor: @viewer, action: SHOW)
   end
 
   test "a view grant does not satisfy download" do
-    activate!(early_access: { SHOW => "granted", DOWNLOAD => "granted" })
+    activate!
 
     assert_equal :allow, restriction(actor: @viewer, action: SHOW)
     assert_equal :deny, restriction(actor: @viewer, action: DOWNLOAD)
     assert_equal :allow, restriction(actor: @editor, action: DOWNLOAD)
   end
 
-  test "download granted_override admits an edit grant when the audience does not" do
-    register_press_list!
-    with_action_audiences(DOWNLOAD, %i[public signed_in granted press_list]) do
-      activate!(early_access: { DOWNLOAD => "press_list" })
+  test "an action the capability does not list stays on the baseline" do
+    activate!
+    set_baseline(DOWNLOAD, :public)
 
-      assert_equal :deny, restriction(actor: @viewer, action: DOWNLOAD)
-      assert_equal :allow, restriction(actor: @editor, action: DOWNLOAD)
-      assert_equal :allow, restriction(actor: @press, action: DOWNLOAD)
-    end
-  end
-
-  test "a workspace constraint replaces a stored public early-access audience" do
-    activate!(early_access: { SHOW => "public" })
-    RecordingStudioAccessible.set_audience_constraint!(
-      root: @root,
-      action: SHOW,
-      allowed_audiences: [:granted],
-      actor: @owner
-    )
-
-    assert_equal :deny, restriction(actor: nil, action: SHOW)
-    assert_equal :allow, restriction(actor: @editor, action: SHOW)
-  end
-
-  test "a custom audience is evaluated as early access" do
-    register_press_list!
-    with_action_audiences(SHOW, %i[public signed_in granted press_list]) do
-      activate!(early_access: { SHOW => "press_list" })
-
-      assert_equal :deny, restriction(actor: @viewer, action: SHOW)
-      assert_equal :allow, restriction(actor: @press, action: SHOW)
-      assert permitted?(actor: @press, action: SHOW)
-    end
-  end
-
-  test "an action omitted from early access stays on the baseline" do
-    activate!(early_access: { SHOW => "granted" })
-
-    assert_equal :not_applicable, restriction(actor: nil, action: DOWNLOAD)
-    assert permitted?(actor: nil, action: DOWNLOAD)
+    assert_equal :not_applicable, restriction(actor: nil, action: :"pages.other")
+    assert_equal :deny, restriction(actor: nil, action: DOWNLOAD)
+    refute permitted?(actor: nil, action: DOWNLOAD)
   end
 
   test "publishable withholding beats early access and expiry is a time read" do
     lifts_at = Time.zone.parse("2026-12-01 12:00:00")
-    activate!(lifts_at: lifts_at, early_access: { SHOW => "granted", DOWNLOAD => "granted" })
+    activate!(lifts_at: lifts_at)
     @page.define_singleton_method(:currently_published?) { |*| false }
 
     assert_equal :allow, restriction(actor: @viewer, action: SHOW)
@@ -117,15 +85,13 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
     end
   end
 
-  test "press kit presentation uses the embargo fallback only while access is denied" do
-    activate!(fallback: "hidden", early_access: { SHOW => "granted" })
+  test "press kit presentation uses the host fallback while access is denied" do
+    activate!
     @page.define_singleton_method(:currently_published?) { |*| true }
 
-    assert_equal :hidden, presentation(actor: nil)
-    assert_equal :full, presentation(actor: @viewer)
-
-    @page.embargo_set!({ fallback: "preview" }, actor: @owner)
-    assert_equal :preview, presentation(actor: nil)
+    assert_equal :hidden, presentation(actor: nil, normal_fallback: :hidden)
+    assert_equal :preview, presentation(actor: nil, normal_fallback: :preview)
+    assert_equal :full, presentation(actor: @viewer, normal_fallback: :hidden)
   end
 
   test "history keeps the actor and a cancel does not erase it" do
@@ -172,7 +138,7 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
     embargo = @page.reload.current_embargo
     refute embargo.enabled?
     assert_nil embargo.lifts_at
-    assert_empty embargo.early_access
+    refute embargo.early_access?
     assert_equal :not_applicable, restriction(actor: nil, action: SHOW)
   end
 
@@ -181,16 +147,6 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
       activate!(lifts_at: 1.hour.ago)
     end
     assert_includes error.message, "future"
-
-    error = assert_raises(RecordingStudioEmbargo::Invalid) do
-      activate!(early_access: { SHOW => "not_an_audience" })
-    end
-    assert_includes error.message, "not_an_audience"
-
-    error = assert_raises(RecordingStudioEmbargo::Invalid) do
-      activate!(early_access: { "pages.unknown" => "granted" })
-    end
-    assert_includes error.message, "pages.unknown"
 
     error = assert_raises(RecordingStudioEmbargo::Unauthorized) do
       @page.embargo_set!(enabled_attributes, actor: @viewer)
@@ -234,14 +190,13 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
     raise result.error if result.failure?
   end
 
-  def activate!(lifts_at: 3.days.from_now, early_access: { SHOW => "granted" }, fallback: "preview")
+  def activate!(lifts_at: 3.days.from_now, early_access: true)
     @page.embargo_set!(
       {
         enabled: true,
         lifts_at: lifts_at,
         time_zone: "America/New_York",
-        early_access: early_access,
-        fallback: fallback
+        early_access: early_access
       },
       actor: @owner
     )
@@ -252,8 +207,7 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
       enabled: true,
       lifts_at: 2.days.from_now,
       time_zone: "UTC",
-      early_access: { SHOW => "granted" },
-      fallback: "preview"
+      early_access: true
     }
   end
 
@@ -274,13 +228,13 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
     RecordingStudioEmbargo.action_permitted?(recording: @page, action: action, actor: actor)
   end
 
-  def presentation(actor:, purpose: :public)
+  def presentation(actor:, purpose: :public, normal_fallback: :hidden)
     RecordingStudioEmbargo.presskit_presentation(
       recording: @page,
       actor: actor,
       view_action: SHOW,
       purpose: purpose,
-      normal_fallback: :hidden
+      normal_fallback: normal_fallback
     )
   end
 
@@ -293,19 +247,4 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
     @page.embargo_child_recording.events.where(action: "embargo_lifted")
   end
 
-  def register_press_list!
-    return if RecordingStudioAccessible.registered_audience?(:press_list)
-
-    RecordingStudioAccessible.register_audience(:press_list) do |actor:, **|
-      actor.respond_to?(:email) && actor.email.to_s.end_with?("@press.example")
-    end
-  end
-
-  def with_action_audiences(action, allowed)
-    original = RecordingStudioAccessible.configuration.action_audiences[action]
-    RecordingStudioAccessible.configuration.action_audiences[action] = original.merge(allowed: allowed)
-    yield
-  ensure
-    RecordingStudioAccessible.configuration.action_audiences[action] = original if original
-  end
 end

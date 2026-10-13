@@ -51,8 +51,7 @@ begin
       enabled: true,
       lifts_at: 3.days.from_now,
       time_zone: "America/New_York",
-      early_access: { "pages.show" => "granted", "pages.download" => "granted" },
-      fallback: "preview"
+      early_access: true
     },
     actor: user
   )

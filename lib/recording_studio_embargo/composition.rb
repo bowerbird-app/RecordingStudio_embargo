@@ -24,7 +24,7 @@ module RecordingStudioEmbargo
                               at: Time.current)
       return :unavailable if recording.blank? || Restriction.trashed?(recording)
       return unpublished_presentation(actor, recording, purpose) unless published?(recording, at)
-      return embargo_fallback(recording) if embargo_denies?(recording, actor, view_action, at)
+      return normalize_fallback(normal_fallback) if embargo_denies?(recording, actor, view_action, at)
       return :full if baseline_permitted?(recording: recording, action: view_action, actor: actor, context: {})
 
       normalize_fallback(normal_fallback)
@@ -74,11 +74,6 @@ module RecordingStudioEmbargo
       RecordingStudioAccessible.authorized?(actor: actor, recording: recording, role: :view)
     rescue StandardError
       false
-    end
-
-    def embargo_fallback(recording)
-      configured = recording.respond_to?(:current_embargo) ? recording.current_embargo&.fallback : nil
-      normalize_fallback(configured.presence || :preview)
     end
 
     def normalize_fallback(value)
