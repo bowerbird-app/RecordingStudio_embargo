@@ -60,7 +60,11 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Restricted presentation"
     assert_select "input[name='embargo[fallback]']", count: 0
     assert_includes response.body, "2026-11-02T09:00"
-    assert_includes response.body, "a view grant does not include download"
+    assert_includes response.body, "Embargoes give journalists advance notice of upcoming news, allowing them to plan and prepare their stories before the official release."
+    assert_includes response.body, "Display your press kit as a preview marked for embargo"
+    assert_includes response.body, "Embargoes work on an honour system. Journalists receive early access and agree not to publish until the release date. For example, sharing award winners in advance gives journalists time to prepare their stories before the announcement."
+    refute_includes response.body, "listed actions"
+    refute_includes response.body, "per action"
   end
 
   test "saving updates the embargo and an invalid release is rejected" do

@@ -155,7 +155,7 @@ include RecordingStudio::Capabilities::Embargo.to(
 )
 ```
 
-The generic editor in this gem is the reference implementation: enable, release time, time zone, and one early-access switch. Do not hardcode press kit actions inside the gem, and do not merge this screen with the visibility or download editors.
+The generic editor in this gem is the reference implementation: enable, release time, a time zone, and one early-access switch. Default copy is press-kit flavoured and lives in the gem locale (`recording_studio_embargo.editor.subtitle`, `enable_help`, `early_access_help`) so a host can override it. Do not hardcode press kit actions inside the gem, and do not merge this screen with the visibility or download editors.
 
 ## Copying recordings
 

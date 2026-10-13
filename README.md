@@ -35,7 +35,7 @@ end
 
 Configure those same actions on Accessible before enabling an embargo. Early access uses each action's granted roles, so a view grant does not include download. Copying a recording must call `RecordingStudioEmbargo.attributes_for_duplicate`, which clears the window and turns early access off.
 
-The editor at `/recording_studio_embargo/recordings/:id/embargo/edit` is an enable switch, a release time, a time zone, and one early-access switch. Preview and hidden stay on the host. The editor does not know about press kits.
+The editor at `/recording_studio_embargo/recordings/:id/embargo/edit` is an enable switch, a release time, a time zone, and one early-access switch. Preview and hidden stay on the host. Default English copy lives in `config/locales/en.yml` under `recording_studio_embargo.editor` and is written for a press kit. A host overrides `subtitle`, `enable_help`, and `early_access_help` in its own locale file. The editor does not hardcode press kit actions.
 
 ## Host follow-ups
 

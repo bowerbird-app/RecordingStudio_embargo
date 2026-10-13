@@ -2,17 +2,17 @@ en:
   recording_studio_embargo:
     editor:
       title: Embargo
-      subtitle: Hold listed actions until a release time.
+      subtitle: Embargoes give journalists advance notice of upcoming news, allowing them to plan and prepare their stories before the official release.
       saved: Embargo saved
       enable: Embargo enabled
-      enable_help: While this is on, listed actions stay restricted until the release time.
+      enable_help: Display your press kit as a preview marked for embargo
       lifts_at: Release date and time
       time_zone: Time zone
       time_zone_placeholder: Choose a time zone
       early_access: Early access
-      early_access_help: People who already have access can use each listed action before the release time. Access is checked per action, so a view grant does not include download.
+      early_access_help: Embargoes work on an honour system. Journalists receive early access and agree not to publish until the release date. For example, sharing award winners in advance gives journalists time to prepare their stories before the announcement.
       save: Save embargo
-      empty_actions: This recordable has no embargo actions yet. Pass actions when including the capability.
+      empty_actions: Nothing is set up to hold back yet.
     errors:
       unauthorized: You are not allowed to change this embargo.
       parent_required: A recording is required.

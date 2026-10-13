@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Default editor copy is plain press-kit language in `config/locales/en.yml`, so a host can override the subtitle and help text.
+
 ## [0.1.0] - 2026-10-12
 
 ### Added
