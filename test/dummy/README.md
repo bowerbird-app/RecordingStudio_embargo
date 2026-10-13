@@ -31,7 +31,7 @@ Then open the app and sign in with:
 
 ## Useful Routes
 
-- `/` - dummy app home page and a link to the embargo editor
+- `/` - dummy app home page and the embargo button for the seeded page
 - `/recording_studio` - redirects to `/` while the mounted Recording Studio engine stays available under that prefix for non-root routes
 - `/recording_studio_embargo/recordings/:id/embargo/edit` - embargo editor
 - `/samples/recordings/:id` - public presentation sample

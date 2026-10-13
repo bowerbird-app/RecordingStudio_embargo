@@ -225,7 +225,8 @@ class RecordingStudioEmbargoTest < Minitest::Test
     view_source = File.read(view_path)
 
     assert_includes view_source, 'title: "Embargo"'
-    assert_includes view_source, 'id: "open-embargo-editor"'
+    assert_includes view_source, 'id="open-embargo-editor"'
+    assert_includes view_source, "render_embargo_button(@page_recording)"
     assert_includes view_source, "FlatPack::Card::Component"
     assert_includes view_source, "dummy_page_nav"
     refute_includes view_source, 'title: "Demo"'

@@ -37,6 +37,16 @@ Configure those same actions on Accessible before enabling an embargo. Early acc
 
 The editor at `/recording_studio_embargo/recordings/:id/embargo/edit` is an enable switch, a release time, a time zone, and one early-access switch. Preview and hidden stay on the host. Default English copy lives in `config/locales/en.yml` under `recording_studio_embargo.editor` and is written for a press kit. A host overrides `subtitle`, `enable_help`, and `early_access_help` in its own locale file. The editor does not hardcode press kit actions.
 
+## Host button
+
+Include `RecordingStudioEmbargo::ApplicationHelper` in the host helper, then render one button:
+
+```erb
+<%= render_embargo_button(page_recording) %>
+```
+
+The button is shown only to someone allowed to edit the embargo. With no embargo, or when it is disabled or already released, the button is secondary and reads "+ Embargo". While an embargo is active it uses the warning style, a lock icon, and the text "Embargoed". Both open the editor. There is no status badge and no one-click toggle. Hosts override `recording_studio_embargo.button.add` and `recording_studio_embargo.button.embargoed`.
+
 ## Host follow-ups
 
 Publishable needs no code change. Downloadable and Presskits do. The exact call sites are in [`docs/integration_plan.md`](docs/integration_plan.md).

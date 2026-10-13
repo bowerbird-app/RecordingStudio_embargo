@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `render_embargo_button` shows a Flatpack button that opens the editor. It reads "+ Embargo" until an embargo is active, then "Embargoed" with a lock. People who cannot edit see nothing.
+
 ### Changed
 
 - Default editor copy is plain press-kit language in `config/locales/en.yml`, so a host can override the subtitle and help text.

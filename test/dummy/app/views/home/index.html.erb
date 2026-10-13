@@ -8,9 +8,9 @@
   ) %>
 
   <% if @page_recording %>
-    <%= link_to recording_studio_embargo.edit_recording_embargo_path(@page_recording), id: "open-embargo-editor", class: "inline-flex" do %>
-      <%= render FlatPack::Button::Component.new(text: "Open embargo editor", style: :primary, size: :md) %>
-    <% end %>
+    <div id="open-embargo-editor" class="inline-flex">
+      <%= render_embargo_button(@page_recording) %>
+    </div>
   <% end %>
 
   <div class="grid gap-6 lg:grid-cols-2">

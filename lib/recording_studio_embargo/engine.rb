@@ -1,8 +1,17 @@
 # frozen_string_literal: true
 
+require_relative "../../app/helpers/recording_studio_embargo/application_helper"
+
 module RecordingStudioEmbargo
   class Engine < ::Rails::Engine
     isolate_namespace RecordingStudioEmbargo
+    paths.add "app/components", eager_load: true
+
+    initializer "recording_studio_embargo.view_helpers" do
+      ActiveSupport.on_load(:action_view) do
+        include RecordingStudioEmbargo::ApplicationHelper
+      end
+    end
 
     initializer "recording_studio_embargo.before_initialize",
                 before: "recording_studio_embargo.load_config" do |_app|
