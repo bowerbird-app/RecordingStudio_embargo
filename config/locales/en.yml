@@ -10,7 +10,7 @@ en:
       time_zone: Time zone
       time_zone_placeholder: Choose a time zone
       early_access: Early access
-      early_access_help: Embargoes work on an honour system. Journalists receive early access and agree not to publish until the release date. For example, sharing award winners in advance gives journalists time to prepare their stories before the announcement.
+      early_access_help: Only journalists you give access to will see it early. Embargoes work on an honour system. Journalists receive early access and agree not to publish until the release date. For example, sharing award winners in advance gives journalists time to prepare their stories before the announcement.
       save: Save embargo
       empty_actions: Nothing is set up to hold back yet.
     errors:
