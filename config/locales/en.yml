@@ -16,6 +16,10 @@ en:
     button:
       add: "+ Embargo"
       embargoed: Embargoed
+    notice:
+      title: Embargoed until %{time}
+      subtitle: Not for publication until embargo lifts.
+      time_format: "%-d %b %Y, %-l:%M %p %Z"
     errors:
       unauthorized: You are not allowed to change this embargo.
       parent_required: A recording is required.

@@ -47,6 +47,19 @@ Include `RecordingStudioEmbargo::ApplicationHelper` in the host helper, then ren
 
 The button is shown only to someone allowed to edit the embargo. With no embargo, or when it is disabled or already released, the button is secondary and reads "+ Embargo". While an embargo is active it uses the warning style, a lock icon, and the text "Embargoed". Both open the editor. There is no status badge and no one-click toggle. Hosts override `recording_studio_embargo.button.add` and `recording_studio_embargo.button.embargoed`.
 
+## Host notice
+
+`render_embargo_notice` is static copy. It is not an alert. It renders nothing when there is no embargo, the embargo is off, or the release time has passed. Anyone who can open the page sees it while the embargo is active, including people who cannot edit it.
+
+```erb
+<%= render_embargo_notice(page_recording) %>
+<%= render_embargo_notice(page_recording, size: :sm, class: "mt-2", id: "page-embargo") %>
+```
+
+The card is `FlatPack::Card` with `style: :default`, `border: :strong` (a 2px outline), and `shadow: :none`. Corners stay rounded. Padding is compact. The card is as wide as its words. Inside, a lock sits on the left of a bold title and a muted line. `size:` is `:md` by default, or `:sm` where space is tight. `class:` and `id:` pass through to the card.
+
+The title reads "Embargoed until 12 Mar 2026, 9:00 AM AEDT". The time is `lifts_at` in the embargo's own time zone, with the zone abbreviation. The line under it reads "Not for publication until embargo lifts." Override `recording_studio_embargo.notice.title`, `recording_studio_embargo.notice.subtitle`, and `recording_studio_embargo.notice.time_format`. This needs Flatpack `v0.1.237` or newer, so the card accepts `border:` and `shadow:`.
+
 ## Editor in a frame
 
 A normal visit still renders the full editor page. When the request includes a `Turbo-Frame` header, the response is only the editor, with no page layout, so it can sit inside whatever container the host provides. This gem does not render a modal.
@@ -90,7 +103,7 @@ Migration details are in [`MIGRATION_NOTES.md`](MIGRATION_NOTES.md).
 
 ## Dummy app
 
-The dummy app pins Recording Studio dummy GitHub tag `v4.5.0`, Accessible dummy GitHub tag `v0.15.0`, Root Switchable dummy GitHub tag `v0.8.0`, and FlatPack dummy GitHub tag `v0.1.196`.
+The dummy app pins Recording Studio dummy GitHub tag `v4.5.0`, Accessible dummy GitHub tag `v0.15.0`, Root Switchable dummy GitHub tag `v0.8.0`, and FlatPack dummy GitHub tag `v0.1.240`. The home page shows the embargo notice at the default size and at `:sm` for the seeded page.
 
 ```bash
 cd test/dummy

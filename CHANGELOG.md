@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-15
+
+### Added
+
+- `render_embargo_notice(recording, size: :md, **options)` shows a Flatpack card while an embargo is active. It renders nothing when the embargo is off or the release time has passed.
+- The title, the line under it, and the release-time format live in `config/locales/en.yml` under `recording_studio_embargo.notice`.
+
+### Upgrade
+
+Existing button and editor calls stay the same. Render `render_embargo_notice(recording)` where the notice should appear. `size:` is `:md` or `:sm`. `class:` and `id:` pass through to the card. The card uses Flatpack `style: :default`, `border: :strong`, and `shadow: :none`, which need Flatpack `v0.1.237` or newer. Override `recording_studio_embargo.notice.title`, `.subtitle`, and `.time_format` for different words or a different clock format.
+
 ## [0.2.0] - 2026-10-15
 
 ### Added
@@ -36,6 +47,7 @@ No change for hosts that open the editor as a page. To drop it into a dialog, ad
 
 - Default editor copy is plain press-kit language in `config/locales/en.yml`, so a host can override the subtitle and help text.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/releases/tag/v0.1.0
