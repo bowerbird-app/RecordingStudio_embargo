@@ -41,7 +41,13 @@ module RecordingStudioEmbargo
       end
 
       def body_padding
-        :sm
+        :none
+      end
+
+      # Compact card padding is 0.75rem. Named sizes are 1rem and 1.25rem, so
+      # one and a half times the compact token is set on the body directly.
+      def body_class
+        "p-[calc(var(--card-padding-sm)*1.5)]"
       end
 
       def icon_size

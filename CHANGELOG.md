@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-10-15
+
+### Changed
+
+- The embargo notice has more room inside the card, at both sizes. Padding is one and a half times the compact card padding (`0.75rem` becomes `1.125rem`). Named body sizes are `1rem` and `1.25rem`, so the body uses that scale directly. The white fill, 2px border, and lack of shadow stay.
+
+### Upgrade
+
+No call-site change. `render_embargo_notice` renders the roomier card on its own.
+
 ## [0.3.0] - 2026-10-15
 
 ### Added
@@ -47,7 +57,8 @@ No change for hosts that open the editor as a page. To drop it into a dialog, ad
 
 - Default editor copy is plain press-kit language in `config/locales/en.yml`, so a host can override the subtitle and help text.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/releases/tag/v0.1.0
