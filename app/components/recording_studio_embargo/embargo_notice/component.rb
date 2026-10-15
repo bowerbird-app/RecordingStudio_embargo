@@ -51,7 +51,7 @@ module RecordingStudioEmbargo
       private
 
       def notice_classes
-        ["w-fit max-w-full", @system_arguments[:class]].compact_blank.join(" ")
+        ["w-fit max-w-full !bg-white", @system_arguments[:class]].compact_blank.join(" ")
       end
 
       def active_embargo

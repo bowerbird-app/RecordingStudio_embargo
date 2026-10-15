@@ -1,3 +1,4 @@
+<%# w-fit max-w-full !bg-white %>
 <%= render FlatPack::Card::Component.new(**card_options) do |card| %>
   <% card.body(padding: body_padding) do %>
     <div class="<%= compact? ? "flex items-center gap-2" : "flex items-center gap-3" %>">

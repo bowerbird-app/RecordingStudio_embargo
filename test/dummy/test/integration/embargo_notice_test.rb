@@ -132,6 +132,7 @@ class EmbargoNoticeTest < ActionDispatch::IntegrationTest
     assert_includes html, "border-2"
     assert_includes html, "rounded-[var(--radius-lg)]"
     assert_includes html, "w-fit"
+    assert_includes html, "!bg-white"
     assert_includes html, 'data-style="default"'
     assert_includes html, 'data-flat-pack--icon-name-value="lock-closed"'
     assert_includes html, 'aria-hidden="true"'

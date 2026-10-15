@@ -56,7 +56,7 @@ The button is shown only to someone allowed to edit the embargo. With no embargo
 <%= render_embargo_notice(page_recording, size: :sm, class: "mt-2", id: "page-embargo") %>
 ```
 
-The card is `FlatPack::Card` with `style: :default`, `border: :strong` (a 2px outline), and `shadow: :none`. Corners stay rounded. Padding is compact. The card is as wide as its words. Inside, a lock sits on the left of a bold title and a muted line. `size:` is `:md` by default, or `:sm` where space is tight. `class:` and `id:` pass through to the card.
+The card is `FlatPack::Card` with `style: :default`, `border: :strong` (a 2px outline), and `shadow: :none`. No card style is plain white, so the notice adds `!bg-white`. The important modifier is required: the default fill is a later `background` shorthand, and a plain `bg-white` loses to it. Corners stay rounded. Padding is compact. The card is as wide as its words. Inside, a lock sits on the left of a bold title and a muted line. `size:` is `:md` by default, or `:sm` where space is tight. `class:` and `id:` pass through to the card.
 
 The title reads "Embargoed until 12 Mar 2026, 9:00 AM AEDT". The time is `lifts_at` in the embargo's own time zone, with the zone abbreviation. The line under it reads "Not for publication until embargo lifts." Override `recording_studio_embargo.notice.title`, `recording_studio_embargo.notice.subtitle`, and `recording_studio_embargo.notice.time_format`. This needs Flatpack `v0.1.237` or newer, so the card accepts `border:` and `shadow:`.
 

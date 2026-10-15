@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `render_embargo_notice(recording, size: :md, **options)` shows a Flatpack card while an embargo is active. It renders nothing when the embargo is off or the release time has passed.
+- `render_embargo_notice(recording, size: :md, **options)` shows a white Flatpack card while an embargo is active. It renders nothing when the embargo is off or the release time has passed. The card uses `style: :default`, `border: :strong`, `shadow: :none`, and `!bg-white`. No card style is plain white, and a plain `bg-white` loses to the card's later background shorthand.
 - The title, the line under it, and the release-time format live in `config/locales/en.yml` under `recording_studio_embargo.notice`.
 
 ### Upgrade
