@@ -3,12 +3,13 @@
 module RecordingStudioEmbargo
   module EmbargoButton
     class Component < ViewComponent::Base
-      def initialize(recording:)
+      def initialize(recording:, turbo_frame: nil)
         super()
         @recording = recording
+        @turbo_frame = turbo_frame.presence&.to_s
       end
 
-      attr_reader :recording
+      attr_reader :recording, :turbo_frame
 
       def self.wrapper_id(recording)
         "embargo_button_#{recording.id}"
@@ -39,6 +40,7 @@ module RecordingStudioEmbargo
       def button_options
         options = { text: button_text, style: button_style, size: :md, href: edit_path }
         options[:icon] = "lock" if active?
+        options[:data] = { turbo_frame: turbo_frame } if turbo_frame.present?
         options
       end
 

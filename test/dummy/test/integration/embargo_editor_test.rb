@@ -47,6 +47,8 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     get recording_studio_embargo.edit_recording_embargo_path(@page)
 
     assert_response :success
+    assert_includes response.body, "data-recording-studio-default-layout"
+    assert_select "turbo-frame", count: 0
     assert_select "#embargo-editor"
     assert_select "#embargo-status", count: 0
     assert_select "#embargo-form"
@@ -90,7 +92,91 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     )
 
     assert_response :unprocessable_entity
+    assert_includes response.body, "data-recording-studio-default-layout"
     assert_includes response.body, "future"
+  end
+
+  test "a turbo frame edit renders the editor without the page layout" do
+    sign_in @owner
+
+    get recording_studio_embargo.edit_recording_embargo_path(@page), headers: frame_headers
+
+    assert_response :success
+    assert_equal "text/html", response.media_type
+    assert_select "turbo-frame#presskit_embargo #embargo-editor"
+    assert_select "#embargo-form"
+    refute_includes response.body, "data-recording-studio-default-layout"
+    refute_includes response.body, "<html"
+    refute_includes response.body, "flat-pack--modal"
+    refute_includes response.body, "data-modal-id"
+  end
+
+  test "saving inside a turbo frame stays there and refreshes the button" do
+    sign_in @owner
+    release = 4.days.from_now.change(sec: 0)
+
+    patch recording_studio_embargo.recording_embargo_path(@page),
+      params: embargo_params(enabled: "0", lifts_at: "", early_access: "0"),
+      headers: frame_headers(stream: true)
+
+    assert_response :success
+    assert_equal "text/vnd.turbo-stream.html", response.media_type
+    assert_includes response.body, "Embargo saved"
+    assert_includes response.body, %(target="presskit_embargo")
+    assert_includes button_stream, "+ Embargo"
+    assert_includes button_stream, 'data-turbo-frame="presskit_embargo"'
+    refute_includes button_stream, "Embargoed"
+    refute @page.reload.current_embargo.active?
+
+    patch recording_studio_embargo.recording_embargo_path(@page),
+      params: embargo_params(lifts_at: release.strftime("%Y-%m-%dT%H:%M")),
+      headers: frame_headers(stream: true)
+
+    assert_response :success
+    assert_includes response.body, "Embargo saved"
+    assert_includes button_stream, "Embargoed"
+    assert_includes button_stream, 'data-turbo-frame="presskit_embargo"'
+    refute_includes button_stream, "+ Embargo"
+    assert @page.reload.current_embargo.active?
+  end
+
+  test "a frame save without a stream response re-renders the editor in the frame" do
+    sign_in @owner
+
+    patch recording_studio_embargo.recording_embargo_path(@page),
+      params: embargo_params(lifts_at: 5.days.from_now.strftime("%Y-%m-%dT%H:%M")),
+      headers: frame_headers
+
+    assert_response :success
+    assert_equal "text/html", response.media_type
+    assert_select "turbo-frame#presskit_embargo"
+    assert_includes response.body, "Embargo saved"
+    refute_includes response.body, "data-recording-studio-default-layout"
+  end
+
+  test "a turbo stream accept without a frame still redirects to the full editor" do
+    sign_in @owner
+
+    patch recording_studio_embargo.recording_embargo_path(@page),
+      params: embargo_params(lifts_at: 5.days.from_now.strftime("%Y-%m-%dT%H:%M")),
+      headers: { "Accept" => "text/vnd.turbo-stream.html, text/html, application/xhtml+xml" }
+
+    assert_redirected_to recording_studio_embargo.edit_recording_embargo_path(@page)
+  end
+
+  test "validation errors inside a turbo frame re-render in the frame" do
+    sign_in @owner
+
+    patch recording_studio_embargo.recording_embargo_path(@page),
+      params: embargo_params(lifts_at: 2.days.ago.strftime("%Y-%m-%dT%H:%M")),
+      headers: frame_headers(stream: true)
+
+    assert_response :unprocessable_entity
+    assert_equal "text/html", response.media_type
+    assert_select "turbo-frame#presskit_embargo #embargo-form"
+    assert_includes response.body, "future"
+    refute_includes response.body, "data-recording-studio-default-layout"
+    assert @page.reload.current_embargo.active?
   end
 
   test "editors without the manage role are forbidden and other recordables are missing" do
@@ -141,14 +227,29 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
 
   private
 
-  def embargo_params(lifts_at:, time_zone: "America/New_York", early_access: "1")
+  def embargo_params(lifts_at:, time_zone: "America/New_York", early_access: "1", enabled: "1")
     {
       embargo: {
-        enabled: "1",
+        enabled: enabled,
         lifts_at: lifts_at,
         time_zone: time_zone,
         early_access: early_access
       }
     }
+  end
+
+  def frame_headers(frame_id = "presskit_embargo", stream: false)
+    headers = { "Turbo-Frame" => frame_id }
+    if stream
+      headers["Accept"] = "text/vnd.turbo-stream.html, text/html, application/xhtml+xml"
+    else
+      headers["Accept"] = "text/html, application/xhtml+xml"
+    end
+    headers
+  end
+
+  def button_stream
+    wrapper_id = RecordingStudioEmbargo::EmbargoButton::Component.wrapper_id(@page)
+    Nokogiri::HTML(response.body).at_css("turbo-stream[target='#{wrapper_id}']")&.to_html.to_s
   end
 end

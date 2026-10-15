@@ -12,6 +12,7 @@ module RecordingStudioEmbargo
       return if performed?
 
       assign_editor
+      render_editor if frame_request?
     end
 
     def update
@@ -19,11 +20,9 @@ module RecordingStudioEmbargo
       return if performed?
 
       @recording.embargo_set!(embargo_params, actor: editor_actor)
-      redirect_to edit_recording_embargo_path(@recording), notice: Copy.t("editor.saved")
+      save_succeeded
     rescue Invalid => e
-      assign_editor(submitted: true)
-      flash.now[:alert] = e.message
-      render :edit, status: :unprocessable_entity
+      save_failed(e)
     end
 
     private
@@ -81,6 +80,40 @@ module RecordingStudioEmbargo
 
     def embargo_params
       params.require(:embargo).permit(:enabled, :lifts_at, :time_zone, :early_access).to_h
+    end
+
+    def save_succeeded
+      return render_frame_save if frame_request?
+
+      redirect_to edit_recording_embargo_path(@recording), notice: Copy.t("editor.saved")
+    end
+
+    def save_failed(error)
+      assign_editor(submitted: true)
+      flash.now[:alert] = error.message
+      render_editor(status: :unprocessable_entity)
+    end
+
+    def render_frame_save
+      @recording.reload
+      assign_editor
+      flash.now[:notice] = Copy.t("editor.saved")
+      respond_to do |format|
+        format.turbo_stream
+        format.html { render_editor }
+      end
+    end
+
+    def render_editor(**options)
+      options[:layout] = false if frame_request?
+      options[:formats] = [:html]
+      render :edit, **options
+    end
+
+    def frame_request?
+      return false unless respond_to?(:turbo_frame_request?, true)
+
+      turbo_frame_request?
     end
   end
 end

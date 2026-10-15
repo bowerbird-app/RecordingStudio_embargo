@@ -8,8 +8,14 @@
   ) %>
 
   <% if @page_recording %>
-    <div id="open-embargo-editor" class="inline-flex">
-      <%= render_embargo_button(@page_recording) %>
+    <%= render FlatPack::Modal::Component.new(id: "embargo-editor-modal", size: :xl) do |modal| %>
+      <% modal.body do %>
+        <%= turbo_frame_tag "embargo_editor" %>
+      <% end %>
+    <% end %>
+
+    <div id="open-embargo-editor" class="inline-flex" data-modal-id="embargo-editor-modal">
+      <%= render_embargo_button(@page_recording, turbo_frame: "embargo_editor") %>
     </div>
   <% end %>
 

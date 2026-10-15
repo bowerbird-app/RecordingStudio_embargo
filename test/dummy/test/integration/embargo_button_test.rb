@@ -87,9 +87,12 @@ class EmbargoButtonTest < ActionDispatch::IntegrationTest
     assert_empty button_html(@folder)
   end
 
-  test "the host helper renders the component" do
+  test "the host helper renders the component inside its own modal" do
     source = Rails.root.join("app/views/home/index.html.erb").read
-    assert_includes source, "render_embargo_button(@page_recording)"
+    assert_includes source, 'render_embargo_button(@page_recording, turbo_frame: "embargo_editor")'
+    assert_includes source, 'turbo_frame_tag "embargo_editor"'
+    assert_includes source, "FlatPack::Modal::Component"
+    assert_includes source, 'data-modal-id="embargo-editor-modal"'
     assert_includes ApplicationHelper.ancestors, RecordingStudioEmbargo::ApplicationHelper
     assert_equal "embargo_button_#{@page.id}", RecordingStudioEmbargo::EmbargoButton::Component.wrapper_id(@page)
 
@@ -98,6 +101,25 @@ class EmbargoButtonTest < ActionDispatch::IntegrationTest
     get root_path(recording_id: @page.id)
 
     assert_select "##{RecordingStudioEmbargo::EmbargoButton::Component.wrapper_id(@page)}"
+    assert_select "#embargo-editor-modal turbo-frame#embargo_editor"
+    assert_includes button_html(@page), 'data-turbo-frame="embargo_editor"'
+  end
+
+  test "turbo_frame targets that frame and the default link does not" do
+    sign_in @owner
+    get root_path(recording_id: @page.id)
+
+    framed = @controller.view_context.render_embargo_button(@page, turbo_frame: "embargo_editor")
+    assert_includes framed, 'data-turbo-frame="embargo_editor"'
+    assert_includes framed, edit_path(@page)
+    refute_includes framed, "data-modal-id"
+
+    plain = @controller.view_context.render_embargo_button(@page)
+    refute_includes plain, "data-turbo-frame"
+    assert_includes plain, edit_path(@page)
+
+    blank = @controller.view_context.render_embargo_button(@page, turbo_frame: "")
+    refute_includes blank, "data-turbo-frame"
   end
 
   private
