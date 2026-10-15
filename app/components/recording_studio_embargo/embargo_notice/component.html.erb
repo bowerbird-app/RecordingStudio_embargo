@@ -1,0 +1,20 @@
+<%# w-fit max-w-full !bg-white %>
+<%= render FlatPack::Card::Component.new(**card_options) do |card| %>
+  <% card.body(padding: body_padding) do %>
+    <div class="<%= compact? ? "flex items-center gap-2" : "flex items-center gap-3" %>">
+      <%= render FlatPack::Shared::IconComponent.new(
+        name: "lock-closed",
+        size: icon_size,
+        aria: { hidden: "true" }
+      ) %>
+      <div class="flex flex-col">
+        <p class="<%= compact? ? "font-bold text-sm text-[var(--surface-content-color)]" : "font-bold text-[var(--surface-content-color)]" %>">
+          <%= title %>
+        </p>
+        <p class="<%= compact? ? "text-xs text-[var(--surface-muted-content-color)]" : "text-sm text-[var(--surface-muted-content-color)]" %>">
+          <%= subtitle %>
+        </p>
+      </div>
+    </div>
+  <% end %>
+<% end %>

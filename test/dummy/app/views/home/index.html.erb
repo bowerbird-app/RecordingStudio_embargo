@@ -8,6 +8,11 @@
   ) %>
 
   <% if @page_recording %>
+    <div id="embargo-notices" class="flex flex-col items-start gap-3">
+      <%= render_embargo_notice(@page_recording, id: "embargo-notice-md", class: "embargo-notice") %>
+      <%= render_embargo_notice(@page_recording, size: :sm, id: "embargo-notice-sm", class: "embargo-notice") %>
+    </div>
+
     <%= render FlatPack::Modal::Component.new(id: "embargo-editor-modal", size: :xl) do |modal| %>
       <% modal.body do %>
         <%= turbo_frame_tag "embargo_editor" %>
@@ -40,7 +45,7 @@
       <% end %>
     <% end %>
 
-    <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
+    <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
       <% card.header do %>
         <%= render FlatPack::PageTitle::Component.new(
           title: "Host setup",
@@ -60,7 +65,7 @@
       <% end %>
     <% end %>
 
-    <%= render FlatPack::Card::Component.new(style: :outlined) do |card| %>
+    <%= render FlatPack::Card::Component.new(style: :default) do |card| %>
       <% card.header do %>
         <%= render FlatPack::PageTitle::Component.new(
           title: "FlatPack usage",

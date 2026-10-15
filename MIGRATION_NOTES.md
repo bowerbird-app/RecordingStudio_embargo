@@ -6,7 +6,7 @@
 - Rails 8.1 or newer
 - Recording Studio 4.x (`~> 4.2` in the gemspec; dummy GitHub tag `v4.5.0`)
 - Accessible, so the early-access switch and the editor's manage role resolve
-- FlatPack dummy tag `v0.1.196` when the host renders the editor
+- FlatPack `v0.1.237` or newer when the host renders the editor or `render_embargo_notice` (dummy tag `v0.1.240`). The notice passes `border:` and `shadow:` to `FlatPack::Card`.
 
 Publishable, Downloadable, and Presskits are optional. Embargo does not read their tables.
 

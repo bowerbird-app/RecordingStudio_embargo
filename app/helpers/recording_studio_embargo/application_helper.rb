@@ -8,5 +8,9 @@ module RecordingStudioEmbargo
         turbo_frame: turbo_frame
       )
     end
+
+    def render_embargo_notice(recording, **)
+      render RecordingStudioEmbargo::EmbargoNotice::Component.new(recording: recording, **)
+    end
   end
 end

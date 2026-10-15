@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioEmbargoTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.2.0", ::RecordingStudioEmbargo::VERSION
+    assert_equal "0.3.0", ::RecordingStudioEmbargo::VERSION
   end
 
   def test_editor_frame_support_does_not_know_about_modals
@@ -71,7 +71,8 @@ class RecordingStudioEmbargoTest < Minitest::Test
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.8.0"'
     refute_includes gemfile, 'tag: "v0.6.0"'
     refute_includes gemfile, 'tag: "v0.5.1"'
-    assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.196"'
+    assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.240"'
+    refute_includes gemfile, 'tag: "v0.1.196"'
     refute_includes gemfile, "recording_studio/v3.0.0"
     refute_includes gemfile, 'tag: "v4.4.0"'
     refute_includes gemfile, 'tag: "v4.3.0"'
@@ -220,7 +221,8 @@ class RecordingStudioEmbargoTest < Minitest::Test
 
     assert_includes readme, "RecordingStudio"
     assert_includes readme, "dummy GitHub tag `v4.5.0`"
-    assert_includes readme, "dummy GitHub tag `v0.1.196`"
+    assert_includes readme, "dummy GitHub tag `v0.1.240`"
+    refute_includes readme, "dummy GitHub tag `v0.1.196`"
     assert_includes readme, "dummy GitHub tag `v0.15.0`"
     refute_includes readme, "dummy GitHub tag `v0.10.1`"
     assert_includes readme, "dummy GitHub tag `v0.8.0`"
@@ -248,6 +250,7 @@ class RecordingStudioEmbargoTest < Minitest::Test
     assert_includes view_source, 'title: "Embargo"'
     assert_includes view_source, 'id="open-embargo-editor"'
     assert_includes view_source, 'render_embargo_button(@page_recording, turbo_frame: "embargo_editor")'
+    assert_includes view_source, "render_embargo_notice(@page_recording"
     assert_includes view_source, "FlatPack::Modal::Component"
     assert_includes view_source, 'turbo_frame_tag "embargo_editor"'
     assert_includes view_source, "FlatPack::Card::Component"
