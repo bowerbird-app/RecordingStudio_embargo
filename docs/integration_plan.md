@@ -155,7 +155,7 @@ include RecordingStudio::Capabilities::Embargo.to(
 )
 ```
 
-The generic editor in this gem is the reference implementation: enable, release time, a time zone, and one early-access switch. Hosts place `render_embargo_button(recording)` on their own page. Default copy is press-kit flavoured and lives in the gem locale (`recording_studio_embargo.editor.subtitle`, `enable_help`, `early_access_help`, `button.add`, `button.embargoed`) so a host can override it. Do not hardcode press kit actions inside the gem, and do not merge this screen with the visibility or download editors.
+The generic editor in this gem is the reference implementation: enable, release time, a time zone, and one early-access switch. Hosts place `render_embargo_button(recording)` on their own page. Pass `turbo_frame:` when that button should load the editor into a host-owned frame, for example the body of a Flatpack modal the host renders. The gem does not render a modal. Default copy is press-kit flavoured and lives in the gem locale (`recording_studio_embargo.editor.subtitle`, `enable_help`, `early_access_help`, `button.add`, `button.embargoed`) so a host can override it. Do not hardcode press kit actions inside the gem, and do not merge this screen with the visibility or download editors.
 
 ## Copying recordings
 

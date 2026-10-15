@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-15
+
+### Added
+
+- A request with a `Turbo-Frame` header renders the editor without the page layout, so a host can place it in its own container.
+- `render_embargo_button` accepts `turbo_frame:`. The button then loads that frame. Leave it out and the button still opens the full editor.
+- Saving inside a frame stays in the frame, shows "Embargo saved", and refreshes the button to "Embargoed" or "+ Embargo". Validation errors re-render in the frame. A normal visit still redirects to the editor.
+
+### Upgrade
+
+No change for hosts that open the editor as a page. To drop it into a dialog, add your own Flatpack modal and Turbo frame, then pass `turbo_frame:` to the button. This gem does not render a modal.
+
 ## [0.1.0] - 2026-10-13
 
 ### Added
@@ -24,5 +36,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Default editor copy is plain press-kit language in `config/locales/en.yml`, so a host can override the subtitle and help text.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/releases/tag/v0.1.0

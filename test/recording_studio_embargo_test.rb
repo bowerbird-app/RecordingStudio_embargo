@@ -4,7 +4,28 @@ require "test_helper"
 
 class RecordingStudioEmbargoTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.1.0", ::RecordingStudioEmbargo::VERSION
+    assert_equal "0.2.0", ::RecordingStudioEmbargo::VERSION
+  end
+
+  def test_editor_frame_support_does_not_know_about_modals
+    root = File.expand_path("..", __dir__)
+    sources = %w[
+      app/controllers/recording_studio_embargo/embargoes_controller.rb
+      app/helpers/recording_studio_embargo/application_helper.rb
+      app/components/recording_studio_embargo/embargo_button/component.rb
+      app/views/recording_studio_embargo/embargoes/edit.html.erb
+      app/views/recording_studio_embargo/embargoes/_editor.html.erb
+      app/views/recording_studio_embargo/embargoes/update.turbo_stream.erb
+    ].map { |path| File.read(File.join(root, path)) }
+
+    sources.each do |source|
+      refute_includes source, "modal_id"
+      refute_includes source, "FlatPack::Modal"
+      refute_includes source, "flat_pack_modal_screen"
+    end
+
+    helper = File.read(File.join(root, "app/helpers/recording_studio_embargo/application_helper.rb"))
+    assert_includes helper, "turbo_frame:"
   end
 
   def test_engine_exists
@@ -226,7 +247,9 @@ class RecordingStudioEmbargoTest < Minitest::Test
 
     assert_includes view_source, 'title: "Embargo"'
     assert_includes view_source, 'id="open-embargo-editor"'
-    assert_includes view_source, "render_embargo_button(@page_recording)"
+    assert_includes view_source, 'render_embargo_button(@page_recording, turbo_frame: "embargo_editor")'
+    assert_includes view_source, "FlatPack::Modal::Component"
+    assert_includes view_source, 'turbo_frame_tag "embargo_editor"'
     assert_includes view_source, "FlatPack::Card::Component"
     assert_includes view_source, "dummy_page_nav"
     refute_includes view_source, 'title: "Demo"'

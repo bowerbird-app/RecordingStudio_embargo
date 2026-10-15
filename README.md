@@ -47,6 +47,32 @@ Include `RecordingStudioEmbargo::ApplicationHelper` in the host helper, then ren
 
 The button is shown only to someone allowed to edit the embargo. With no embargo, or when it is disabled or already released, the button is secondary and reads "+ Embargo". While an embargo is active it uses the warning style, a lock icon, and the text "Embargoed". Both open the editor. There is no status badge and no one-click toggle. Hosts override `recording_studio_embargo.button.add` and `recording_studio_embargo.button.embargoed`.
 
+## Editor in a frame
+
+A normal visit still renders the full editor page. When the request includes a `Turbo-Frame` header, the response is only the editor, with no page layout, so it can sit inside whatever container the host provides. This gem does not render a modal.
+
+Pass `turbo_frame:` and the button loads that frame instead of navigating:
+
+```erb
+<%= render_embargo_button(page_recording, turbo_frame: "embargo_editor") %>
+```
+
+Leave `turbo_frame` out and the button keeps the current full-page link. The host owns the frame. A dialog, when you want one, is a Flatpack modal around that frame:
+
+```erb
+<%= render FlatPack::Modal::Component.new(id: "embargo-modal", size: :xl) do |modal| %>
+  <% modal.body do %>
+    <%= turbo_frame_tag "embargo_editor" %>
+  <% end %>
+<% end %>
+
+<div data-modal-id="embargo-modal">
+  <%= render_embargo_button(page_recording, turbo_frame: "embargo_editor") %>
+</div>
+```
+
+Saving from inside the frame stays there. The editor shows "Embargo saved", and the button on the page updates to "Embargoed" or "+ Embargo". A validation error is shown in the same frame. A visit with no frame still redirects back to the full editor.
+
 ## Host follow-ups
 
 Publishable needs no code change. Downloadable and Presskits do. The exact call sites are in [`docs/integration_plan.md`](docs/integration_plan.md).
@@ -72,6 +98,6 @@ bin/rails db:setup
 bin/dev
 ```
 
-Sign in as `admin@admin.com` / `Password`. The home page opens the embargo editor for the seeded page. `/recording_studio` redirects to `/`.
+Sign in as `admin@admin.com` / `Password`. The home page opens the embargo editor for the seeded page inside a Flatpack modal. `/recording_studio` redirects to `/`.
 
 Authenticated pages use Recording Studio's default layout. Devise keeps its own sign-in layout.
