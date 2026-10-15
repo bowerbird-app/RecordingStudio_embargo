@@ -1,6 +1,6 @@
-<%# w-fit max-w-full !bg-white %>
+<%# w-fit max-w-full !bg-white p-[calc(var(--card-padding-sm)*1.5)] %>
 <%= render FlatPack::Card::Component.new(**card_options) do |card| %>
-  <% card.body(padding: body_padding) do %>
+  <% card.body(padding: body_padding, class: body_class) do %>
     <div class="<%= compact? ? "flex items-center gap-2" : "flex items-center gap-3" %>">
       <%= render FlatPack::Shared::IconComponent.new(
         name: "lock-closed",

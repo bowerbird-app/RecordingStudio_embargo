@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioEmbargoTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.3.0", ::RecordingStudioEmbargo::VERSION
+    assert_equal "0.3.1", ::RecordingStudioEmbargo::VERSION
   end
 
   def test_editor_frame_support_does_not_know_about_modals
