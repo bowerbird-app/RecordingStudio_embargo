@@ -108,9 +108,9 @@ class DocsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", text: "Methods"
     assert_includes response.body, "Document the public methods your addon exposes."
-    assert_includes response.body, "Example method"
-    assert_includes response.body, "recordingstudio_addon.example_method"
-    assert_includes response.body, "# Explain what this method does before the example."
+    assert_includes response.body, "Editor link"
+    assert_includes response.body, "recording_studio_embargo_management_path(page_recording, return_to: request.fullpath)"
+    assert_includes response.body, "embargoed?(page_recording)"
     assert_includes response.body, "Provide one section title and codeblock for each method"
   end
 
