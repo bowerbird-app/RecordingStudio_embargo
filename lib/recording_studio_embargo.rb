@@ -11,6 +11,8 @@ require "recording_studio_embargo/validator"
 require "recording_studio_embargo/restriction"
 require "recording_studio_embargo/composition"
 require "recording_studio_embargo/cache"
+require "recording_studio_embargo/return_to"
+require "recording_studio_embargo/host_refresh"
 require "recording_studio_embargo/editor"
 require "recording_studio_embargo/recording_extensions"
 require "recording_studio_embargo/lifecycle"
@@ -66,6 +68,13 @@ module RecordingStudioEmbargo
 
     def attributes_for_duplicate(embargo = nil)
       CopyPolicy.attributes_for_duplicate(embargo)
+    end
+
+    def embargoed?(recording)
+      return false if recording.blank?
+      return false unless recording.respond_to?(:embargo_active?)
+
+      recording.embargo_active? || false
     end
 
     def observe_lift!(recording)

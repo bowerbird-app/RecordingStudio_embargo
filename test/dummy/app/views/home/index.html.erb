@@ -1,4 +1,5 @@
 <% dummy_page_nav(title: "Embargo", back_url: root_path) %>
+<% turbo_refreshes_with(method: :morph, scroll: :preserve) if respond_to?(:turbo_refreshes_with) %>
 
 <div class="flex w-full flex-col gap-6">
   <%= render FlatPack::PageTitle::Component.new(
@@ -8,10 +9,18 @@
   ) %>
 
   <% if @page_recording %>
+    <%= turbo_stream_from @page_recording %>
+
     <div id="embargo-notices" class="flex flex-col items-start gap-3">
       <%= render_embargo_notice(@page_recording, id: "embargo-notice-md", class: "embargo-notice") %>
       <%= render_embargo_notice(@page_recording, size: :sm, id: "embargo-notice-sm", class: "embargo-notice") %>
     </div>
+
+    <% management_path = recording_studio_embargo_management_path(
+      @page_recording,
+      return_to: root_path(recording_id: @page_recording.id)
+    ) %>
+    <% menu_label = embargoed?(@page_recording) ? "Embargoed" : "Embargo" %>
 
     <%= render FlatPack::Modal::Component.new(id: "embargo-editor-modal", size: :xl) do |modal| %>
       <% modal.body do %>
@@ -19,8 +28,33 @@
       <% end %>
     <% end %>
 
-    <div id="open-embargo-editor" class="inline-flex" data-modal-id="embargo-editor-modal">
-      <%= render_embargo_button(@page_recording, turbo_frame: "embargo_editor") %>
+    <div id="embargo-host-actions">
+      <%= render FlatPack::Button::Dropdown::Component.new(text: "More", id: "embargo-more-menu", style: :secondary) do |dropdown| %>
+        <% if embargoed?(@page_recording) %>
+          <% dropdown.menu_item(
+            text: menu_label,
+            icon: "lock",
+            href: management_path,
+            id: "embargo-menu-item",
+            data: { modal_id: "embargo-editor-modal", turbo_frame: "embargo_editor" }
+          ) %>
+        <% else %>
+          <% dropdown.menu_item(
+            text: menu_label,
+            href: management_path,
+            id: "embargo-menu-item",
+            data: { modal_id: "embargo-editor-modal", turbo_frame: "embargo_editor" }
+          ) %>
+        <% end %>
+      <% end %>
+
+      <%= render FlatPack::Button::Component.new(
+        text: "Open embargo page",
+        style: :ghost,
+        size: :md,
+        href: management_path,
+        id: "embargo-full-page-link"
+      ) %>
     </div>
   <% end %>
 

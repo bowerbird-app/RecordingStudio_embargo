@@ -3,20 +3,16 @@
 require "test_helper"
 require "devise/test/integration_helpers"
 
-class EmbargoButtonTest < ActionDispatch::IntegrationTest
+class EmbargoHostLinkTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
 
   setup do
-    @owner = create_user("button-owner")
-    @viewer = create_user("button-viewer")
-    @stranger = create_user("button-stranger")
-    workspace = Workspace.create!(name: "Button #{SecureRandom.hex(4)}")
+    @owner = create_user("link-owner")
+    @viewer = create_user("link-viewer")
+    workspace = Workspace.create!(name: "Link #{SecureRandom.hex(4)}")
     @root = RecordingStudio.root_recording_for(workspace)
     @page = @root.record(Page, actor: @owner, parent_recording: @root) do |page|
-      page.title = "Button page #{SecureRandom.hex(4)}"
-    end
-    @folder = @root.record(Folder, actor: @owner, parent_recording: @root) do |folder|
-      folder.name = "Button folder #{SecureRandom.hex(4)}"
+      page.title = "Link page #{SecureRandom.hex(4)}"
     end
     RecordingStudioAccessible.bootstrap_owner_access!(recording: @root, actor: @owner)
     grant(@viewer, :view)
@@ -26,120 +22,90 @@ class EmbargoButtonTest < ActionDispatch::IntegrationTest
     Current.actor = nil
   end
 
-  test "an active embargo renders a warning Embargoed button for an editor" do
+  test "the host menu item and full-page link use the management path" do
+    sign_in @owner
+
+    get root_path(recording_id: @page.id)
+
+    expected = recording_studio_embargo.edit_recording_embargo_path(
+      @page,
+      return_to: root_path(recording_id: @page.id)
+    )
+    menu = css("#embargo-menu-item")
+    full_page = css("#embargo-full-page-link")
+
+    assert_includes menu, "Embargo"
+    assert_includes menu, %(href="#{expected}")
+    assert_includes menu, 'data-modal-id="embargo-editor-modal"'
+    assert_includes menu, 'data-turbo-frame="embargo_editor"'
+    refute_includes menu, "lock-closed"
+    refute_includes menu, "Embargoed"
+
+    assert_includes full_page, "Open embargo page"
+    assert_includes full_page, %(href="#{expected}")
+    refute_includes full_page, "data-turbo-frame"
+    refute_includes full_page, "data-modal-id"
+
+    assert_select "#embargo-editor-modal turbo-frame#embargo_editor"
+    assert_select "turbo-cable-stream-source", count: 1
+    refute_includes response.body, "embargo_button_"
+    refute_includes response.body, "render_embargo_button"
+  end
+
+  test "an active hold labels the menu item and embargoed? is true" do
     activate!
     sign_in @owner
 
     get root_path(recording_id: @page.id)
 
-    section = button_html(@page)
-    assert_includes section, "Embargoed"
-    assert_includes section, 'data-fp-style="warning"'
-    assert_includes section, 'data-flat-pack--icon-name-value="lock-closed"'
-    assert_includes section, edit_path(@page)
-    refute_includes section, "+ Embargo"
+    menu = css("#embargo-menu-item")
+    assert_includes menu, "Embargoed"
+    assert_includes menu, 'data-flat-pack--icon-name-value="lock-closed"'
+    assert @controller.view_context.embargoed?(@page)
   end
 
-  test "no embargo renders a secondary add button" do
+  test "a disabled or lifted hold is not embargoed" do
     sign_in @owner
-
     get root_path(recording_id: @page.id)
+    refute @controller.view_context.embargoed?(@page)
 
-    assert_add_button
-  end
-
-  test "a disabled embargo renders the add button" do
     @page.embargo_set!(
       { enabled: false, lifts_at: nil, time_zone: "UTC", early_access: false },
       actor: @owner
     )
-    sign_in @owner
+    refute @controller.view_context.embargoed?(@page.reload)
 
-    get root_path(recording_id: @page.id)
-
-    assert_add_button
-  end
-
-  test "an expired embargo renders the add button" do
     activate!(lifts_at: 1.hour.from_now)
-    sign_in @owner
-
     travel_to(2.hours.from_now) do
-      get root_path(recording_id: @page.id)
+      refute @controller.view_context.embargoed?(@page.reload)
     end
-
-    assert_add_button
   end
 
-  test "people who cannot edit the embargo see no button" do
-    activate!
+  test "the management helper drops an unsafe return path" do
+    sign_in @owner
+    get root_path(recording_id: @page.id)
+    view = @controller.view_context
 
+    safe = view.recording_studio_embargo_management_path(@page, return_to: "/docs/install")
+    unsafe = view.recording_studio_embargo_management_path(@page, return_to: "https://evil.test/phish")
+
+    assert_equal recording_studio_embargo.edit_recording_embargo_path(@page, return_to: "/docs/install"), safe
+    assert_equal recording_studio_embargo.edit_recording_embargo_path(@page), unsafe
+    refute view.embargoed?(nil)
+  end
+
+  test "someone who cannot edit is still forbidden at the editor" do
     sign_in @viewer
-    get root_path(recording_id: @page.id)
-    assert_empty button_html(@page)
 
-    sign_in @stranger
-    get root_path(recording_id: @page.id)
-    assert_empty button_html(@page)
+    get recording_studio_embargo.edit_recording_embargo_path(@page)
 
-    sign_in @owner
-    get root_path(recording_id: @folder.id)
-    assert_empty button_html(@folder)
-  end
-
-  test "the host helper renders the component inside its own modal" do
-    source = Rails.root.join("app/views/home/index.html.erb").read
-    assert_includes source, 'render_embargo_button(@page_recording, turbo_frame: "embargo_editor")'
-    assert_includes source, 'turbo_frame_tag "embargo_editor"'
-    assert_includes source, "FlatPack::Modal::Component"
-    assert_includes source, 'data-modal-id="embargo-editor-modal"'
-    assert_includes ApplicationHelper.ancestors, RecordingStudioEmbargo::ApplicationHelper
-    assert_equal "embargo_button_#{@page.id}", RecordingStudioEmbargo::EmbargoButton::Component.wrapper_id(@page)
-
-    activate!
-    sign_in @owner
-    get root_path(recording_id: @page.id)
-
-    assert_select "##{RecordingStudioEmbargo::EmbargoButton::Component.wrapper_id(@page)}"
-    assert_select "#embargo-editor-modal turbo-frame#embargo_editor"
-    assert_includes button_html(@page), 'data-turbo-frame="embargo_editor"'
-  end
-
-  test "turbo_frame targets that frame and the default link does not" do
-    sign_in @owner
-    get root_path(recording_id: @page.id)
-
-    framed = @controller.view_context.render_embargo_button(@page, turbo_frame: "embargo_editor")
-    assert_includes framed, 'data-turbo-frame="embargo_editor"'
-    assert_includes framed, edit_path(@page)
-    refute_includes framed, "data-modal-id"
-
-    plain = @controller.view_context.render_embargo_button(@page)
-    refute_includes plain, "data-turbo-frame"
-    assert_includes plain, edit_path(@page)
-
-    blank = @controller.view_context.render_embargo_button(@page, turbo_frame: "")
-    refute_includes blank, "data-turbo-frame"
+    assert_response :forbidden
   end
 
   private
 
-  def assert_add_button
-    section = button_html(@page)
-    assert_includes section, "+ Embargo"
-    assert_includes section, 'data-fp-style="secondary"'
-    assert_includes section, edit_path(@page)
-    refute_includes section, "Embargoed"
-    refute_includes section, "lock-closed"
-  end
-
-  def button_html(recording)
-    wrapper = RecordingStudioEmbargo::EmbargoButton::Component.wrapper_id(recording)
-    Nokogiri::HTML(response.body).at_css("##{wrapper}")&.to_html.to_s
-  end
-
-  def edit_path(recording)
-    recording_studio_embargo.edit_recording_embargo_path(recording)
+  def css(selector)
+    Nokogiri::HTML(response.body).at_css(selector)&.to_html.to_s
   end
 
   def create_user(prefix)

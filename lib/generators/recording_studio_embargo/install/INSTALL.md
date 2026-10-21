@@ -6,5 +6,6 @@ RecordingStudio Embargo install
 4. Configure those actions on Accessible before enabling an embargo.
 5. Install migrations: `bin/rails generate recording_studio_embargo:migrations`
 6. Migrate: `bin/rails db:migrate`
+7. Link with `recording_studio_embargo_management_path(recording, return_to:)` and `embargoed?(recording)`. The host chooses a page or its own modal. See the README.
 
 See docs/integration_plan.md before wiring Presskits or Downloadable.

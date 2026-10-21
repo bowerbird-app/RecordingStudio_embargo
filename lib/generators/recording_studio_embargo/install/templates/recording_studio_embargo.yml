@@ -1,6 +1,7 @@
 default: &default
   default_time_zone: UTC
   manage_role: edit
+  broadcast_page_refresh: true
 
 development:
   <<: *default

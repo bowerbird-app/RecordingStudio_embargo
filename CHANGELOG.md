@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-21
+
+### Added
+
+- `recording_studio_embargo_management_path(recording, return_to: nil)` is the editor link. The host passes the recording it already has.
+- `embargoed?(recording)` and `RecordingStudioEmbargo.embargoed?(recording)` are true while a hold is on and the release time is still ahead.
+- A full-page save redirects to a same-origin `return_to`. Any other value is ignored, and the editor is shown again.
+- A save inside a Turbo Frame responds with `turbo_stream.refresh` (`method="morph"`, `scroll="preserve"`). The host page renders again. Embargo does not replace host markup.
+- `config.broadcast_page_refresh` (default `true`). When turbo-rails is loaded, create, update, cancel, and a scheduled lift broadcast a page refresh with `Turbo::StreamsChannel.broadcast_refresh_to(recording)`. The broadcast is skipped when the setting is off or turbo-rails is not loaded.
+- Those same events touch the parent recording so a fragment cache keyed on it rebuilds.
+
+### Removed
+
+- `render_embargo_button`, `EmbargoButton`, and the wrapper id it used to replace after save. Hosts render their own Flatpack link or menu item.
+
+### Upgrade
+
+Drop `render_embargo_button` and any `turbo_frame:` passed to it. Render a host link with `recording_studio_embargo_management_path`. Use `embargoed?` for a lock or a label. `render_embargo_notice` stays. Set `config.broadcast_page_refresh = false` when a host should not receive the page refresh. Subscribe with `turbo_stream_from recording` to pick it up.
+
 ## [0.3.1] - 2026-10-15
 
 ### Changed
@@ -57,7 +76,8 @@ No change for hosts that open the editor as a page. To drop it into a dialog, ad
 
 - Default editor copy is plain press-kit language in `config/locales/en.yml`, so a host can override the subtitle and help text.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.1.0...v0.2.0
