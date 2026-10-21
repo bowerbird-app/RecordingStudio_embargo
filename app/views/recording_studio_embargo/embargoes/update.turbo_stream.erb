@@ -1,9 +1,0 @@
-<%= turbo_stream.update turbo_frame_request_id do %>
-  <%= render "editor" %>
-<% end %>
-<%= turbo_stream.replace RecordingStudioEmbargo::EmbargoButton::Component.wrapper_id(@recording) do %>
-  <%= render RecordingStudioEmbargo::EmbargoButton::Component.new(
-    recording: @recording,
-    turbo_frame: turbo_frame_request_id
-  ) %>
-<% end %>

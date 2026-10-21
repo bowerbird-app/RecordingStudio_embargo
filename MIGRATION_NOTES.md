@@ -14,6 +14,14 @@ Publishable, Downloadable, and Presskits are optional. Embargo does not read the
 
 `recording_studio_embargo_embargoes` stores `enabled`, `lifts_at`, `time_zone`, and `early_access` (boolean). The row is a child recordable. A partial unique index, `index_rs_embargo_child_per_parent`, allows one untrashed `RecordingStudioEmbargo::Embargo` recording per parent. Revisions reuse that recording. There is no production data to backfill. Preview and hidden are not stored here.
 
+## Host linking
+
+Hosts link to the editor with `recording_studio_embargo_management_path(recording, return_to:)`. `embargoed?(recording)` reports an active hold. The editor is the same view as a page or inside a host Turbo Frame. Embargo does not render a modal and does not replace host markup after save. A full-page save redirects to a same-origin `return_to`, or back to the editor. A frame save responds with a morphing page refresh.
+
+`config.broadcast_page_refresh` defaults to true. When turbo-rails is loaded, create, update, cancel, and a scheduled lift broadcast `Turbo::StreamsChannel.broadcast_refresh_to(recording)`. Set it to false to skip that broadcast. Those same events touch the parent recording so fragment caches keyed on it rebuild.
+
+`render_embargo_button`, `EmbargoButton`, and its wrapper id are gone. `render_embargo_notice` is unchanged.
+
 ## Install
 
 From the host app:

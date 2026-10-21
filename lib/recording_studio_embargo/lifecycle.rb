@@ -3,6 +3,7 @@
 require_relative "lifecycle_snapshot"
 require_relative "lifecycle_support"
 require_relative "lift"
+require_relative "host_refresh"
 
 module RecordingStudioEmbargo
   # Config changes and the moment an embargo lifts are different events.
@@ -78,6 +79,7 @@ module RecordingStudioEmbargo
 
     def instrument!(event, payload)
       ActiveSupport::Notifications.instrument(EVENTS.fetch(event), payload)
+      HostRefresh.after_commit(payload)
     end
 
     def build_snapshot(embargo)

@@ -37,15 +37,17 @@ Configure those same actions on Accessible before enabling an embargo. Early acc
 
 The editor at `/recording_studio_embargo/recordings/:id/embargo/edit` is an enable switch, a release time, a time zone, and one early-access switch. Preview and hidden stay on the host. Default English copy lives in `config/locales/en.yml` under `recording_studio_embargo.editor` and is written for a press kit. A host overrides `subtitle`, `enable_help`, and `early_access_help` in its own locale file. The editor does not hardcode press kit actions.
 
-## Host button
+## Host link
 
-Include `RecordingStudioEmbargo::ApplicationHelper` in the host helper, then render one button:
+Include `RecordingStudioEmbargo::ApplicationHelper` (the engine does this for host views). Link to the editor with the recording the host already has. Embargo does not ask the host for an embargo id, and it does not render the host's menu.
 
 ```erb
-<%= render_embargo_button(page_recording) %>
+<%= recording_studio_embargo_management_path(page_recording, return_to: request.fullpath) %>
 ```
 
-The button is shown only to someone allowed to edit the embargo. With no embargo, or when it is disabled or already released, the button is secondary and reads "+ Embargo". While an embargo is active it uses the warning style, a lock icon, and the text "Embargoed". Both open the editor. There is no status badge and no one-click toggle. Hosts override `recording_studio_embargo.button.add` and `recording_studio_embargo.button.embargoed`.
+`return_to:` is optional. After a full-page save, Embargo redirects there when the value is a same-origin path. Anything else is ignored, and the editor is shown again.
+
+`embargoed?(page_recording)` is true only while a hold is on and the release time is still ahead. Use it for a lock or a label. `RecordingStudioEmbargo.embargoed?(recording)` is the same check outside a view.
 
 ## Host notice
 
@@ -60,31 +62,36 @@ The card is `FlatPack::Card` with `style: :default`, `border: :strong` (a 2px ou
 
 The title reads "Embargoed until 12 Mar 2026, 9:00 AM AEDT". The time is `lifts_at` in the embargo's own time zone, with the zone abbreviation. The line under it reads "Not for publication until embargo lifts." Override `recording_studio_embargo.notice.title`, `recording_studio_embargo.notice.subtitle`, and `recording_studio_embargo.notice.time_format`. This needs Flatpack `v0.1.237` or newer, so the card accepts `border:` and `shadow:`.
 
-## Editor in a frame
+## Page or modal
 
-A normal visit still renders the full editor page. When the request includes a `Turbo-Frame` header, the response is only the editor, with no page layout, so it can sit inside whatever container the host provides. This gem does not render a modal.
+The editor is one view. A normal visit renders the full page. A request with a `Turbo-Frame` header renders that same editor with no page layout, inside the frame the host named. This gem does not render a modal and does not know the host's modal id or frame name.
 
-Pass `turbo_frame:` and the button loads that frame instead of navigating:
-
-```erb
-<%= render_embargo_button(page_recording, turbo_frame: "embargo_editor") %>
-```
-
-Leave `turbo_frame` out and the button keeps the current full-page link. The host owns the frame. A dialog, when you want one, is a Flatpack modal around that frame:
+A Flatpack menu item is enough. The ids below belong to the host:
 
 ```erb
-<%= render FlatPack::Modal::Component.new(id: "embargo-modal", size: :xl) do |modal| %>
+<%= turbo_stream_from page_recording %>
+
+<%= render FlatPack::Modal::Component.new(id: "embargo-editor-modal", size: :xl) do |modal| %>
   <% modal.body do %>
     <%= turbo_frame_tag "embargo_editor" %>
   <% end %>
 <% end %>
 
-<div data-modal-id="embargo-modal">
-  <%= render_embargo_button(page_recording, turbo_frame: "embargo_editor") %>
-</div>
+<%= render FlatPack::Button::Dropdown::Component.new(text: "More") do |dropdown| %>
+  <% dropdown.menu_item(
+    text: embargoed?(page_recording) ? "Embargoed" : "Embargo",
+    icon: ("lock" if embargoed?(page_recording)),
+    href: recording_studio_embargo_management_path(page_recording, return_to: request.fullpath),
+    data: { modal_id: "embargo-editor-modal", turbo_frame: "embargo_editor" }
+  ) %>
+<% end %>
 ```
 
-Saving from inside the frame stays there. The editor shows "Embargo saved", and the button on the page updates to "Embargoed" or "+ Embargo". A validation error is shown in the same frame. A visit with no frame still redirects back to the full editor.
+Leave the frame data off the link and it opens the editor as a page. Saving on that page redirects to `return_to`, or back to the editor when `return_to` is missing or not same-origin. Saving inside a frame responds with `turbo_stream.refresh` (`method="morph"`) so the host page renders again. Embargo does not replace the host's markup. A validation error is shown in the same frame.
+
+`turbo_stream_from page_recording` is optional. When `config.broadcast_page_refresh` is true (the default) and turbo-rails is loaded, a create, update, cancel, or scheduled lift broadcasts a page refresh on that stream. Set `config.broadcast_page_refresh = false` to keep the notifications and skip the broadcast. The call is skipped when turbo-rails is not loaded.
+
+Any of those changes also touches the parent recording, so a fragment cache keyed on that recording rebuilds. `render_embargo_notice` is unchanged.
 
 ## Host follow-ups
 
@@ -103,7 +110,7 @@ Migration details are in [`MIGRATION_NOTES.md`](MIGRATION_NOTES.md).
 
 ## Dummy app
 
-The dummy app pins Recording Studio dummy GitHub tag `v4.5.0`, Accessible dummy GitHub tag `v0.15.0`, Root Switchable dummy GitHub tag `v0.8.0`, and FlatPack dummy GitHub tag `v0.1.240`. The home page shows the embargo notice at the default size and at `:sm` for the seeded page.
+The dummy app pins Recording Studio dummy GitHub tag `v4.5.0`, Accessible dummy GitHub tag `v0.15.0`, Root Switchable dummy GitHub tag `v0.8.0`, and FlatPack dummy GitHub tag `v0.1.240`. The home page shows the embargo notice at the default size and at `:sm` for the seeded page. A More menu opens the editor in a host modal. "Open embargo page" opens the same editor as a page.
 
 ```bash
 cd test/dummy

@@ -31,7 +31,7 @@ Then open the app and sign in with:
 
 ## Useful Routes
 
-- `/` - dummy app home page. The seeded page shows the embargo notice, and the embargo button opens the editor in a host-owned Flatpack modal and Turbo frame
+- `/` - dummy app home page. The seeded page shows the embargo notice. More opens the editor in a host-owned Flatpack modal. "Open embargo page" opens the same editor as a page
 - `/recording_studio` - redirects to `/` while the mounted Recording Studio engine stays available under that prefix for non-root routes
 - `/recording_studio_embargo/recordings/:id/embargo/edit` - embargo editor
 - `/samples/recordings/:id` - public presentation sample

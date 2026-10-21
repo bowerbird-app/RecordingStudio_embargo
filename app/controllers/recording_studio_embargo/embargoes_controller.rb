@@ -6,6 +6,7 @@ module RecordingStudioEmbargo
 
     before_action :require_signed_in_actor
     before_action :set_recording
+    before_action :set_return_to
 
     def edit
       authorize_editor!
@@ -83,9 +84,9 @@ module RecordingStudioEmbargo
     end
 
     def save_succeeded
-      return render_frame_save if frame_request?
+      return refresh_page if frame_request?
 
-      redirect_to edit_recording_embargo_path(@recording), notice: Copy.t("editor.saved")
+      redirect_to after_save_location, notice: Copy.t("editor.saved")
     end
 
     def save_failed(error)
@@ -94,14 +95,17 @@ module RecordingStudioEmbargo
       render_editor(status: :unprocessable_entity)
     end
 
-    def render_frame_save
-      @recording.reload
-      assign_editor
-      flash.now[:notice] = Copy.t("editor.saved")
-      respond_to do |format|
-        format.turbo_stream
-        format.html { render_editor }
-      end
+    def refresh_page
+      # Turbo drops a refresh tagged with the request that just finished.
+      render turbo_stream: turbo_stream.refresh(request_id: nil, method: "morph", scroll: "preserve")
+    end
+
+    def after_save_location
+      @return_to.presence || edit_recording_embargo_path(@recording)
+    end
+
+    def set_return_to
+      @return_to = ReturnTo.path(params[:return_to], request: request)
     end
 
     def render_editor(**options)

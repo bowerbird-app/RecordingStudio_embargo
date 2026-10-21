@@ -8,11 +8,13 @@ class ConfigurationTest < Minitest::Test
   end
 
   def test_merge_updates_known_attributes
-    @configuration.merge!(default_time_zone: "America/Chicago", manage_role: :admin, layout: "application")
+    @configuration.merge!(default_time_zone: "America/Chicago", manage_role: :admin, layout: "application",
+                          broadcast_page_refresh: false)
 
     assert_equal "America/Chicago", @configuration.default_time_zone
     assert_equal :admin, @configuration.manage_role
     assert_equal "application", @configuration.layout
+    assert_equal false, @configuration.broadcast_page_refresh
   end
 
   def test_merge_ignores_unknown_keys
@@ -37,6 +39,7 @@ class ConfigurationTest < Minitest::Test
 
     assert_equal "UTC", configuration.default_time_zone
     assert_equal :edit, configuration.manage_role
+    assert_equal true, configuration.broadcast_page_refresh
     assert_equal "recording_studio/default_layout", configuration.layout
     assert_instance_of RecordingStudio::Hooks, configuration.hooks
   end
