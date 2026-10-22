@@ -65,6 +65,8 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Embargo this page and set a release date."
     assert_includes response.body, "What is an embargo"
     assert_includes response.body, "md:grid-cols-2"
+    assert_includes response.body, "max-w-3xl"
+    assert_includes response.body, "mt-8"
     assert_select "#what-is-an-embargo-content[hidden]", text: /Embargoes give journalists advance notice/
     assert_select "#embargo-form button[type=submit]", text: "Update"
     assert_select "p", text: "Embargoes give journalists advance notice of upcoming news, allowing them to plan and prepare their stories before the official release.", count: 0

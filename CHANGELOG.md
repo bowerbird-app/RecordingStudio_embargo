@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The editor subtitle is "Embargo this %{recordable_name} and set a release date." `recordable_name` is the recordable's human name in lowercase.
 - The explanation of an embargo sits in a collapse titled "What is an embargo", under the form.
 - Release date and time zone sit side by side. They stack on a small screen.
+- The editor column is at most `max-w-3xl` and stays full width on a narrow screen.
+- The "What is an embargo" collapse has space above it.
 - The submit button reads "Update".
 
 ### Removed

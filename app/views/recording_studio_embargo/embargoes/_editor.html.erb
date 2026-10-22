@@ -1,4 +1,4 @@
-<div id="embargo-editor">
+<div id="embargo-editor" class="w-full max-w-3xl">
   <% if respond_to?(:turbo_frame_request?) && turbo_frame_request? %>
     <% if flash[:notice].present? %>
       <%= render FlatPack::Alert::Component.new(
@@ -81,7 +81,8 @@
 
     <%= render FlatPack::Collapse::Component.new(
       id: "what-is-an-embargo",
-      title: t("recording_studio_embargo.editor.what_is_an_embargo")
+      title: t("recording_studio_embargo.editor.what_is_an_embargo"),
+      class: "mt-8"
     ) do %>
       <%= t("recording_studio_embargo.editor.explanation") %>
     <% end %>
