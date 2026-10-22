@@ -33,7 +33,7 @@
       <%= hidden_field_tag "embargo[enabled]", "0" %>
       <%= hidden_field_tag "embargo[early_access]", "0" %>
 
-      <%= render FlatPack::Grid::Component.new(cols: 1, gap: :md) do %>
+      <%= render FlatPack::Grid::Component.new(cols: 1, gap: :lg) do %>
         <%= render FlatPack::Switch::Component.new(
           name: "embargo[enabled]",
           checked: @editor.enabled?,
@@ -41,7 +41,7 @@
           help_text: t("recording_studio_embargo.editor.enable_help")
         ) %>
 
-        <%= render FlatPack::Grid::Component.new(cols: 2, gap: :md) do %>
+        <%= render FlatPack::Grid::Component.new(cols: 2, gap: :lg) do %>
           <%= render FlatPack::DateTimeInput::Component.new(
             name: "embargo[lifts_at]",
             label: t("recording_studio_embargo.editor.lifts_at"),

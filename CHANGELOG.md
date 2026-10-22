@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The editor subtitle is "Lock with embargo and set a release date".
 - The explanation of an embargo sits in a collapse titled "What is an embargo", under the form.
-- Release date and time zone sit side by side. They stack on a small screen.
+- Release date and time zone sit side by side. They stack on a small screen. Form rows use the large grid gap, and the date and time zone pair uses that same gap.
 - The editor column is at most `max-w-3xl` and stays full width on a narrow screen.
 - The "What is an embargo" collapse has space above it.
 - The submit button reads "Update".

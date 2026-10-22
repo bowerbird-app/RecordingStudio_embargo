@@ -64,7 +64,8 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "2026-11-02T09:00"
     assert_includes response.body, "Lock with embargo and set a release date"
     assert_includes response.body, "What is an embargo"
-    assert_includes response.body, "md:grid-cols-2"
+    assert_includes response.body, "md:grid-cols-2 gap-6"
+    assert_includes response.body, "grid-cols-1 gap-6"
     assert_includes response.body, "max-w-3xl"
     assert_includes response.body, "mt-8"
     assert_select "#what-is-an-embargo-content[hidden]", text: /Embargoes give journalists advance notice/
