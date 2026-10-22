@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-22
+
+### Changed
+
+- The editor subtitle is "Embargo this %{recordable_name} and set a release date." `recordable_name` is the recordable's human name in lowercase.
+- The explanation of an embargo sits in a collapse titled "What is an embargo", under the form.
+- Release date and time zone sit side by side. They stack on a small screen.
+- The submit button reads "Update".
+
+### Removed
+
+- The "When it lifts" fieldset, and the `recording_studio_embargo.editor.fieldset` locale key.
+
+### Upgrade
+
+If you override `recording_studio_embargo.editor.subtitle`, include `%{recordable_name}`. Drop any override of `recording_studio_embargo.editor.fieldset`. The save key is still `recording_studio_embargo.editor.save`. Its default is now "Update".
+
 ## [0.4.0] - 2026-10-21
 
 ### Added
@@ -76,7 +93,8 @@ No change for hosts that open the editor as a page. To drop it into a dialog, ad
 
 - Default editor copy is plain press-kit language in `config/locales/en.yml`, so a host can override the subtitle and help text.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.2.0...v0.3.0

@@ -62,6 +62,14 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Restricted presentation"
     assert_select "input[name='embargo[fallback]']", count: 0
     assert_includes response.body, "2026-11-02T09:00"
+    assert_includes response.body, "Embargo this page and set a release date."
+    assert_includes response.body, "What is an embargo"
+    assert_includes response.body, "md:grid-cols-2"
+    assert_select "#what-is-an-embargo-content[hidden]", text: /Embargoes give journalists advance notice/
+    assert_select "#embargo-form button[type=submit]", text: "Update"
+    assert_select "p", text: "Embargoes give journalists advance notice of upcoming news, allowing them to plan and prepare their stories before the official release.", count: 0
+    refute_includes response.body, "When it lifts"
+    refute_includes response.body, "Save embargo"
     assert_includes response.body, "Embargoes give journalists advance notice of upcoming news, allowing them to plan and prepare their stories before the official release."
     assert_includes response.body, "Display your press kit as a preview marked for embargo"
     assert_includes response.body, "Only journalists you give access to will see it early. Embargoes work on an honour system. Journalists receive early access and agree not to publish until the release date. For example, sharing award winners in advance gives journalists time to prepare their stories before the announcement."
@@ -105,7 +113,10 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal "text/html", response.media_type
     assert_select "turbo-frame#presskit_embargo #embargo-editor"
-    assert_select "#embargo-form"
+    assert_select "turbo-frame#presskit_embargo #embargo-form"
+    assert_select "turbo-frame#presskit_embargo #what-is-an-embargo-content"
+    assert_includes response.body, "Embargo this page and set a release date."
+    refute_includes response.body, "When it lifts"
     refute_includes response.body, "data-recording-studio-default-layout"
     refute_includes response.body, "<html"
     refute_includes response.body, "flat-pack--modal"
