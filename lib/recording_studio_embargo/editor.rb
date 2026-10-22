@@ -42,18 +42,7 @@ module RecordingStudioEmbargo
       embargo.early_access?
     end
 
-    def recordable_name
-      human_recordable_name.downcase
-    end
-
     private
-
-    def human_recordable_name
-      recordable = recording.recordable if recording.respond_to?(:recordable)
-      return recordable.model_name.human if recordable.respond_to?(:model_name)
-
-      recording.recordable_type.to_s.demodulize.underscore.humanize
-    end
 
     def zone_option(name)
       zone = ActiveSupport::TimeZone[name]

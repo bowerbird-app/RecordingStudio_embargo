@@ -2,7 +2,7 @@ en:
   recording_studio_embargo:
     editor:
       title: Embargo
-      subtitle: Embargo this %{recordable_name} and set a release date.
+      subtitle: Lock with embargo and set a release date
       explanation: Embargoes give journalists advance notice of upcoming news, allowing them to plan and prepare their stories before the official release.
       what_is_an_embargo: What is an embargo
       saved: Embargo saved

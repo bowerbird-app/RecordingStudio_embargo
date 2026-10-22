@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- The editor subtitle is "Embargo this %{recordable_name} and set a release date." `recordable_name` is the recordable's human name in lowercase.
+- The editor subtitle is "Lock with embargo and set a release date".
 - The explanation of an embargo sits in a collapse titled "What is an embargo", under the form.
 - Release date and time zone sit side by side. They stack on a small screen.
 - The editor column is at most `max-w-3xl` and stays full width on a narrow screen.
@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Upgrade
 
-If you override `recording_studio_embargo.editor.subtitle`, include `%{recordable_name}`. Drop any override of `recording_studio_embargo.editor.fieldset`. The save key is still `recording_studio_embargo.editor.save`. Its default is now "Update".
+Drop any override of `recording_studio_embargo.editor.fieldset`. The subtitle no longer takes `%{recordable_name}`. The save key is still `recording_studio_embargo.editor.save`. Its default is now "Update".
 
 ## [0.4.0] - 2026-10-21
 

@@ -62,7 +62,7 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Restricted presentation"
     assert_select "input[name='embargo[fallback]']", count: 0
     assert_includes response.body, "2026-11-02T09:00"
-    assert_includes response.body, "Embargo this page and set a release date."
+    assert_includes response.body, "Lock with embargo and set a release date"
     assert_includes response.body, "What is an embargo"
     assert_includes response.body, "md:grid-cols-2"
     assert_includes response.body, "max-w-3xl"
@@ -117,7 +117,7 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     assert_select "turbo-frame#presskit_embargo #embargo-editor"
     assert_select "turbo-frame#presskit_embargo #embargo-form"
     assert_select "turbo-frame#presskit_embargo #what-is-an-embargo-content"
-    assert_includes response.body, "Embargo this page and set a release date."
+    assert_includes response.body, "Lock with embargo and set a release date"
     refute_includes response.body, "When it lifts"
     refute_includes response.body, "data-recording-studio-default-layout"
     refute_includes response.body, "<html"
