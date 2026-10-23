@@ -96,7 +96,11 @@
       title: t("recording_studio_embargo.editor.what_is_an_embargo"),
       class: "mt-8"
     ) do %>
-      <%= t("recording_studio_embargo.editor.explanation") %>
+      <%= render FlatPack::Content::Component.new do %>
+        <% t("recording_studio_embargo.editor.explanation_paragraphs").each do |paragraph| %>
+          <p><%= paragraph %></p>
+        <% end %>
+      <% end %>
     <% end %>
   <% end %>
 </div>

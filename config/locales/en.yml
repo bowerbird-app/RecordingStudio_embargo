@@ -3,7 +3,11 @@ en:
     editor:
       title: Embargo
       subtitle: Lock with embargo and set a release date
-      explanation: Embargoes give journalists advance notice of upcoming news, allowing them to plan and prepare their stories before the official release.
+      explanation_paragraphs:
+        - "An embargo lets you share your press kit with journalists before it's made public, giving them time to prepare their stories."
+        - "Journalists who receive early access are expected to keep the information confidential and not publish anything until the embargo date and time."
+        - "Embargoes work on an honour system. This tool helps you communicate the embargo and control who has early access, but it cannot prevent someone from sharing or publishing the information early."
+        - "Only grant early access to people you trust."
       what_is_an_embargo: What is an embargo
       saved: Embargo saved
       enable: Embargo

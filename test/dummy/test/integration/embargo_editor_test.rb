@@ -68,14 +68,19 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "grid-cols-1 gap-6"
     assert_includes response.body, "max-w-3xl"
     assert_includes response.body, "mt-8"
-    assert_select "#what-is-an-embargo-content[hidden]", text: /Embargoes give journalists advance notice/
+    assert_select "#what-is-an-embargo-content[hidden] .fp-content" do
+      assert_select "p", count: 4
+      assert_select "p", text: "An embargo lets you share your press kit with journalists before it's made public, giving them time to prepare their stories."
+      assert_select "p", text: "Journalists who receive early access are expected to keep the information confidential and not publish anything until the embargo date and time."
+      assert_select "p", text: "Embargoes work on an honour system. This tool helps you communicate the embargo and control who has early access, but it cannot prevent someone from sharing or publishing the information early."
+      assert_select "p", text: "Only grant early access to people you trust."
+    end
     assert_select "#embargo-form button[type=submit]", text: "Update"
-    assert_select "p", text: "Embargoes give journalists advance notice of upcoming news, allowing them to plan and prepare their stories before the official release.", count: 0
     refute_includes response.body, "When it lifts"
     refute_includes response.body, "Save embargo"
     refute_includes response.body, "Embargo enabled"
     refute_includes response.body, "Display your press kit as a preview marked for embargo"
-    refute_includes response.body, "honour system"
+    refute_includes response.body, "Embargoes give journalists advance notice"
     assert_select ".fp-card" do |cards|
       card = cards.find { |node| node.at_css("input#embargo-enabled") }
       assert card
@@ -93,7 +98,6 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     assert_select "p#embargo-early-access-description", text: "Allow people to request early access"
     assert_select "li span.mr-2 svg[data-flat-pack--icon-name-value=lock-open][aria-hidden=true]"
     assert_select "li span.ml-2 input#embargo-early-access[type=checkbox][aria-describedby=embargo-early-access-description]"
-    assert_includes response.body, "Embargoes give journalists advance notice of upcoming news, allowing them to plan and prepare their stories before the official release."
     refute_includes response.body, "listed actions"
     refute_includes response.body, "per action"
   end
