@@ -34,20 +34,24 @@
       <%= hidden_field_tag "embargo[early_access]", "0" %>
 
       <%= render FlatPack::Grid::Component.new(cols: 1, gap: :lg) do %>
-        <%= render FlatPack::List::Component.new(layout: :key_value, divider: true) do %>
-          <%= render FlatPack::List::Item.new(key: t("recording_studio_embargo.editor.enable")) do %>
-            <%= render FlatPack::Switch::Component.new(
+        <%= render FlatPack::List::Component.new(divider: true) do %>
+          <%= render FlatPack::List::Item.new(
+            trailing: render(FlatPack::Switch::Component.new(
               name: "embargo[enabled]",
-              checked: @editor.enabled?,
-              aria: { label: t("recording_studio_embargo.editor.enable") }
-            ) %>
+              id: "embargo-enabled",
+              checked: @editor.enabled?
+            ))
+          ) do %>
+            <%= label_tag "embargo-enabled", t("recording_studio_embargo.editor.enable") %>
           <% end %>
-          <%= render FlatPack::List::Item.new(key: t("recording_studio_embargo.editor.early_access")) do %>
-            <%= render FlatPack::Switch::Component.new(
+          <%= render FlatPack::List::Item.new(
+            trailing: render(FlatPack::Switch::Component.new(
               name: "embargo[early_access]",
-              checked: @editor.early_access?,
-              aria: { label: t("recording_studio_embargo.editor.early_access") }
-            ) %>
+              id: "embargo-early-access",
+              checked: @editor.early_access?
+            ))
+          ) do %>
+            <%= label_tag "embargo-early-access", t("recording_studio_embargo.editor.early_access") %>
           <% end %>
         <% end %>
 
