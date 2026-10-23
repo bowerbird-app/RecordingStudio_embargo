@@ -7,10 +7,12 @@ en:
       what_is_an_embargo: What is an embargo
       saved: Embargo saved
       enable: Embargo
+      enable_description: Keep this hidden until the release date.
       lifts_at: Release date and time
       time_zone: Time zone
       time_zone_placeholder: Choose a time zone
       early_access: Early access
+      early_access_description: Let people with access see it before the release date.
       save: Update
       empty_actions: Nothing is set up to hold back yet.
     notice:
