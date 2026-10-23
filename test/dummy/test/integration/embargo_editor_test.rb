@@ -73,9 +73,12 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     assert_select "p", text: "Embargoes give journalists advance notice of upcoming news, allowing them to plan and prepare their stories before the official release.", count: 0
     refute_includes response.body, "When it lifts"
     refute_includes response.body, "Save embargo"
+    refute_includes response.body, "Embargo enabled"
+    refute_includes response.body, "Display your press kit as a preview marked for embargo"
+    refute_includes response.body, "honour system"
+    assert_select ".flat-pack-list dt", text: "Embargo"
+    assert_select ".flat-pack-list dt", text: "Early access"
     assert_includes response.body, "Embargoes give journalists advance notice of upcoming news, allowing them to plan and prepare their stories before the official release."
-    assert_includes response.body, "Display your press kit as a preview marked for embargo"
-    assert_includes response.body, "Only journalists you give access to will see it early. Embargoes work on an honour system. Journalists receive early access and agree not to publish until the release date. For example, sharing award winners in advance gives journalists time to prepare their stories before the announcement."
     refute_includes response.body, "listed actions"
     refute_includes response.body, "per action"
   end

@@ -34,12 +34,22 @@
       <%= hidden_field_tag "embargo[early_access]", "0" %>
 
       <%= render FlatPack::Grid::Component.new(cols: 1, gap: :lg) do %>
-        <%= render FlatPack::Switch::Component.new(
-          name: "embargo[enabled]",
-          checked: @editor.enabled?,
-          label: t("recording_studio_embargo.editor.enable"),
-          help_text: t("recording_studio_embargo.editor.enable_help")
-        ) %>
+        <%= render FlatPack::List::Component.new(layout: :key_value, divider: true) do %>
+          <%= render FlatPack::List::Item.new(key: t("recording_studio_embargo.editor.enable")) do %>
+            <%= render FlatPack::Switch::Component.new(
+              name: "embargo[enabled]",
+              checked: @editor.enabled?,
+              aria: { label: t("recording_studio_embargo.editor.enable") }
+            ) %>
+          <% end %>
+          <%= render FlatPack::List::Item.new(key: t("recording_studio_embargo.editor.early_access")) do %>
+            <%= render FlatPack::Switch::Component.new(
+              name: "embargo[early_access]",
+              checked: @editor.early_access?,
+              aria: { label: t("recording_studio_embargo.editor.early_access") }
+            ) %>
+          <% end %>
+        <% end %>
 
         <%= render FlatPack::Grid::Component.new(cols: 2, gap: :lg) do %>
           <%= render FlatPack::DateTimeInput::Component.new(
@@ -57,13 +67,6 @@
             options: @editor.time_zone_options
           ) %>
         <% end %>
-
-        <%= render FlatPack::Switch::Component.new(
-          name: "embargo[early_access]",
-          checked: @editor.early_access?,
-          label: t("recording_studio_embargo.editor.early_access"),
-          help_text: t("recording_studio_embargo.editor.early_access_help")
-        ) %>
 
         <div>
           <%= render FlatPack::Button::Component.new(
