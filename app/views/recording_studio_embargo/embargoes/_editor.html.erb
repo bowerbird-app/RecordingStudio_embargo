@@ -37,6 +37,7 @@
         <%= render FlatPack::Card::Component.new(padding: :none, border: :default) do %>
         <%= render FlatPack::List::Component.new(divider: true) do %>
           <%= render FlatPack::List::Item.new(
+            leading: render(FlatPack::Shared::IconComponent.new(name: "lock-closed", size: :md)),
             trailing: render(FlatPack::Switch::Component.new(
               name: "embargo[enabled]",
               id: "embargo-enabled",
@@ -46,6 +47,7 @@
             <%= label_tag "embargo-enabled", t("recording_studio_embargo.editor.enable") %>
           <% end %>
           <%= render FlatPack::List::Item.new(
+            leading: render(FlatPack::Shared::IconComponent.new(name: "lock-open", size: :md)),
             trailing: render(FlatPack::Switch::Component.new(
               name: "embargo[early_access]",
               id: "embargo-early-access",

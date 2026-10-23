@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - The editor subtitle is "Lock with embargo and set a release date".
-- Embargo and early access are two rows in a Flatpack list, inside a Flatpack card. The card uses its default border and no extra padding, so the rows keep their own inset. Each switch sits in the row's trailing slot. The left label is "Embargo" or "Early access" and is a label for that switch. The old switch help text is gone. Release date and time zone stay under the list.
+- Embargo and early access are two rows in a Flatpack list, inside a Flatpack card. The card uses its default border and no extra padding, so the rows keep their own inset. A decorative lock icon leads the Embargo row, and a decorative open lock leads Early access. Each switch sits in the row's trailing slot. The left label is "Embargo" or "Early access" and is a label for that switch. The old switch help text is gone. Release date and time zone stay under the list.
 - The explanation of an embargo sits in a collapse titled "What is an embargo", under the form.
 - Release date and time zone sit side by side. They stack on a small screen. Form rows use the large grid gap, and the date and time zone pair uses that same gap.
 - The editor column is at most `max-w-3xl` and stays full width on a narrow screen.

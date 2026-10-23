@@ -86,8 +86,10 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
       refute_includes card["class"], "p-[var(--card-padding-lg)]"
     end
     assert_select "label[for=embargo-enabled]", text: "Embargo"
+    assert_select "li span.mr-2 svg[data-flat-pack--icon-name-value=lock-closed][aria-hidden=true]"
     assert_select "li span.ml-2 input#embargo-enabled[type=checkbox]"
     assert_select "label[for=embargo-early-access]", text: "Early access"
+    assert_select "li span.mr-2 svg[data-flat-pack--icon-name-value=lock-open][aria-hidden=true]"
     assert_select "li span.ml-2 input#embargo-early-access[type=checkbox]"
     assert_includes response.body, "Embargoes give journalists advance notice of upcoming news, allowing them to plan and prepare their stories before the official release."
     refute_includes response.body, "listed actions"
