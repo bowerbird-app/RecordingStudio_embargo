@@ -1,4 +1,4 @@
-<div id="embargo-editor">
+<div id="embargo-editor" class="w-full max-w-3xl">
   <% if respond_to?(:turbo_frame_request?) && turbo_frame_request? %>
     <% if flash[:notice].present? %>
       <%= render FlatPack::Alert::Component.new(
@@ -27,48 +27,80 @@
     ) %>
   <% end %>
 
-  <%= form_with url: recording_embargo_path(@recording), method: :patch, id: "embargo-form" do %>
-    <%= hidden_field_tag :return_to, @return_to if @return_to.present? %>
-    <%= render FlatPack::Fieldset::Component.new(
-      title: t("recording_studio_embargo.editor.fieldset")
-    ) do %>
+  <%= render FlatPack::Grid::Component.new(cols: 1, gap: :md) do %>
+    <%= form_with url: recording_embargo_path(@recording), method: :patch, id: "embargo-form" do %>
+      <%= hidden_field_tag :return_to, @return_to if @return_to.present? %>
       <%= hidden_field_tag "embargo[enabled]", "0" %>
-      <%= render FlatPack::Switch::Component.new(
-        name: "embargo[enabled]",
-        checked: @editor.enabled?,
-        label: t("recording_studio_embargo.editor.enable"),
-        help_text: t("recording_studio_embargo.editor.enable_help")
-      ) %>
-
-      <%= render FlatPack::DateTimeInput::Component.new(
-        name: "embargo[lifts_at]",
-        label: t("recording_studio_embargo.editor.lifts_at"),
-        value: @editor.lifts_at_value,
-        placeholder: "2026-11-02T09:00"
-      ) %>
-
-      <%= render FlatPack::Select::Component.new(
-        name: "embargo[time_zone]",
-        label: t("recording_studio_embargo.editor.time_zone"),
-        placeholder: t("recording_studio_embargo.editor.time_zone_placeholder"),
-        value: @editor.time_zone_value,
-        options: @editor.time_zone_options
-      ) %>
-
       <%= hidden_field_tag "embargo[early_access]", "0" %>
-      <%= render FlatPack::Switch::Component.new(
-        name: "embargo[early_access]",
-        checked: @editor.early_access?,
-        label: t("recording_studio_embargo.editor.early_access"),
-        help_text: t("recording_studio_embargo.editor.early_access_help")
-      ) %>
 
-      <%= render FlatPack::Button::Component.new(
-        text: t("recording_studio_embargo.editor.save"),
-        style: :primary,
-        size: :md,
-        type: "submit"
-      ) %>
+      <%= render FlatPack::Grid::Component.new(cols: 1, gap: :lg) do %>
+        <%= render FlatPack::Card::Component.new(padding: :none, border: :default) do %>
+        <%= render FlatPack::List::Component.new(divider: true) do %>
+          <%= render FlatPack::List::Item.new(
+            leading: render(FlatPack::Shared::IconComponent.new(name: "lock-closed", size: :md)),
+            trailing: render(FlatPack::Switch::Component.new(
+              name: "embargo[enabled]",
+              id: "embargo-enabled",
+              checked: @editor.enabled?,
+              aria: { describedby: "embargo-enabled-description" }
+            ))
+          ) do %>
+            <%= label_tag "embargo-enabled", t("recording_studio_embargo.editor.enable"), class: "font-medium" %>
+            <p id="embargo-enabled-description" class="mt-1 text-xs text-[var(--surface-muted-content-color)]"><%= t("recording_studio_embargo.editor.enable_description") %></p>
+          <% end %>
+          <%= render FlatPack::List::Item.new(
+            leading: render(FlatPack::Shared::IconComponent.new(name: "lock-open", size: :md)),
+            trailing: render(FlatPack::Switch::Component.new(
+              name: "embargo[early_access]",
+              id: "embargo-early-access",
+              checked: @editor.early_access?,
+              aria: { describedby: "embargo-early-access-description" }
+            ))
+          ) do %>
+            <%= label_tag "embargo-early-access", t("recording_studio_embargo.editor.early_access"), class: "font-medium" %>
+            <p id="embargo-early-access-description" class="mt-1 text-xs text-[var(--surface-muted-content-color)]"><%= t("recording_studio_embargo.editor.early_access_description") %></p>
+          <% end %>
+        <% end %>
+        <% end %>
+
+        <%= render FlatPack::Grid::Component.new(cols: 2, gap: :lg) do %>
+          <%= render FlatPack::DateTimeInput::Component.new(
+            name: "embargo[lifts_at]",
+            label: t("recording_studio_embargo.editor.lifts_at"),
+            value: @editor.lifts_at_value,
+            placeholder: "2026-11-02T09:00"
+          ) %>
+
+          <%= render FlatPack::Select::Component.new(
+            name: "embargo[time_zone]",
+            label: t("recording_studio_embargo.editor.time_zone"),
+            placeholder: t("recording_studio_embargo.editor.time_zone_placeholder"),
+            value: @editor.time_zone_value,
+            options: @editor.time_zone_options
+          ) %>
+        <% end %>
+
+        <div>
+          <%= render FlatPack::Button::Component.new(
+            text: t("recording_studio_embargo.editor.save"),
+            style: :primary,
+            size: :md,
+            type: "submit"
+          ) %>
+        </div>
+      <% end %>
+    <% end %>
+
+    <%= render FlatPack::Collapse::Component.new(
+      id: "what-is-an-embargo",
+      title: t("recording_studio_embargo.editor.what_is_an_embargo"),
+      class: "mt-8"
+    ) do %>
+      <%= render FlatPack::Content::Component.new do %>
+        <% t("recording_studio_embargo.editor.explanation_paragraphs").each do |paragraph| %>
+          <p><%= paragraph %></p>
+        <% end %>
+      <% end %>
     <% end %>
   <% end %>
 </div>

@@ -62,9 +62,42 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Restricted presentation"
     assert_select "input[name='embargo[fallback]']", count: 0
     assert_includes response.body, "2026-11-02T09:00"
-    assert_includes response.body, "Embargoes give journalists advance notice of upcoming news, allowing them to plan and prepare their stories before the official release."
-    assert_includes response.body, "Display your press kit as a preview marked for embargo"
-    assert_includes response.body, "Only journalists you give access to will see it early. Embargoes work on an honour system. Journalists receive early access and agree not to publish until the release date. For example, sharing award winners in advance gives journalists time to prepare their stories before the announcement."
+    assert_includes response.body, "Lock with embargo and set a release date"
+    assert_includes response.body, "What is an embargo"
+    assert_includes response.body, "md:grid-cols-2 gap-6"
+    assert_includes response.body, "grid-cols-1 gap-6"
+    assert_includes response.body, "max-w-3xl"
+    assert_includes response.body, "mt-8"
+    assert_select "#what-is-an-embargo-content[hidden] .fp-content" do
+      assert_select "p", count: 4
+      assert_select "p", text: "An embargo lets you share your press kit with journalists before it's made public, giving them time to prepare their stories."
+      assert_select "p", text: "Journalists who receive early access are expected to keep the information confidential and not publish anything until the embargo date and time."
+      assert_select "p", text: "Embargoes work on an honour system. This tool helps you communicate the embargo and control who has early access, but it cannot prevent someone from sharing or publishing the information early."
+      assert_select "p", text: "Only grant early access to people you trust."
+    end
+    assert_select "#embargo-form button[type=submit]", text: "Update"
+    refute_includes response.body, "When it lifts"
+    refute_includes response.body, "Save embargo"
+    refute_includes response.body, "Embargo enabled"
+    refute_includes response.body, "Display your press kit as a preview marked for embargo"
+    refute_includes response.body, "Embargoes give journalists advance notice"
+    assert_select ".fp-card" do |cards|
+      card = cards.find { |node| node.at_css("input#embargo-enabled") }
+      assert card
+      assert_includes card["class"], "border"
+      assert_includes card["class"], "border-[var(--card-border-color)]"
+      refute_includes card["class"], "p-[var(--card-padding-md)]"
+      refute_includes card["class"], "p-[var(--card-padding-sm)]"
+      refute_includes card["class"], "p-[var(--card-padding-lg)]"
+    end
+    assert_select "label[for=embargo-enabled]", text: "Embargo"
+    assert_select "p#embargo-enabled-description", text: "Show preview only and mark as embargoed"
+    assert_select "li span.mr-2 svg[data-flat-pack--icon-name-value=lock-closed][aria-hidden=true]"
+    assert_select "li span.ml-2 input#embargo-enabled[type=checkbox][aria-describedby=embargo-enabled-description]"
+    assert_select "label[for=embargo-early-access]", text: "Early access"
+    assert_select "p#embargo-early-access-description", text: "Allow people to request early access"
+    assert_select "li span.mr-2 svg[data-flat-pack--icon-name-value=lock-open][aria-hidden=true]"
+    assert_select "li span.ml-2 input#embargo-early-access[type=checkbox][aria-describedby=embargo-early-access-description]"
     refute_includes response.body, "listed actions"
     refute_includes response.body, "per action"
   end
@@ -105,7 +138,10 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal "text/html", response.media_type
     assert_select "turbo-frame#presskit_embargo #embargo-editor"
-    assert_select "#embargo-form"
+    assert_select "turbo-frame#presskit_embargo #embargo-form"
+    assert_select "turbo-frame#presskit_embargo #what-is-an-embargo-content"
+    assert_includes response.body, "Lock with embargo and set a release date"
+    refute_includes response.body, "When it lifts"
     refute_includes response.body, "data-recording-studio-default-layout"
     refute_includes response.body, "<html"
     refute_includes response.body, "flat-pack--modal"

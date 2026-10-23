@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-22
+
+### Changed
+
+- The editor subtitle is "Lock with embargo and set a release date".
+- Embargo and early access are two rows in a Flatpack list, inside a Flatpack card. The card uses its default border and no extra padding, so the rows keep their own inset. A decorative lock icon leads the Embargo row, and a decorative open lock leads Early access. Each row has a name and a short description. The name is a label for the switch in the trailing slot. The description is tied to that switch with `aria-describedby`. Embargo reads "Show preview only and mark as embargoed". Early access reads "Allow people to request early access". The old switch help text is gone. Release date and time zone stay under the list.
+- The explanation of an embargo sits in a collapse titled "What is an embargo", under the form. It is four paragraphs from `explanation_paragraphs`.
+- Release date and time zone sit side by side. They stack on a small screen. Form rows use the large grid gap, and the date and time zone pair uses that same gap.
+- The editor column is at most `max-w-3xl` and stays full width on a narrow screen.
+- The "What is an embargo" collapse has space above it.
+- The submit button reads "Update".
+
+### Removed
+
+- The "When it lifts" fieldset, and the `recording_studio_embargo.editor.fieldset` locale key.
+
+### Upgrade
+
+Drop any override of `recording_studio_embargo.editor.fieldset`, `recording_studio_embargo.editor.explanation`, `enable_help`, and `early_access_help`. The explanation is now the array `explanation_paragraphs`. The subtitle no longer takes `%{recordable_name}`. `enable` now reads "Embargo". The row descriptions are `enable_description` and `early_access_description`. The save key is still `recording_studio_embargo.editor.save`. Its default is now "Update".
+
 ## [0.4.0] - 2026-10-21
 
 ### Added
@@ -76,7 +96,8 @@ No change for hosts that open the editor as a page. To drop it into a dialog, ad
 
 - Default editor copy is plain press-kit language in `config/locales/en.yml`, so a host can override the subtitle and help text.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.2.0...v0.3.0
