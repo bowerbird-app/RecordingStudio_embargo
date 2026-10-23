@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Upgrade
 
-Drop any override of `recording_studio_embargo.editor.fieldset`. The subtitle no longer takes `%{recordable_name}`. The save key is still `recording_studio_embargo.editor.save`. Its default is now "Update".
+Drop any override of `recording_studio_embargo.editor.fieldset`, `enable_help`, and `early_access_help`. The subtitle no longer takes `%{recordable_name}`. `enable` now reads "Embargo". The save key is still `recording_studio_embargo.editor.save`. Its default is now "Update".
 
 ## [0.4.0] - 2026-10-21
 
