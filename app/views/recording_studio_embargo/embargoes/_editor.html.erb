@@ -34,6 +34,7 @@
       <%= hidden_field_tag "embargo[early_access]", "0" %>
 
       <%= render FlatPack::Grid::Component.new(cols: 1, gap: :lg) do %>
+        <%= render FlatPack::Card::Component.new(padding: :none, border: :default) do %>
         <%= render FlatPack::List::Component.new(divider: true) do %>
           <%= render FlatPack::List::Item.new(
             trailing: render(FlatPack::Switch::Component.new(
@@ -53,6 +54,7 @@
           ) do %>
             <%= label_tag "embargo-early-access", t("recording_studio_embargo.editor.early_access") %>
           <% end %>
+        <% end %>
         <% end %>
 
         <%= render FlatPack::Grid::Component.new(cols: 2, gap: :lg) do %>

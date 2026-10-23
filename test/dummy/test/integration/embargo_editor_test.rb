@@ -76,6 +76,15 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Embargo enabled"
     refute_includes response.body, "Display your press kit as a preview marked for embargo"
     refute_includes response.body, "honour system"
+    assert_select ".fp-card" do |cards|
+      card = cards.find { |node| node.at_css("input#embargo-enabled") }
+      assert card
+      assert_includes card["class"], "border"
+      assert_includes card["class"], "border-[var(--card-border-color)]"
+      refute_includes card["class"], "p-[var(--card-padding-md)]"
+      refute_includes card["class"], "p-[var(--card-padding-sm)]"
+      refute_includes card["class"], "p-[var(--card-padding-lg)]"
+    end
     assert_select "label[for=embargo-enabled]", text: "Embargo"
     assert_select "li span.ml-2 input#embargo-enabled[type=checkbox]"
     assert_select "label[for=embargo-early-access]", text: "Early access"
