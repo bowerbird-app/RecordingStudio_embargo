@@ -31,7 +31,35 @@ class ConfigurationTest < Minitest::Test
 
     assert_equal original[:default_time_zone], @configuration.default_time_zone
     assert_equal original[:manage_role], @configuration.manage_role
-    assert_equal original[:layout], @configuration.layout
+    assert_nil original[:layout]
+    assert_nil @configuration.layout
+  end
+
+  def test_layout_defaults_to_nil_and_rejects_invalid_values
+    assert_nil @configuration.layout
+
+    @configuration.layout = false
+    assert_equal false, @configuration.layout
+
+    @configuration.layout = "admin"
+    assert_equal "admin", @configuration.layout
+
+    callable = ->(controller:) { controller }
+    @configuration.layout = callable
+    assert_equal callable, @configuration.layout
+
+    assert_raises(ArgumentError) { @configuration.layout = "  " }
+    assert_equal callable, @configuration.layout
+    assert_raises(ArgumentError) { @configuration.layout = ->(c) { c } }
+    assert_equal callable, @configuration.layout
+    assert_raises(ArgumentError) { @configuration.layout = Object.new }
+    assert_equal callable, @configuration.layout
+
+    @configuration.layout = ->(controller:) { controller.nil? ? :nope : 1 }
+    error = assert_raises(ArgumentError) do
+      RecordingStudio::Layout.resolve(@configuration.layout, controller: Object.new)
+    end
+    assert_includes error.message, "layout callable must return"
   end
 
   def test_initialize_uses_zone_and_edit_role
@@ -40,7 +68,7 @@ class ConfigurationTest < Minitest::Test
     assert_equal "UTC", configuration.default_time_zone
     assert_equal :edit, configuration.manage_role
     assert_equal true, configuration.broadcast_page_refresh
-    assert_equal "recording_studio/default_layout", configuration.layout
+    assert_nil configuration.layout
     assert_instance_of RecordingStudio::Hooks, configuration.hooks
   end
 

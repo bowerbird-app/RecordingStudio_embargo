@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-26
+
+### Changed
+
+- Requires `recording_studio` `>= 6.1.0` and FlatPack `>= 0.1.315`. The dummy app pins Recording Studio tag `v6.1.0` and FlatPack commit `1fcbafe94f8eb118f0a22182f63f5110fcc97a56` (`0.1.319`).
+- `RecordingStudioEmbargo.configuration.layout` defaults to `nil`. Assignments go through `RecordingStudio::Layout.accept`. `nil` follows `RecordingStudio.configuration.layout`, then `"recording_studio/default_layout"`. `false` skips the layout. A callable must be `->(controller:) { ... }` and return a String, `nil`, or `false`.
+- Engine controllers call `recording_studio_layout { RecordingStudioEmbargo.configuration.layout }`.
+- The editor page sets `content_for :title` and `content_for :subtitle`, and back uses `flat_pack_page_nav`. A Turbo Frame request still draws the heading inside the frame.
+- The embargo notice passes `background: :default` to `FlatPack::Card`. `style:` is no longer a card argument.
+
+### Removed
+
+- `include RecordingStudio::UsesDefaultLayout`.
+- `recording_studio_page_nav` and the inline page heading on a full-page editor visit.
+
+### Upgrade
+
+Require `recording_studio` `>= 6.1.0` and FlatPack `>= 0.1.315` (`view_component` `>= 4.14, < 5`). Drop `include RecordingStudio::UsesDefaultLayout` and any `layout "recording_studio/default_layout"` or `layout "recording_studio/action_layout"`. Call `recording_studio_layout` on the host controller. Leave `config.layout` at `nil` to keep the shared shell, or set a layout name, `false`, or `->(controller:) { ... }`. Replace `recording_studio_page_nav` with `content_for :title`, `content_for :subtitle`, and `flat_pack_page_nav`. Drop `style:` on `FlatPack::Card`. The notice now uses `background:`.
+
 ## [0.5.0] - 2026-10-22
 
 ### Changed
@@ -96,7 +115,8 @@ No change for hosts that open the editor as a page. To drop it into a dialog, ad
 
 - Default editor copy is plain press-kit language in `config/locales/en.yml`, so a host can override the subtitle and help text.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.3.0...v0.3.1

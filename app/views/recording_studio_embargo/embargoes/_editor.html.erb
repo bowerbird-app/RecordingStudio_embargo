@@ -14,11 +14,13 @@
     <% end %>
   <% end %>
 
-  <%= render FlatPack::PageTitle::Component.new(
-    title: t("recording_studio_embargo.editor.title"),
-    subtitle: t("recording_studio_embargo.editor.subtitle"),
-    variant: :h1
-  ) %>
+  <% if respond_to?(:turbo_frame_request?) && turbo_frame_request? %>
+    <%= render FlatPack::PageTitle::Component.new(
+      title: t("recording_studio_embargo.editor.title"),
+      subtitle: t("recording_studio_embargo.editor.subtitle"),
+      variant: :h1
+    ) %>
+  <% end %>
 
   <% if @editor.actions.empty? %>
     <%= render FlatPack::Alert::Component.new(

@@ -2,8 +2,6 @@
 
 module RecordingStudioEmbargo
   class EmbargoesController < ApplicationController
-    include RecordingStudio::UsesDefaultLayout if defined?(RecordingStudio::UsesDefaultLayout)
-
     before_action :require_signed_in_actor
     before_action :set_recording
     before_action :set_return_to

@@ -32,8 +32,8 @@ module RecordingStudioEmbargo
       end
 
       def card_options
-        @system_arguments.except(:class, :style, :border, :shadow).merge(
-          style: :default,
+        @system_arguments.except(:class, :style, :background, :border, :shadow).merge(
+          background: :default,
           border: :strong,
           shadow: :none,
           class: notice_classes
