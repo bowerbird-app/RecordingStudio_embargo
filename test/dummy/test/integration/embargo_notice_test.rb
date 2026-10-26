@@ -130,12 +130,12 @@ class EmbargoNoticeTest < ActionDispatch::IntegrationTest
     assert_includes html, "Embargoed until 12 Mar 2026, 9:00 AM AEDT"
     assert_includes html, "Not for publication until embargo lifts."
     assert_includes html, "border-2"
-    assert_includes html, "rounded-[var(--radius-lg)]"
+    assert_includes html, "rounded-[var(--card-radius)]"
     assert_includes html, "w-fit"
     assert_includes html, "!bg-white"
     assert_includes html, "p-[calc(var(--card-padding-sm)*1.5)]"
     refute_includes html, "p-[var(--card-padding-sm)]"
-    assert_includes html, 'data-style="default"'
+    assert_includes html, 'data-background="default"'
     assert_includes html, 'data-flat-pack--icon-name-value="lock-closed"'
     assert_includes html, 'aria-hidden="true"'
     assert_includes html, icon_size
@@ -143,7 +143,9 @@ class EmbargoNoticeTest < ActionDispatch::IntegrationTest
     assert_includes html, subtitle_class
     assert_includes html, "text-[var(--surface-muted-content-color)]"
     assert_includes html, "embargo-notice"
-    refute_includes html, "shadow-"
+    assert_includes html, "shadow-none"
+    refute_includes html, "shadow-sm"
+    refute_includes html, "shadow-md"
     refute_includes html, 'role="alert"'
   end
 

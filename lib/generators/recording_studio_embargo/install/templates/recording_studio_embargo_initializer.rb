@@ -15,7 +15,8 @@
 RecordingStudioEmbargo.configure do |config|
   # config.default_time_zone = "UTC"
   # config.manage_role = :edit
-  # config.layout = "recording_studio/default_layout"
+  # nil follows RecordingStudio.configuration.layout, then the default shell.
+  # config.layout = nil
   # Page refresh on the recording's Turbo stream after a change or a scheduled lift.
   # config.broadcast_page_refresh = true
 end

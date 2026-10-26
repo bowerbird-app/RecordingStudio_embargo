@@ -4,9 +4,14 @@
 
 - Ruby 3.3 or newer
 - Rails 8.1 or newer
-- Recording Studio 4.x (`~> 4.2` in the gemspec; dummy GitHub tag `v4.5.0`)
+- Recording Studio `>= 6.1.0` (dummy GitHub tag `v6.1.0`)
 - Accessible, so the early-access switch and the editor's manage role resolve
-- FlatPack `v0.1.237` or newer when the host renders the editor or `render_embargo_notice` (dummy tag `v0.1.240`). The notice passes `border:` and `shadow:` to `FlatPack::Card`.
+- FlatPack `>= 0.1.315` when the host renders the editor or `render_embargo_notice`. The dummy pins commit `1fcbafe94f8eb118f0a22182f63f5110fcc97a56` (`0.1.319`). The notice passes `background:`, `border:`, and `shadow:` to `FlatPack::Card`.
+- `view_component` `>= 4.14, < 5`. The dummy locks `4.19.0`.
+
+`RecordingStudio::UsesDefaultLayout` is gone. Engine controllers call `recording_studio_layout { RecordingStudioEmbargo.configuration.layout }`. `config.layout` defaults to `nil`. `nil` follows `RecordingStudio.configuration.layout`, then `"recording_studio/default_layout"`. `false` renders with no layout. A callable is invoked as `call(controller:)` and must return a String, `nil`, or `false`.
+
+Page headings are `content_for :title` and `content_for :subtitle`. Back and close use `flat_pack_page_nav`. A Turbo Frame request still renders the editor heading inside the frame, because the frame has no page layout.
 
 Publishable, Downloadable, and Presskits are optional. Embargo does not read their tables.
 

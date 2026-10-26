@@ -2,18 +2,22 @@
 
 module RecordingStudioEmbargo
   class Configuration
-    attr_accessor :default_time_zone, :layout, :manage_role, :broadcast_page_refresh,
+    attr_accessor :default_time_zone, :manage_role, :broadcast_page_refresh,
                   :current_actor_resolver, :management_authorizer
-    attr_reader :hooks
+    attr_reader :hooks, :layout
 
     def initialize
       @default_time_zone = default_rails_time_zone
-      @layout = "recording_studio/default_layout"
+      @layout = nil
       @manage_role = :edit
       @broadcast_page_refresh = true
       @current_actor_resolver = method(:default_actor)
       @management_authorizer = method(:default_management_authorizer)
       @hooks = RecordingStudio::Hooks.new
+    end
+
+    def layout=(value)
+      @layout = RecordingStudio::Layout.accept(value)
     end
 
     def to_h

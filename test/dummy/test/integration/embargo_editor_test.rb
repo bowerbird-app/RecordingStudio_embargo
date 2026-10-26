@@ -48,6 +48,7 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_includes response.body, "data-recording-studio-default-layout"
+    assert_select "h1", text: "Embargo", count: 1
     assert_select "turbo-frame", count: 0
     assert_select "#embargo-editor"
     assert_select "#embargo-status", count: 0
@@ -137,6 +138,7 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_equal "text/html", response.media_type
+    assert_select "turbo-frame#presskit_embargo h1", text: "Embargo", count: 1
     assert_select "turbo-frame#presskit_embargo #embargo-editor"
     assert_select "turbo-frame#presskit_embargo #embargo-form"
     assert_select "turbo-frame#presskit_embargo #what-is-an-embargo-content"
@@ -186,7 +188,7 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "input[name='return_to'][value='/docs/install']"
-    assert_select "button[aria-label='Back']"
+    assert_select "[aria-label='Back']"
   end
 
   test "saving inside a turbo frame refreshes the page and does not replace host markup" do

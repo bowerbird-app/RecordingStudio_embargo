@@ -1,10 +1,13 @@
 <% frame_request = respond_to?(:turbo_frame_request?) && turbo_frame_request? %>
-<% if respond_to?(:recording_studio_page_nav) && !frame_request %>
-  <% recording_studio_page_nav(
-    title: t("recording_studio_embargo.editor.title"),
-    page_nav_back_url: @return_to.presence || main_app.root_path,
-    page_nav_back_label: @return_to.present? ? "Back" : "Home"
-  ) %>
+<% unless frame_request %>
+  <% content_for :title, t("recording_studio_embargo.editor.title") %>
+  <% content_for :subtitle, t("recording_studio_embargo.editor.subtitle") %>
+  <% flat_pack_page_nav(
+       round: true,
+       style: :default,
+       back_href: @return_to.presence || main_app.root_path,
+       back_tooltip: @return_to.present? ? "Back" : "Home"
+     ) %>
 <% end %>
 
 <% if frame_request %>

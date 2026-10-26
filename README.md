@@ -58,9 +58,9 @@ Include `RecordingStudioEmbargo::ApplicationHelper` (the engine does this for ho
 <%= render_embargo_notice(page_recording, size: :sm, class: "mt-2", id: "page-embargo") %>
 ```
 
-The card is `FlatPack::Card` with `style: :default`, `border: :strong` (a 2px outline), and `shadow: :none`. No card style is plain white, so the notice adds `!bg-white`. The important modifier is required: the default fill is a later `background` shorthand, and a plain `bg-white` loses to it. Corners stay rounded. The space inside is one and a half times the compact card padding, at both sizes. The card is as wide as its words. Inside, a lock sits on the left of a bold title and a muted line. `size:` is `:md` by default, or `:sm` where space is tight. `class:` and `id:` pass through to the card.
+The card is `FlatPack::Card` with `background: :default`, `border: :strong` (a 2px outline), and `shadow: :none`. No card fill is plain white, so the notice adds `!bg-white`. The important modifier is required: the default fill is a later `background` shorthand, and a plain `bg-white` loses to it. Corners stay rounded. The space inside is one and a half times the compact card padding, at both sizes. The card is as wide as its words. Inside, a lock sits on the left of a bold title and a muted line. `size:` is `:md` by default, or `:sm` where space is tight. `class:` and `id:` pass through to the card.
 
-The title reads "Embargoed until 12 Mar 2026, 9:00 AM AEDT". The time is `lifts_at` in the embargo's own time zone, with the zone abbreviation. The line under it reads "Not for publication until embargo lifts." Override `recording_studio_embargo.notice.title`, `recording_studio_embargo.notice.subtitle`, and `recording_studio_embargo.notice.time_format`. This needs Flatpack `v0.1.237` or newer, so the card accepts `border:` and `shadow:`.
+The title reads "Embargoed until 12 Mar 2026, 9:00 AM AEDT". The time is `lifts_at` in the embargo's own time zone, with the zone abbreviation. The line under it reads "Not for publication until embargo lifts." Override `recording_studio_embargo.notice.title`, `recording_studio_embargo.notice.subtitle`, and `recording_studio_embargo.notice.time_format`. This needs Flatpack `0.1.315` or newer, so the card accepts `background:`, `border:`, and `shadow:`. `style:` is not a card argument.
 
 ## Page or modal
 
@@ -110,7 +110,7 @@ Migration details are in [`MIGRATION_NOTES.md`](MIGRATION_NOTES.md).
 
 ## Dummy app
 
-The dummy app pins Recording Studio dummy GitHub tag `v4.5.0`, Accessible dummy GitHub tag `v0.15.0`, Root Switchable dummy GitHub tag `v0.8.0`, and FlatPack dummy GitHub tag `v0.1.240`. The home page shows the embargo notice at the default size and at `:sm` for the seeded page. A More menu opens the editor in a host modal. "Open embargo page" opens the same editor as a page.
+The dummy app pins Recording Studio dummy GitHub tag `v6.1.0`, Accessible dummy GitHub tag `v0.15.0`, Root Switchable dummy GitHub tag `v0.8.0`, and FlatPack commit `1fcbafe94f8eb118f0a22182f63f5110fcc97a56` (`FlatPack::VERSION` `0.1.319`). The newest FlatPack tag is `v0.1.315`. Accessible `v0.15.0`, Root Switchable `v0.8.0`, and Metrics `v0.2.0` still require `recording_studio` below 5 on their tagged releases. The latest tags of those gems do too. Accessible's open layout branch supports `>= 6.1.0`, and it is not merged. The dummy Gemfile widens the sibling requirement so Bundler installs Recording Studio `v6.1.0` against the tags the embargo tests already use. `config.layout` defaults to `nil`, which follows `RecordingStudio.configuration.layout` and then `"recording_studio/default_layout"`. The home page shows the embargo notice at the default size and at `:sm` for the seeded page. A More menu opens the editor in a host modal. "Open embargo page" opens the same editor as a page.
 
 ```bash
 cd test/dummy
@@ -120,4 +120,4 @@ bin/dev
 
 Sign in as `admin@admin.com` / `Password`. The home page opens the embargo editor for the seeded page inside a Flatpack modal. `/recording_studio` redirects to `/`.
 
-Authenticated pages use Recording Studio's default layout. Devise keeps its own sign-in layout.
+Authenticated pages use `recording_studio_layout`. With `config.layout` left at `nil`, that is Recording Studio's default layout. Devise keeps its own sign-in layout. Set `config.layout` to a layout name, `false`, or `->(controller:) { ... }` when a host wants a different shell.

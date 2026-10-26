@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioEmbargoTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.5.0", ::RecordingStudioEmbargo::VERSION
+    assert_equal "0.6.0", ::RecordingStudioEmbargo::VERSION
   end
 
   def test_editor_frame_support_does_not_know_about_modals
@@ -24,7 +24,14 @@ class RecordingStudioEmbargoTest < Minitest::Test
       refute_includes source, "flat_pack_modal_screen"
       refute_includes source, "EmbargoButton"
       refute_includes source, "wrapper_id"
+      refute_includes source, "recording_studio_page_nav"
+      refute_includes source, "UsesDefaultLayout"
     end
+
+    edit = File.read(File.join(root, "app/views/recording_studio_embargo/embargoes/edit.html.erb"))
+    assert_includes edit, "content_for :title"
+    assert_includes edit, "content_for :subtitle"
+    assert_includes edit, "flat_pack_page_nav"
 
     helper = File.read(File.join(root, "app/helpers/recording_studio_embargo/application_helper.rb"))
     assert_includes helper, "def recording_studio_embargo_management_path(recording, return_to: nil)"
@@ -33,14 +40,26 @@ class RecordingStudioEmbargoTest < Minitest::Test
     refute File.exist?(File.join(root, "app/views/recording_studio_embargo/embargoes/update.turbo_stream.erb"))
   end
 
+  def test_controllers_do_not_hardcode_a_recording_studio_layout
+    root = File.expand_path("..", __dir__)
+    application = File.read(File.join(root, "app/controllers/recording_studio_embargo/application_controller.rb"))
+    embargoes = File.read(File.join(root, "app/controllers/recording_studio_embargo/embargoes_controller.rb"))
+
+    assert_includes application, "recording_studio_layout { RecordingStudioEmbargo.configuration.layout }"
+    refute_includes embargoes, "layout \"recording_studio/"
+    assert_empty RecordingStudio::Layout.hardcoded_layout_paths(root)
+  end
+
   def test_engine_exists
     assert_kind_of Class, ::RecordingStudioEmbargo::Engine
   end
 
-  def test_gemspec_pins_recording_studio_4_2
+  def test_gemspec_requires_recording_studio_6_1
     gemspec = File.read(File.expand_path("../recording_studio_embargo.gemspec", __dir__))
 
-    assert_includes gemspec, 'spec.add_dependency "recording_studio", "~> 4.2"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio", ">= 6.1.0"'
+    refute_includes gemspec, 'spec.add_dependency "flat_pack"'
+    refute_includes gemspec, 'spec.add_dependency "view_component"'
   end
 
   def test_gemspec_excludes_cursor_config
@@ -70,13 +89,16 @@ class RecordingStudioEmbargoTest < Minitest::Test
   def test_dummy_gemfile_pins_verified_4x_github_tags
     gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
 
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v4.5.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v6.1.0"'
+    refute_includes gemfile, 'tag: "v4.5.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.15.0"'
     refute_includes gemfile, 'tag: "v0.10.1"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.8.0"'
     refute_includes gemfile, 'tag: "v0.6.0"'
     refute_includes gemfile, 'tag: "v0.5.1"'
-    assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.240"'
+    assert_includes gemfile, 'github: "bowerbird-app/flatpack", ref: "1fcbafe94f8eb118f0a22182f63f5110fcc97a56"'
+    assert_includes gemfile, 'gem "view_component", "4.19.0"'
+    refute_includes gemfile, 'tag: "v0.1.240"'
     refute_includes gemfile, 'tag: "v0.1.196"'
     refute_includes gemfile, "recording_studio/v3.0.0"
     refute_includes gemfile, 'tag: "v4.4.0"'
@@ -156,9 +178,12 @@ class RecordingStudioEmbargoTest < Minitest::Test
     application_controller_path = File.expand_path("dummy/app/controllers/application_controller.rb", __dir__)
     controller_source = File.read(application_controller_path)
 
-    assert_includes controller_source, "include RecordingStudio::UsesDefaultLayout"
-    assert_includes controller_source, '"recording_studio/default_layout"'
-    assert_includes controller_source, "devise_controller? ? \"application\""
+    assert_includes controller_source, "recording_studio_layout { devise_controller? ? \"application\" : nil }"
+    refute_includes controller_source, "UsesDefaultLayout"
+    refute_includes controller_source, "recording_studio/default_layout"
+    refute_includes controller_source, "recording_studio/action_layout"
+    switchable = File.read(File.expand_path("dummy/config/initializers/recording_studio_root_switchable.rb", __dir__))
+    assert_includes switchable, 'config.layout = "recording_studio/default_layout"'
     refute_includes controller_source, "flat_pack_sidebar"
     refute File.exist?(File.expand_path("dummy/app/views/layouts/flat_pack_sidebar.html.erb", __dir__))
     refute File.exist?(File.expand_path("dummy/app/views/layouts/flat_pack/_sidebar.html.erb", __dir__))
@@ -225,8 +250,10 @@ class RecordingStudioEmbargoTest < Minitest::Test
     readme = File.read(File.expand_path("../README.md", __dir__))
 
     assert_includes readme, "RecordingStudio"
-    assert_includes readme, "dummy GitHub tag `v4.5.0`"
-    assert_includes readme, "dummy GitHub tag `v0.1.240`"
+    assert_includes readme, "dummy GitHub tag `v6.1.0`"
+    assert_includes readme, "1fcbafe94f8eb118f0a22182f63f5110fcc97a56"
+    refute_includes readme, "dummy GitHub tag `v4.5.0`"
+    refute_includes readme, "dummy GitHub tag `v0.1.240`"
     refute_includes readme, "dummy GitHub tag `v0.1.196`"
     assert_includes readme, "dummy GitHub tag `v0.15.0`"
     refute_includes readme, "dummy GitHub tag `v0.10.1`"
@@ -266,6 +293,8 @@ class RecordingStudioEmbargoTest < Minitest::Test
     assert_includes view_source, "FlatPack::Card::Component"
     assert_includes view_source, "dummy_page_nav"
     refute_includes view_source, 'title: "Demo"'
+    refute_includes view_source, "variant: :h1"
+    refute_includes view_source, "style: :default"
     refute_includes view_source, "FlatPack::Breadcrumb::Component"
   end
 
@@ -279,7 +308,9 @@ class RecordingStudioEmbargoTest < Minitest::Test
       view_source = File.read(view_path)
 
       assert_includes view_source, "dummy_page_nav"
-      assert_includes view_source, "FlatPack::PageTitle::Component"
+      assert_includes view_source, "subtitle:"
+      refute_includes view_source, "variant: :h1"
+      refute_includes view_source, "FlatPack::PageTitle::Component"
       refute_includes view_source, "FlatPack::Card::Component"
       refute_includes view_source, "FlatPack::Breadcrumb::Component"
     end
