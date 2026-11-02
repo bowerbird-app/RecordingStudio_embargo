@@ -46,6 +46,8 @@ class EmbargoHostLinkTest < ActionDispatch::IntegrationTest
     refute_includes full_page, "data-turbo-frame"
     refute_includes full_page, "data-modal-id"
 
+    assert_select "a[href='#{destroy_user_session_path}'][data-turbo-method=delete]", text: "Sign out"
+    refute_includes response.body, '<button url="'
     assert_select "#embargo-editor-modal turbo-frame#embargo_editor"
     assert_select "turbo-cable-stream-source", count: 1
     refute_includes response.body, "embargo_button_"

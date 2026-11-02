@@ -48,7 +48,14 @@
             ))
           ) do %>
             <%= label_tag "embargo-enabled", t("recording_studio_embargo.editor.enable"), class: "font-medium" %>
-            <p id="embargo-enabled-description" class="mt-1 text-xs text-[var(--surface-muted-content-color)]"><%= t("recording_studio_embargo.editor.enable_description") %></p>
+            <%= render FlatPack::Text::Component.new(
+              text: t("recording_studio_embargo.editor.enable_description"),
+              as: :p,
+              size: :xs,
+              style: :muted,
+              id: "embargo-enabled-description",
+              class: "mt-1"
+            ) %>
           <% end %>
           <%= render FlatPack::List::Item.new(
             leading: render(FlatPack::Shared::IconComponent.new(name: "lock-open", size: :md)),
@@ -60,7 +67,14 @@
             ))
           ) do %>
             <%= label_tag "embargo-early-access", t("recording_studio_embargo.editor.early_access"), class: "font-medium" %>
-            <p id="embargo-early-access-description" class="mt-1 text-xs text-[var(--surface-muted-content-color)]"><%= t("recording_studio_embargo.editor.early_access_description") %></p>
+            <%= render FlatPack::Text::Component.new(
+              text: t("recording_studio_embargo.editor.early_access_description"),
+              as: :p,
+              size: :xs,
+              style: :muted,
+              id: "embargo-early-access-description",
+              class: "mt-1"
+            ) %>
           <% end %>
         <% end %>
         <% end %>

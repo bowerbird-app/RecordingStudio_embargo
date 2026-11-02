@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioEmbargoTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.6.1", ::RecordingStudioEmbargo::VERSION
+    assert_equal "0.6.2", ::RecordingStudioEmbargo::VERSION
   end
 
   def test_editor_frame_support_does_not_know_about_modals
@@ -32,6 +32,12 @@ class RecordingStudioEmbargoTest < Minitest::Test
     assert_includes edit, "content_for :title"
     assert_includes edit, "content_for :subtitle"
     assert_includes edit, "flat_pack_page_nav"
+
+    editor = File.read(File.join(root, "app/views/recording_studio_embargo/embargoes/_editor.html.erb"))
+    assert_includes editor, "FlatPack::Text::Component.new"
+    assert_includes editor, 'id: "embargo-enabled-description"'
+    assert_includes editor, 'id: "embargo-early-access-description"'
+    refute_includes editor, "text-xs text-[var(--surface-muted-content-color)]"
 
     helper = File.read(File.join(root, "app/helpers/recording_studio_embargo/application_helper.rb"))
     assert_includes helper, "def recording_studio_embargo_management_path(recording, return_to: nil)"
@@ -97,7 +103,7 @@ class RecordingStudioEmbargoTest < Minitest::Test
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.2.0"'
     refute_includes gemfile, 'tag: "v0.6.0"'
     refute_includes gemfile, 'tag: "v0.5.1"'
-    assert_includes gemfile, 'github: "bowerbird-app/flatpack", ref: "1fcbafe94f8eb118f0a22182f63f5110fcc97a56"'
+    assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.331"'
     assert_includes gemfile, 'gem "view_component", "4.19.0"'
     refute_includes gemfile, 'tag: "v0.1.240"'
     refute_includes gemfile, 'tag: "v0.1.196"'
@@ -252,7 +258,7 @@ class RecordingStudioEmbargoTest < Minitest::Test
 
     assert_includes readme, "RecordingStudio"
     assert_includes readme, "GitHub tag `v6.1.0`"
-    assert_includes readme, "1fcbafe94f8eb118f0a22182f63f5110fcc97a56"
+    assert_includes readme, "FlatPack GitHub tag `v0.1.331`"
     refute_includes readme, "dummy GitHub tag `v4.5.0`"
     refute_includes readme, "dummy GitHub tag `v0.1.240`"
     refute_includes readme, "dummy GitHub tag `v0.1.196`"
