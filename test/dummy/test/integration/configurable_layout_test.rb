@@ -30,13 +30,22 @@ class ConfigurableLayoutTest < ActionDispatch::IntegrationTest
 
   test "nil falls through to the core layout and then the default shell" do
     assert_nil RecordingStudioEmbargo.configuration.layout
-    controller = RecordingStudioEmbargo::EmbargoesController.new
+    sign_in @owner
 
-    assert_equal "recording_studio/default_layout", controller.send(:recording_studio_resolved_layout)
+    get recording_studio_embargo.edit_recording_embargo_path(@page)
+
+    assert_response :success
+    assert_includes response.body, "embargo-form"
+    assert_select "body[data-recording-studio-default-layout='true']", count: 1
 
     RecordingStudio.configuration.layout = "application"
 
-    assert_equal "application", controller.send(:recording_studio_resolved_layout)
+    get recording_studio_embargo.edit_recording_embargo_path(@page)
+
+    assert_response :success
+    assert_includes response.body, "embargo-form"
+    assert_includes response.body, "<html"
+    assert_select "body[data-recording-studio-default-layout]", count: 0
   end
 
   test "a string layout name wraps the editor" do
