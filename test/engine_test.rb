@@ -4,8 +4,8 @@ require "test_helper"
 
 class EngineTest < Minitest::Test
   def setup
-    @original_configuration = RecordingStudioEmbargo.instance_variable_get(:@configuration)
-    RecordingStudioEmbargo.instance_variable_set(:@configuration, RecordingStudioEmbargo::Configuration.new)
+    @original_configuration = RecordingStudioEmbargo.configuration
+    RecordingStudioEmbargo.reset_configuration!
   end
 
   def teardown
