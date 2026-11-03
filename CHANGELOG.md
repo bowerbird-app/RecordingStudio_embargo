@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Editor switch rows use FlatPack `List::Item` `title:` and `subtitle:` slots. The switch labels stay in `with_title`. The `FlatPack::Text` descriptions stay in `with_subtitle` with the same `id`s so `aria-describedby` still resolves.
 - Requires `flat_pack >= 0.1.335`. Dummy and root Gemfiles pin GitHub tag `v0.1.335`.
+- Dummy and root lockfiles use `loofah` `2.25.3`, `nokogiri` `1.19.7`, and `rails-html-sanitizer` `1.7.2`.
 
 ### Upgrade
 
