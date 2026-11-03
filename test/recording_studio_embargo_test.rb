@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioEmbargoTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.6.2", ::RecordingStudioEmbargo::VERSION
+    assert_equal "0.6.3", ::RecordingStudioEmbargo::VERSION
   end
 
   def test_editor_frame_support_does_not_know_about_modals
@@ -34,6 +34,8 @@ class RecordingStudioEmbargoTest < Minitest::Test
     assert_includes edit, "flat_pack_page_nav"
 
     editor = File.read(File.join(root, "app/views/recording_studio_embargo/embargoes/_editor.html.erb"))
+    assert_includes editor, "item.with_title"
+    assert_includes editor, "item.with_subtitle"
     assert_includes editor, "FlatPack::Text::Component.new"
     assert_includes editor, 'id: "embargo-enabled-description"'
     assert_includes editor, 'id: "embargo-early-access-description"'
@@ -64,7 +66,7 @@ class RecordingStudioEmbargoTest < Minitest::Test
     gemspec = File.read(File.expand_path("../recording_studio_embargo.gemspec", __dir__))
 
     assert_includes gemspec, 'spec.add_dependency "recording_studio", ">= 6.1.0"'
-    assert_includes gemspec, 'spec.add_dependency "flat_pack", ">= 0.1.331"'
+    assert_includes gemspec, 'spec.add_dependency "flat_pack", ">= 0.1.335"'
     refute_includes gemspec, 'spec.add_dependency "view_component"'
   end
 
@@ -103,7 +105,7 @@ class RecordingStudioEmbargoTest < Minitest::Test
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.2.0"'
     refute_includes gemfile, 'tag: "v0.6.0"'
     refute_includes gemfile, 'tag: "v0.5.1"'
-    assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.331"'
+    assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.1.335"'
     assert_includes gemfile, 'gem "view_component", "4.19.0"'
     refute_includes gemfile, 'tag: "v0.1.240"'
     refute_includes gemfile, 'tag: "v0.1.196"'
@@ -258,7 +260,7 @@ class RecordingStudioEmbargoTest < Minitest::Test
 
     assert_includes readme, "RecordingStudio"
     assert_includes readme, "GitHub tag `v6.1.0`"
-    assert_includes readme, "FlatPack GitHub tag `v0.1.331`"
+    assert_includes readme, "FlatPack GitHub tag `v0.1.335`"
     refute_includes readme, "dummy GitHub tag `v4.5.0`"
     refute_includes readme, "dummy GitHub tag `v0.1.240`"
     refute_includes readme, "dummy GitHub tag `v0.1.196`"

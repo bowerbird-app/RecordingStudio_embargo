@@ -6,7 +6,7 @@
 - Rails 8.1 or newer
 - Recording Studio `>= 6.1.0` (dummy GitHub tag `v6.1.0`)
 - Accessible, so the early-access switch and the editor's manage role resolve
-- FlatPack `>= 0.1.331` when the host renders the editor (switch descriptions use `FlatPack::Text`). The dummy pins GitHub tag `v0.1.331`. `render_embargo_notice` still needs FlatPack `>= 0.1.315` for Card `background:`, `border:`, and `shadow:`. The gemspec does not add a `flat_pack` dependency.
+- FlatPack `>= 0.1.335` when the host renders the editor (`List::Item` `title:` / `subtitle:` slots and `FlatPack::Text`). The dummy pins GitHub tag `v0.1.335`. `render_embargo_notice` still needs FlatPack `>= 0.1.315` for Card `background:`, `border:`, and `shadow:`. The gemspec requires `flat_pack >= 0.1.335`.
 - `view_component` `>= 4.14, < 5`. The dummy locks `4.19.0`.
 
 `RecordingStudio::UsesDefaultLayout` is gone. Engine controllers call `recording_studio_layout { RecordingStudioEmbargo.configuration.layout }`. `config.layout` defaults to `nil`. `nil` follows `RecordingStudio.configuration.layout`, then `"recording_studio/default_layout"`. `false` renders with no layout. A callable is invoked as `call(controller:)` and must return a String, `nil`, or `false`.

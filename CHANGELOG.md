@@ -7,9 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.3] - 2026-11-03
+
 ### Changed
 
-- The gemspec now requires `flat_pack >= 0.1.331`. The editor uses `FlatPack::Text`, which needs that version.
+- Editor switch rows use FlatPack `List::Item` `title:` and `subtitle:` slots. The switch labels stay in `with_title`. The `FlatPack::Text` descriptions stay in `with_subtitle` with the same `id`s so `aria-describedby` still resolves.
+- Requires `flat_pack >= 0.1.335`. Dummy and root Gemfiles pin GitHub tag `v0.1.335`.
+
+### Upgrade
+
+Use FlatPack `≥ 0.1.335` if you render the embargo editor.
 
 ## [0.6.2] - 2026-11-02
 
@@ -138,7 +145,8 @@ No change for hosts that open the editor as a page. To drop it into a dialog, ad
 
 - Default editor copy is plain press-kit language in `config/locales/en.yml`, so a host can override the subtitle and help text.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.2...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.3...HEAD
+[0.6.3]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.5.0...v0.6.0
