@@ -26,10 +26,11 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
       folder.name = "Editor folder #{SecureRandom.hex(4)}"
     end
     RecordingStudioAccessible.bootstrap_owner_access!(recording: @root, actor: @owner)
+    @lifts_at = 3.days.from_now.in_time_zone("America/New_York").change(sec: 0)
     @page.embargo_set!(
       {
         enabled: true,
-        lifts_at: ActiveSupport::TimeZone["America/New_York"].parse("2026-11-02 09:00"),
+        lifts_at: @lifts_at,
         time_zone: "America/New_York",
         early_access: true
       },
@@ -62,7 +63,7 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Anyone"
     refute_includes response.body, "Restricted presentation"
     assert_select "input[name='embargo[fallback]']", count: 0
-    assert_includes response.body, "2026-11-02T09:00"
+    assert_includes response.body, @lifts_at.strftime("%Y-%m-%dT%H:%M")
     assert_includes response.body, "Lock with embargo and set a release date"
     assert_includes response.body, "What is an embargo"
     assert_includes response.body, "md:grid-cols-2 gap-[var(--stack-gap-lg)]"
