@@ -26,10 +26,11 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
       folder.name = "Editor folder #{SecureRandom.hex(4)}"
     end
     RecordingStudioAccessible.bootstrap_owner_access!(recording: @root, actor: @owner)
+    @lifts_at = 3.days.from_now.in_time_zone("America/New_York").change(sec: 0)
     @page.embargo_set!(
       {
         enabled: true,
-        lifts_at: ActiveSupport::TimeZone["America/New_York"].parse("2026-11-02 09:00"),
+        lifts_at: @lifts_at,
         time_zone: "America/New_York",
         early_access: true
       },
@@ -62,11 +63,11 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     refute_includes response.body, "Anyone"
     refute_includes response.body, "Restricted presentation"
     assert_select "input[name='embargo[fallback]']", count: 0
-    assert_includes response.body, "2026-11-02T09:00"
+    assert_includes response.body, @lifts_at.strftime("%Y-%m-%dT%H:%M")
     assert_includes response.body, "Lock with embargo and set a release date"
     assert_includes response.body, "What is an embargo"
-    assert_includes response.body, "md:grid-cols-2 gap-6"
-    assert_includes response.body, "grid-cols-1 gap-6"
+    assert_includes response.body, "md:grid-cols-2 gap-[var(--stack-gap-lg)]"
+    assert_includes response.body, "grid-cols-1 gap-[var(--stack-gap-lg)]"
     assert_includes response.body, "max-w-3xl"
     assert_includes response.body, "mt-8"
     assert_select "#what-is-an-embargo-content[hidden] .fp-content" do
@@ -92,11 +93,20 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
       refute_includes card["class"], "p-[var(--card-padding-lg)]"
     end
     assert_select "label[for=embargo-enabled]", text: "Embargo"
-    assert_select "p#embargo-enabled-description", text: "Show preview only and mark as embargoed"
+    assert_select "p#embargo-enabled-description.fp-text", text: "Show preview only and mark as embargoed"
+    enabled_classes = css_select("p#embargo-enabled-description").first["class"]
+    assert_includes enabled_classes, "mt-1"
+    assert_includes enabled_classes, "text-[length:var(--text-xs)]"
+    assert_includes enabled_classes, "text-[var(--surface-muted-content-color)]"
+    refute_includes response.body, 'class="mt-1 text-xs text-[var(--surface-muted-content-color)]"'
     assert_select "li span.mr-2 svg[data-flat-pack--icon-name-value=lock-closed][aria-hidden=true]"
     assert_select "li span.ml-2 input#embargo-enabled[type=checkbox][aria-describedby=embargo-enabled-description]"
     assert_select "label[for=embargo-early-access]", text: "Early access"
-    assert_select "p#embargo-early-access-description", text: "Allow people to request early access"
+    assert_select "p#embargo-early-access-description.fp-text", text: "Allow people to request early access"
+    early_classes = css_select("p#embargo-early-access-description").first["class"]
+    assert_includes early_classes, "mt-1"
+    assert_includes early_classes, "text-[length:var(--text-xs)]"
+    assert_includes early_classes, "text-[var(--surface-muted-content-color)]"
     assert_select "li span.mr-2 svg[data-flat-pack--icon-name-value=lock-open][aria-hidden=true]"
     assert_select "li span.ml-2 input#embargo-early-access[type=checkbox][aria-describedby=embargo-early-access-description]"
     refute_includes response.body, "listed actions"

@@ -110,7 +110,7 @@ Migration details are in [`MIGRATION_NOTES.md`](MIGRATION_NOTES.md).
 
 ## Dummy app
 
-The dummy app pins Recording Studio GitHub tag `v6.1.0`, Accessible GitHub tag `v0.15.0`, Root Switchable GitHub tag `v0.8.0`, Metrics GitHub tag `v0.2.0`, and FlatPack commit `1fcbafe94f8eb118f0a22182f63f5110fcc97a56` (`FlatPack::VERSION` `0.1.319`). The root Gemfile uses the same Recording Studio tag and FlatPack commit. Those sibling tags still require `recording_studio` below 5, so the dummy Gemfile widens that requirement to install Recording Studio `v6.1.0`. `config.layout` defaults to `nil`, which follows `RecordingStudio.configuration.layout` and then `"recording_studio/default_layout"`. The home page shows the embargo notice at the default size and at `:sm` for the seeded page. A More menu opens the editor in a host modal. "Open embargo page" opens the same editor as a page.
+The dummy app pins Recording Studio GitHub tag `v6.1.0`, Accessible GitHub tag `v0.15.0`, Root Switchable GitHub tag `v0.8.0`, Metrics GitHub tag `v0.2.0`, and FlatPack GitHub tag `v0.1.331`. The root Gemfile uses the same Recording Studio tag and FlatPack tag. Those sibling tags still require `recording_studio` below 5, so the dummy Gemfile widens that requirement to install Recording Studio `v6.1.0`. `config.layout` defaults to `nil`, which follows `RecordingStudio.configuration.layout` and then `"recording_studio/default_layout"`. The home page shows the embargo notice at the default size and at `:sm` for the seeded page. A More menu opens the editor in a host modal. "Open embargo page" opens the same editor as a page.
 
 ```bash
 cd test/dummy

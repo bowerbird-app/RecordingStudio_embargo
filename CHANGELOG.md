@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- The gemspec now requires `flat_pack >= 0.1.331`. The editor uses `FlatPack::Text`, which needs that version.
+
+## [0.6.2] - 2026-11-02
+
+### Changed
+
+- The editor switch descriptions render with `FlatPack::Text` (`as: :p`, `size: :xs`, `style: :muted`). The same `id`s stay on those paragraphs so the switches keep `aria-describedby`.
+- Dummy Sign out uses Button `href:` instead of `url:`.
+- Dummy and root Gemfiles pin FlatPack GitHub tag `v0.1.331`. The engine editor now needs FlatPack `≥ 0.1.331` for `Text`. The gemspec still does not declare `flat_pack`, so hosts that render the editor must pin it themselves. FlatPack Grid now uses `--stack-gap-*` tokens instead of `gap-6`.
+
+### Upgrade
+
+Use FlatPack `≥ 0.1.331` if you render the embargo editor. There is no new gemspec dependency. Replace Button `url:` with `href:` on FlatPack `≥ 0.1.177`.
+
 ## [0.6.1] - 2026-11-02
 
 ### Changed
@@ -122,7 +138,8 @@ No change for hosts that open the editor as a page. To drop it into a dialog, ad
 
 - Default editor copy is plain press-kit language in `config/locales/en.yml`, so a host can override the subtitle and help text.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.2...HEAD
+[0.6.2]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.4.0...v0.5.0
