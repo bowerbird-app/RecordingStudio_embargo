@@ -22,6 +22,7 @@ PATH
   remote: .
   specs:
     recording_studio_embargo (0.6.2)
+      flat_pack (>= 0.1.331)
       rails (~> 8.1.0)
       recording_studio (>= 6.1.0)
 

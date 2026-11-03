@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- The gemspec now requires `flat_pack >= 0.1.331`. The editor uses `FlatPack::Text`, which needs that version.
+
 ## [0.6.2] - 2026-11-02
 
 ### Changed

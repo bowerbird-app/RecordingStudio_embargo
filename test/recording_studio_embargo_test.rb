@@ -64,7 +64,7 @@ class RecordingStudioEmbargoTest < Minitest::Test
     gemspec = File.read(File.expand_path("../recording_studio_embargo.gemspec", __dir__))
 
     assert_includes gemspec, 'spec.add_dependency "recording_studio", ">= 6.1.0"'
-    refute_includes gemspec, 'spec.add_dependency "flat_pack"'
+    assert_includes gemspec, 'spec.add_dependency "flat_pack", ">= 0.1.331"'
     refute_includes gemspec, 'spec.add_dependency "view_component"'
   end
 
