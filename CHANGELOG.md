@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.4] - 2026-11-05
+
+### Changed
+
+- Dummy and root lockfiles use Rails `8.1.4.1`. Bundler also moved the Rails stack and a few forced deps (`json`, `uri`, `prettyprint`, `io-console`, `date`, `rack-test`, `net-imap`). `rack` stays `3.2.8`, `nokogiri` `1.19.7`, `loofah` `2.25.3`, `rails-html-sanitizer` `1.7.2`, dummy `net-ssh` `7.3.8`.
+
 ## [0.6.3] - 2026-11-03
 
 ### Changed
@@ -146,7 +152,8 @@ No change for hosts that open the editor as a page. To drop it into a dialog, ad
 
 - Default editor copy is plain press-kit language in `config/locales/en.yml`, so a host can override the subtitle and help text.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.3...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.4...HEAD
+[0.6.4]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.3...v0.6.4
 [0.6.3]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.0...v0.6.1
