@@ -11,11 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Registers Recording Studio API member actions `set_embargo`, `cancel_embargo`, and `show_embargo` on the `:embargo` capability when `recording_studio_api` is loaded. Handlers authorize with `context.access_grant.authorize!` using the same manage role as the HTML editor (`:edit` by default), look the recording up in the grant's accessible set, then call `embargo_set!`, `embargo_cancel!`, and `current_embargo` / `embargo_active?`. There is no gemspec dependency on Recording Studio API. MCP does not need embargo-specific code.
+- Registers Recording Studio API member actions `set_embargo`, `cancel_embargo`, and `show_embargo` on the `:embargo` capability when `recording_studio_api` is loaded. Registration requires `each_api` and `register_capability_action(api:)`. Input contracts use `reject_unknown: false` because member actions still receive route params. Handlers authorize with `context.access_grant.authorize!` using the same manage role as the HTML editor (`:edit` by default), look the recording up in the grant's accessible set, then call `embargo_set!`, `embargo_cancel!`, and `current_embargo` / `embargo_active?`. There is no gemspec dependency on Recording Studio API. MCP does not need embargo-specific code. The dummy app pins Recording Studio API `v0.21.3` so eager load can load `AdminApi`.
 
 ### Upgrade
 
-Add `recording_studio_api` in the host if you want the JSON actions. Enable `:embargo` on the recordable. List `set_embargo`, `cancel_embargo`, and `show_embargo` in that type's `capability_actions`. The HTML editor role is unchanged.
+Add `recording_studio_api` with `each_api` and `register_capability_action(api:)` (0.21.3 or later) if you want the JSON actions. Enable `:embargo` on the recordable. List `set_embargo`, `cancel_embargo`, and `show_embargo` in that type's `capability_actions`. The HTML editor role is unchanged.
 
 ## [0.6.4] - 2026-11-05
 

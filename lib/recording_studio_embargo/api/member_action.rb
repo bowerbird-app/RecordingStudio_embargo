@@ -21,17 +21,10 @@ module RecordingStudioEmbargo
       end
 
       def embargo_params(context)
-        raw_params(context.params).each_with_object({}) do |(key, value), filtered|
+        context.params.to_h.each_with_object({}) do |(key, value), filtered|
           symbol = key.to_sym
           filtered[symbol] = value if Attributes::KEYS.include?(symbol)
         end
-      end
-
-      def raw_params(raw)
-        return raw.to_unsafe_h if raw.respond_to?(:to_unsafe_h)
-        return raw.to_h if raw.respond_to?(:to_h)
-
-        {}
       end
 
       def serialize(recording, **)

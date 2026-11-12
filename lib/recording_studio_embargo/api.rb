@@ -10,7 +10,6 @@ require "recording_studio_embargo/api/registration"
 module RecordingStudioEmbargo
   module Api
     ACTION_VERSION = "1.0.0"
-    INTERNAL_ROUTE_PARAMETER_KEYS = %i[api_key api_version].push("api_key", "api_version").freeze
 
     def self.register_capability_actions!
       Registration.register!
