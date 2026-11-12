@@ -19,6 +19,7 @@ require "recording_studio_embargo/lifecycle"
 require "recording_studio_embargo/services/embargoes/upsert"
 require "recording_studio_embargo/services/embargoes/cancel"
 require "recording_studio/capabilities/embargo"
+require "recording_studio_embargo/api"
 require "recording_studio_embargo/engine"
 
 module RecordingStudioEmbargo

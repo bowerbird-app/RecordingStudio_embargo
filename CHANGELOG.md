@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-12
+
+### Added
+
+- Registers Recording Studio API member actions `set_embargo`, `cancel_embargo`, and `show_embargo` on the `:embargo` capability when `recording_studio_api` is loaded. Handlers authorize with `context.access_grant.authorize!` using the same manage role as the HTML editor (`:edit` by default), look the recording up in the grant's accessible set, then call `embargo_set!`, `embargo_cancel!`, and `current_embargo` / `embargo_active?`. There is no gemspec dependency on Recording Studio API. MCP does not need embargo-specific code.
+
+### Upgrade
+
+Add `recording_studio_api` in the host if you want the JSON actions. Enable `:embargo` on the recordable. List `set_embargo`, `cancel_embargo`, and `show_embargo` in that type's `capability_actions`. The HTML editor role is unchanged.
+
 ## [0.6.4] - 2026-11-05
 
 ### Changed
@@ -152,7 +162,8 @@ No change for hosts that open the editor as a page. To drop it into a dialog, ad
 
 - Default editor copy is plain press-kit language in `config/locales/en.yml`, so a host can override the subtitle and help text.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.4...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.4...v0.7.0
 [0.6.4]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.3...v0.6.4
 [0.6.3]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.1...v0.6.2

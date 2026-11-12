@@ -43,6 +43,11 @@ module RecordingStudioEmbargo
       RecordingStudioEmbargo.configuration.hooks.run(:after_initialize, self)
     end
 
+    initializer "recording_studio_embargo.register_recording_studio_api_actions",
+                before: "recording_studio_api.after_initialize" do
+      RecordingStudioEmbargo::Api.register_capability_actions!
+    end
+
     initializer "recording_studio_embargo.extensions" do
       config.to_prepare do
         RecordingStudioEmbargo.install!

@@ -6,6 +6,7 @@
 - Rails 8.1 or newer
 - Recording Studio `>= 6.1.0` (dummy GitHub tag `v6.1.0`)
 - Accessible, so the early-access switch and the editor's manage role resolve
+- Recording Studio API is optional. This gem registers `set_embargo`, `cancel_embargo`, and `show_embargo` when that engine is present. List those names on the recordable type API. Authorization uses the HTML manage role (`:edit` unless `Embargo.to` sets `manage_role:`).
 - FlatPack `>= 0.1.335` when the host renders the editor (`List::Item` `title:` / `subtitle:` slots and `FlatPack::Text`). The dummy pins GitHub tag `v0.1.335`. `render_embargo_notice` still needs FlatPack `>= 0.1.315` for Card `background:`, `border:`, and `shadow:`. The gemspec requires `flat_pack >= 0.1.335`.
 - `view_component` `>= 4.14, < 5`. The dummy locks `4.19.0`.
 
