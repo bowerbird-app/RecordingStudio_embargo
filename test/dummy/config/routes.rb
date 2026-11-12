@@ -7,6 +7,7 @@ Rails.application.routes.draw do
   mount RecordingStudio::Engine, at: "/recording_studio"
   mount RecordingStudioRootSwitchable::Engine, at: "/recording_studio_root_switchable"
   mount RecordingStudioEmbargo::Engine, at: "/recording_studio_embargo"
+  mount RecordingStudioApi::Engine, at: "/recording_studio_api" if defined?(RecordingStudioApi::Engine)
 
   get "samples/recordings/:id", to: "embargo_samples#show", as: :embargo_sample
   get "samples/recordings/:id/download", to: "embargo_samples#download", as: :embargo_sample_download

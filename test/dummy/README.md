@@ -11,6 +11,7 @@ This Rails app exists to validate Recording Studio Embargo in a real host applic
 - Accessible audiences for `pages.show` and `pages.download`
 - Recording Studio default layout, FlatPack assets, and Tailwind source scanning
 - Mounted `RecordingStudio::Engine` route behavior inside a host app
+- Dummy-only Recording Studio API with Page `set_embargo`, `cancel_embargo`, and `show_embargo`
 - Dummy-only `/docs/*` pages for gem-specific onboarding
 
 ## Quick Start
