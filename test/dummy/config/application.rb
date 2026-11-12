@@ -45,3 +45,9 @@ module Dummy
     config.generators.system_tests = nil
   end
 end
+
+if defined?(RecordingStudioApi::Engine)
+  Rails.autoloaders.main.ignore(
+    RecordingStudioApi::Engine.root.join("app/models/recording_studio_api/admin_api.rb")
+  )
+end
