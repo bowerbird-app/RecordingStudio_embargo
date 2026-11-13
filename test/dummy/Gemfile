@@ -6,7 +6,7 @@ require_relative "../support/widen_recording_studio_requirement"
 gem "recording_studio_embargo", path: "../.."
 
 # RecordingStudio engine
-gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v6.1.0"
+gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v6.7.0"
 gem "recording_studio_accessible", github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.15.0"
 
 # Root switcher for the top nav
