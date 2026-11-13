@@ -21,13 +21,23 @@ RecordingStudioRootSwitchable.configure do |config|
 
   config.scope :all_workspaces do |scope|
     scope.label = "All workspaces"
-    scope.description = "Every workspace root in the dummy app."
-    scope.available_roots = lambda do |**|
+    scope.description = "Workspace roots you can view."
+    scope.available_roots = lambda do |actor: nil, **|
+      next [] if actor.blank?
+
       Workspace.order(:name).filter_map do |workspace|
-        RecordingStudio.root_recording_for(workspace)
+        recording = RecordingStudio.root_recording_for(workspace)
+        next if recording.blank?
+        next unless RecordingStudioAccessible.authorized?(actor: actor, recording: recording, role: :view)
+
+        recording
       end
     end
-    scope.access_check = ->(**) { true }
+    scope.access_check = lambda do |actor: nil, recording: nil, **|
+      actor.present? &&
+        recording.present? &&
+        RecordingStudioAccessible.authorized?(actor: actor, recording: recording, role: :view)
+    end
 
     scope.default_root = lambda do |roots:, **|
       roots.first
