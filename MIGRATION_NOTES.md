@@ -7,7 +7,7 @@
 - Recording Studio `>= 6.7.0` (dummy GitHub tag `v6.7.0`). Recording Studio 6.7 requires Rails `>= 8.1.4.1`.
 - On Recording Studio 6.5 and newer, set `config.authorize_write` and pass an actor on each write. The dummy allows a write when the actor is present. A scheduled lift uses the actor stored on the embargo recording. Leave `allow_unauthorized_writes` unset.
 - Accessible, so the early-access switch and the editor's manage role resolve
-- FlatPack `>= 0.1.335` when the host renders the editor (`List::Item` `title:` / `subtitle:` slots and `FlatPack::Text`). The dummy pins GitHub tag `v0.1.335`. `render_embargo_notice` still needs FlatPack `>= 0.1.315` for Card `background:`, `border:`, and `shadow:`. The gemspec requires `flat_pack >= 0.1.335`.
+- FlatPack `>= 0.1.335` when the host renders the editor (`List::Item` `title:` / `subtitle:` slots and `FlatPack::Text`). The dummy pins GitHub tag `v0.1.356`. `render_embargo_notice` still needs FlatPack `>= 0.1.315` for Card `background:`, `border:`, and `shadow:`. The gemspec requires `flat_pack >= 0.1.335`.
 - `view_component` `>= 4.14, < 5`. The dummy locks `4.19.0`.
 
 `RecordingStudio::UsesDefaultLayout` is gone. Engine controllers call `recording_studio_layout { RecordingStudioEmbargo.configuration.layout }`. `config.layout` defaults to `nil`. `nil` follows `RecordingStudio.configuration.layout`, then `"recording_studio/default_layout"`. `false` renders with no layout. A callable is invoked as `call(controller:)` and must return a String, `nil`, or `false`.

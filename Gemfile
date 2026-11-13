@@ -6,7 +6,7 @@ source "https://rubygems.org"
 gemspec
 
 # recording_studio is not published to RubyGems; resolve the gemspec pin from GitHub.
-gem "flat_pack", ">= 0.1.335", github: "bowerbird-app/flatpack", tag: "v0.1.335"
+gem "flat_pack", ">= 0.1.356", github: "bowerbird-app/flatpack", tag: "v0.1.356"
 gem "recording_studio", github: "bowerbird-app/RecordingStudio", tag: "v6.7.0"
 gem "view_component", "4.19.0"
 

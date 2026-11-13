@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-# Root Switchable v0.8.0 still passes PageNav keywords and Card style that
-# Flatpack 0.1.331 rejects. Strip them so the mounted switcher can render.
+# Older Root Switchable builds passed PageNav keywords and Card style that
+# Flatpack rejects. Strip them so a mounted switcher can still render.
 module DummyPageNavClose
   def initialize(*args, anchor_url: nil, anchor_label: nil, **kwargs)
     super(*args, **kwargs)
