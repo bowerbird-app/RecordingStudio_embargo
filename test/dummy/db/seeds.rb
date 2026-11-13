@@ -2,7 +2,7 @@
 # development, test). The code here should be idempotent so that it can be executed at any point in every environment.
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
 
-find_or_record_child = lambda do |recordable, root_recording, parent_recording|
+find_or_record_child = lambda do |recordable, root_recording, parent_recording, actor|
   RecordingStudio::Recording.find_by(
     root_recording: root_recording,
     parent_recording: parent_recording,
@@ -12,7 +12,8 @@ find_or_record_child = lambda do |recordable, root_recording, parent_recording|
     action: "created",
     recordable: recordable,
     root_recording: root_recording,
-    parent_recording: parent_recording
+    parent_recording: parent_recording,
+    actor: actor
   ).recording
 end
 
@@ -38,9 +39,9 @@ begin
   accessible_root_recording = RecordingStudio.root_recording_for(accessible_workspace)
   private_root_recording = RecordingStudio.root_recording_for(private_workspace)
 
-  folder_recording = find_or_record_child.call(folder, root_recording, root_recording)
+  folder_recording = find_or_record_child.call(folder, root_recording, root_recording, user)
 
-  page_recording = find_or_record_child.call(page, root_recording, folder_recording)
+  page_recording = find_or_record_child.call(page, root_recording, folder_recording, user)
 
   unless RecordingStudioAccessible.authorized?(actor: user, recording: root_recording, role: :admin)
     RecordingStudioAccessible.bootstrap_owner_access!(recording: root_recording, actor: user)

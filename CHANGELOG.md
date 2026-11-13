@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.5] - 2026-11-13
+
+### Changed
+
+- Dummy and root Gemfiles pin Recording Studio tag `v6.7.0`. The gemspec still requires `recording_studio >= 6.1.0`. The lockfiles move `minitest` to `6.1.0` and `irb` to `1.19.0`.
+- The dummy initializer sets `config.authorize_write` to allow a write when an actor is present.
+- A scheduled lift passes the actor stored on the embargo recording into `log_event!`.
+
+### Upgrade
+
+No embargo method change. Recording Studio 6.5 and newer raises `AuthorizationError` when `config.authorize_write` is missing, and `ActorRequired` when the actor is missing. Set the authorizer in the host app, and pass an actor on each write. The dummy allows a write when the actor is present. Embargo already passes the editor actor through `Upsert`, `Cancel`, and lifecycle history. The lift uses the actor stored on the embargo recording. Leave `allow_unauthorized_writes` unset. Recording Studio 6.7 requires Rails `>= 8.1.4.1`. This release does not register a gate.
+
 ## [0.6.4] - 2026-11-05
 
 ### Changed
@@ -152,7 +164,8 @@ No change for hosts that open the editor as a page. To drop it into a dialog, ad
 
 - Default editor copy is plain press-kit language in `config/locales/en.yml`, so a host can override the subtitle and help text.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.4...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.5...HEAD
+[0.6.5]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.4...v0.6.5
 [0.6.4]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.3...v0.6.4
 [0.6.3]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.1...v0.6.2

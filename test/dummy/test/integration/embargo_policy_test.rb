@@ -128,6 +128,7 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
     end
 
     assert_equal 1, lift_events.count
+    assert_equal @owner, lift_events.sole.actor
   end
 
   test "duplicating attributes does not carry early access or an active window" do
@@ -246,5 +247,4 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
   def lift_events
     @page.embargo_child_recording.events.where(action: "embargo_lifted")
   end
-
 end

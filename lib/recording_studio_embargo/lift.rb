@@ -53,18 +53,23 @@ module RecordingStudioEmbargo
       key = "embargo-lifted-#{expected.utc.iso8601(6)}"
       return if child.event_by_idempotency_key(key)
 
-      child.log_event!(action: "embargo_lifted", metadata: lift_metadata(expected), idempotency_key: key)
-      notify_lift(parent)
+      actor = stored_actor(child)
+      child.log_event!(action: "embargo_lifted", actor: actor, metadata: lift_metadata(expected), idempotency_key: key)
+      notify_lift(parent, actor)
+    end
+
+    def stored_actor(child)
+      child.events.where.not(actor_id: nil).reorder(occurred_at: :desc, created_at: :desc).first&.actor
     end
 
     def lift_metadata(expected)
       { "source" => "recording_studio_embargo.lift", "lifts_at" => expected.iso8601 }
     end
 
-    def notify_lift(parent)
+    def notify_lift(parent, actor)
       Lifecycle.emit_after_commit(
         :embargo_lifted,
-        Lifecycle.payload_for(parent, nil, Lifecycle.snapshot_for(parent), nil, "scheduled")
+        Lifecycle.payload_for(parent, nil, Lifecycle.snapshot_for(parent), actor, "scheduled")
       )
     end
   end
