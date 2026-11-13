@@ -12,6 +12,7 @@ require "recording_studio_embargo/restriction"
 require "recording_studio_embargo/composition"
 require "recording_studio_embargo/cache"
 require "recording_studio_embargo/return_to"
+require "recording_studio_embargo/manage_authorization"
 require "recording_studio_embargo/host_refresh"
 require "recording_studio_embargo/editor"
 require "recording_studio_embargo/recording_extensions"
@@ -22,6 +23,8 @@ require "recording_studio/capabilities/embargo"
 require "recording_studio_embargo/engine"
 
 module RecordingStudioEmbargo
+  MANAGE_GATE = "embargo.manage"
+
   class << self
     def configuration
       @configuration ||= Configuration.new
@@ -44,6 +47,14 @@ module RecordingStudioEmbargo
 
     def subscribe(name, &)
       Lifecycle.subscribe(name, &)
+    end
+
+    def manage_decision(recording:, actor:, **context)
+      RecordingStudio.check_gate(MANAGE_GATE, actor: actor, recording: recording, **context)
+    end
+
+    def manage_allowed?(recording:, actor:, **context)
+      manage_decision(recording: recording, actor: actor, **context).allowed?
     end
 
     def restriction_for(...)

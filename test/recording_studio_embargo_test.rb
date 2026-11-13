@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioEmbargoTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.6.5", ::RecordingStudioEmbargo::VERSION
+    assert_equal "0.7.0", ::RecordingStudioEmbargo::VERSION
   end
 
   def test_editor_frame_support_does_not_know_about_modals
@@ -62,10 +62,10 @@ class RecordingStudioEmbargoTest < Minitest::Test
     assert_kind_of Class, ::RecordingStudioEmbargo::Engine
   end
 
-  def test_gemspec_requires_recording_studio_6_1
+  def test_gemspec_requires_recording_studio_6_7
     gemspec = File.read(File.expand_path("../recording_studio_embargo.gemspec", __dir__))
 
-    assert_includes gemspec, 'spec.add_dependency "recording_studio", ">= 6.1.0"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio", ">= 6.7.0"'
     assert_includes gemspec, 'spec.add_dependency "flat_pack", ">= 0.1.335"'
     refute_includes gemspec, 'spec.add_dependency "view_component"'
   end

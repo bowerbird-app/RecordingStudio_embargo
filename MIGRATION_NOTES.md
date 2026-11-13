@@ -4,7 +4,7 @@
 
 - Ruby 3.3 or newer
 - Rails 8.1 or newer
-- Recording Studio `>= 6.1.0` (dummy GitHub tag `v6.7.0`). Recording Studio 6.7 requires Rails `>= 8.1.4.1`.
+- Recording Studio `>= 6.7.0` (dummy GitHub tag `v6.7.0`). Recording Studio 6.7 requires Rails `>= 8.1.4.1`.
 - On Recording Studio 6.5 and newer, set `config.authorize_write` and pass an actor on each write. The dummy allows a write when the actor is present. A scheduled lift uses the actor stored on the embargo recording. Leave `allow_unauthorized_writes` unset.
 - Accessible, so the early-access switch and the editor's manage role resolve
 - FlatPack `>= 0.1.335` when the host renders the editor (`List::Item` `title:` / `subtitle:` slots and `FlatPack::Text`). The dummy pins GitHub tag `v0.1.335`. `render_embargo_notice` still needs FlatPack `>= 0.1.315` for Card `background:`, `border:`, and `shadow:`. The gemspec requires `flat_pack >= 0.1.335`.
@@ -19,6 +19,22 @@ Publishable, Downloadable, and Presskits are optional. Embargo does not read the
 ## Schema
 
 `recording_studio_embargo_embargoes` stores `enabled`, `lifts_at`, `time_zone`, and `early_access` (boolean). The row is a child recordable. A partial unique index, `index_rs_embargo_child_per_parent`, allows one untrashed `RecordingStudioEmbargo::Embargo` recording per parent. Revisions reuse that recording. There is no production data to backfill. Preview and hidden are not stored here.
+
+## Manage gate
+
+`embargo.manage` runs before the editor is shown and before `Services::Embargoes::Upsert`. Embargo registers no check. With none registered, the gate allows. The Accessible manage role is a separate check, and both have to pass.
+
+```ruby
+RecordingStudio.register_gate("embargo.manage", "host.plan") do |actor:, recording:, **|
+  if plan_allows_embargo?(actor)
+    true
+  else
+    RecordingStudio::GateDecision.deny(redirect_to: "/plans")
+  end
+end
+```
+
+`redirect_to` has to be a same-origin path. Consumers call `RecordingStudioEmbargo.manage_allowed?(recording:, actor:)` when they should hide their own Embargo control or refuse their own API. `manage_decision(recording:, actor:)` returns the gate decision. `recording_studio_embargo_management_path` does not hide itself.
 
 ## Host linking
 

@@ -42,13 +42,12 @@ module RecordingStudioEmbargo
     end
 
     def authorize_editor!
-      return if RecordingStudioEmbargo.configuration.authorize_management?(
-        recording: @recording,
-        actor: editor_actor,
-        controller: self
-      )
+      access = ManageAuthorization.new(recording: @recording, actor: editor_actor, controller: self)
+      return if access.allowed?
+      return head(:forbidden) unless access.management_allowed?
 
-      head :forbidden
+      location = access.redirect_path
+      location ? redirect_to(location) : head(:forbidden)
     end
 
     def editor_actor
