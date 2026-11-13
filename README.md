@@ -49,6 +49,32 @@ Include `RecordingStudioEmbargo::ApplicationHelper` (the engine does this for ho
 
 `embargoed?(page_recording)` is true only while a hold is on and the release time is still ahead. Use it for a lock or a label. `RecordingStudioEmbargo.embargoed?(recording)` is the same check outside a view.
 
+## Manage gate
+
+Showing the editor and saving an embargo both consult `embargo.manage`. Embargo does not register a check on that gate. With no checks registered, the gate allows, and existing hosts keep the current editor. Accessible's manage role stays a separate check. Both have to allow the change.
+
+A host or another gem registers a check when it wants to refuse management. This plan check sends the visitor to a same-origin path. Embargo drops any other location and responds forbidden. A check that raises is a deny.
+
+```ruby
+RecordingStudio.register_gate("embargo.manage", "host.plan") do |actor:, recording:, **|
+  if plan_allows_embargo?(actor)
+    true
+  else
+    RecordingStudio::GateDecision.deny(redirect_to: "/plans")
+  end
+end
+```
+
+A consumer hides its own Embargo menu item, and refuses its own API, with the same gate.
+
+```ruby
+RecordingStudioEmbargo.manage_allowed?(recording: page_recording, actor: current_user)
+```
+
+`RecordingStudioEmbargo.manage_decision(recording:, actor:)` returns the `RecordingStudio::GateDecision` when the caller needs `redirect_to` or `reason`. Extra keywords are forwarded to each check.
+
+`recording_studio_embargo_management_path` and `embargoed?` do not consult the gate. The host decides whether to show the link. An active embargo still restricts listed actions while the gate denies. `embargo_cancel!` does not consult the gate. It still requires the Accessible manage role, so a denied gate can clear an existing hold. The scheduled lift does not consult the gate.
+
 ## Host notice
 
 `render_embargo_notice` is static copy. It is not an alert. It renders nothing when there is no embargo, the embargo is off, or the release time has passed. Anyone who can open the page sees it while the embargo is active, including people who cannot edit it.

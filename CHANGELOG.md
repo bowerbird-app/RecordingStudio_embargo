@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-13
+
+### Added
+
+- `embargo.manage` is consulted before the editor is shown and before `Services::Embargoes::Upsert`, including `embargo_set!`. `embargo_cancel!` does not consult the gate. It still requires the Accessible manage role. `RecordingStudioEmbargo.manage_allowed?(recording:, actor:)` reports the boolean. `manage_decision(recording:, actor:)` returns the `RecordingStudio::GateDecision`. Embargo registers no check, so the gate allows until a host or another gem registers one.
+
+### Upgrade
+
+Require `recording_studio` `>= 6.7.0`.
+
+Register a check on `embargo.manage` when management should be refused. This plan check sends the visitor to a same-origin path. Any other `redirect_to` is ignored, and the editor responds forbidden. A check that raises denies the change. The Accessible manage role is unchanged and still has to allow the editor.
+
+```ruby
+RecordingStudio.register_gate("embargo.manage", "host.plan") do |actor:, recording:, **|
+  if plan_allows_embargo?(actor)
+    true
+  else
+    RecordingStudio::GateDecision.deny(redirect_to: "/plans")
+  end
+end
+```
+
+Consumers call `RecordingStudioEmbargo.manage_allowed?(recording:, actor:)` to hide their own Embargo menu item or refuse their own API. `recording_studio_embargo_management_path` and `embargoed?` stay available. An active embargo still restricts actions while this gate denies. `embargo_cancel!` is not gated, so a denied gate can still clear an existing hold. The gate is not used by enforcement or by `LiftTransitionJob`.
+
 ## [0.6.5] - 2026-11-13
 
 ### Changed
@@ -164,7 +188,8 @@ No change for hosts that open the editor as a page. To drop it into a dialog, ad
 
 - Default editor copy is plain press-kit language in `config/locales/en.yml`, so a host can override the subtitle and help text.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.5...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.5...v0.7.0
 [0.6.5]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.4...v0.6.5
 [0.6.4]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.3...v0.6.4
 [0.6.3]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.2...v0.6.3
