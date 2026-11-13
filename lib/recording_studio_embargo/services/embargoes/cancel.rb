@@ -22,7 +22,8 @@ module RecordingStudioEmbargo
             Upsert.call(
               parent_recording: parent_recording,
               attributes: { enabled: false },
-              actor: actor
+              actor: actor,
+              check_manage_gate: false
             ).value!
           )
         end

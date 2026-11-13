@@ -55,7 +55,7 @@ class EmbargoManageGateTest < ActionDispatch::IntegrationTest
     assert_equal "America/Chicago", @page.reload.current_embargo.time_zone
   end
 
-  test "a denying check blocks edit, update, upsert, and cancel" do
+  test "a denying check blocks edit, update, and upsert, and cancel still clears the hold" do
     register_check { false }
     sign_in @owner
 
@@ -73,10 +73,10 @@ class EmbargoManageGateTest < ActionDispatch::IntegrationTest
     assert_includes error.message, "not allowed"
     assert_equal @lifts_at, @page.reload.current_embargo.lifts_at
 
-    assert_raises(RecordingStudioEmbargo::Unauthorized) do
-      @page.embargo_cancel!(actor: @owner)
-    end
-    assert @page.reload.embargo_active?
+    @page.embargo_cancel!(actor: @owner)
+
+    refute @page.reload.embargo_active?
+    assert @page.embargo_child_recording.events.exists?(action: "embargo_cancelled")
   end
 
   test "a same-origin redirect is followed and an off-site redirect is refused" do

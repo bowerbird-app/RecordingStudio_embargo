@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `embargo.manage` is consulted before the editor is shown and before every save, including `Services::Embargoes::Upsert`. `RecordingStudioEmbargo.manage_allowed?(recording:, actor:)` reports the boolean. `manage_decision(recording:, actor:)` returns the `RecordingStudio::GateDecision`. Embargo registers no check, so the gate allows until a host or another gem registers one.
+- `embargo.manage` is consulted before the editor is shown and before `Services::Embargoes::Upsert`, including `embargo_set!`. `embargo_cancel!` does not consult the gate. It still requires the Accessible manage role. `RecordingStudioEmbargo.manage_allowed?(recording:, actor:)` reports the boolean. `manage_decision(recording:, actor:)` returns the `RecordingStudio::GateDecision`. Embargo registers no check, so the gate allows until a host or another gem registers one.
 
 ### Upgrade
 
@@ -29,7 +29,7 @@ RecordingStudio.register_gate("embargo.manage", "host.plan") do |actor:, recordi
 end
 ```
 
-Consumers call `RecordingStudioEmbargo.manage_allowed?(recording:, actor:)` to hide their own Embargo menu item or refuse their own API. `recording_studio_embargo_management_path` and `embargoed?` stay available. An active embargo still restricts actions while this gate denies. The gate is not used by enforcement or by `LiftTransitionJob`.
+Consumers call `RecordingStudioEmbargo.manage_allowed?(recording:, actor:)` to hide their own Embargo menu item or refuse their own API. `recording_studio_embargo_management_path` and `embargoed?` stay available. An active embargo still restricts actions while this gate denies. `embargo_cancel!` is not gated, so a denied gate can still clear an existing hold. The gate is not used by enforcement or by `LiftTransitionJob`.
 
 ## [0.6.5] - 2026-11-13
 

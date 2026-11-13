@@ -73,7 +73,7 @@ RecordingStudioEmbargo.manage_allowed?(recording: page_recording, actor: current
 
 `RecordingStudioEmbargo.manage_decision(recording:, actor:)` returns the `RecordingStudio::GateDecision` when the caller needs `redirect_to` or `reason`. Extra keywords are forwarded to each check.
 
-`recording_studio_embargo_management_path` and `embargoed?` do not consult the gate. The host decides whether to show the link. An active embargo still restricts listed actions while the gate denies. Cancel writes through the same save, so a denying check refuses cancel too. The scheduled lift does not consult the gate.
+`recording_studio_embargo_management_path` and `embargoed?` do not consult the gate. The host decides whether to show the link. An active embargo still restricts listed actions while the gate denies. `embargo_cancel!` does not consult the gate. It still requires the Accessible manage role, so a denied gate can clear an existing hold. The scheduled lift does not consult the gate.
 
 ## Host notice
 

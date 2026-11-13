@@ -22,7 +22,7 @@ Publishable, Downloadable, and Presskits are optional. Embargo does not read the
 
 ## Manage gate
 
-`embargo.manage` runs before the editor is shown and before `Services::Embargoes::Upsert`. Embargo registers no check. With none registered, the gate allows. The Accessible manage role is a separate check, and both have to pass.
+`embargo.manage` runs before the editor is shown and before `Services::Embargoes::Upsert`, including `embargo_set!`. Embargo registers no check. With none registered, the gate allows. The Accessible manage role is a separate check, and both have to pass. `embargo_cancel!` does not consult the gate. It still requires the Accessible manage role, so a denied gate can clear an existing hold.
 
 ```ruby
 RecordingStudio.register_gate("embargo.manage", "host.plan") do |actor:, recording:, **|
