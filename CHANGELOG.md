@@ -7,12 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-14
+
 ### Changed
 
-- Dummy and root Gemfiles pin Recording Studio GitHub tag `v6.10.0` and FlatPack `v0.1.366`. The dummy also pins Accessible `v0.37.0`, Root Switchable `v0.15.0`, Metrics `v0.8.0`, Cache `v0.6.3`, and Trashable `v0.14.1` (`require: false`). The gemspec floors stay `flat_pack >= 0.1.335` and `recording_studio >= 6.7.0`.
+- Embargo child lookup, the dummy home page, and seeds use `RecordingStudio::Recording.kept`. Embargo no longer checks whether a `trashed_at` column exists.
+- The partial unique index `index_rs_embargo_child_per_parent` is gone. Saving an embargo locks the parent and uses `Recording.kept` to revise the kept child or record a new one. A trashed embargo does not block a new one once a filter excludes it from `kept`.
+- Require `recording_studio` `>= 6.14.0`. Dummy and root Gemfiles pin GitHub tag `v6.14.0`. FlatPack stays `v0.1.366`. The dummy still pins Accessible `v0.37.0`, Root Switchable `v0.15.0`, Metrics `v0.8.0`, Cache `v0.6.3`, and Trashable `v0.14.1` (`require: false`).
 - The dummy copies Recording Studio migration `20261114090000_add_root_recording_id_to_recording_studio_events`. Recording Studio 6.9 requires `recording_studio_events.root_recording_id`.
 - The dummy Gemfile no longer loads `widen_recording_studio_requirement`. Those sibling tags accept Recording Studio 6.
 - The dummy root-switch scope lists workspace roots the actor can view. Root Switchable 0.15 requires Accessible `:view` on the current root before the switch page renders.
+
+### Upgrade
+
+Require `recording_studio` `>= 6.14.0`.
+
+Kept rows come from filters registered with core. This gem does not depend on `recording_studio_trashable` and does not register a filter. With none registered, `Recording.kept` matches every recording, so a save revises the existing embargo child. Trashable `0.16.0` registers the `trashed_at` filter; after that, a trashed embargo is not kept and a save can record a new one. The dummy pin stays `v0.14.1`.
+
+Run `bin/rails generate recording_studio_embargo:migrations` and migrate. That drops `index_rs_embargo_child_per_parent` if a previous install created it. The index is not rebuilt.
 
 ## [0.7.0] - 2026-11-13
 
@@ -195,7 +207,8 @@ No change for hosts that open the editor as a page. To drop it into a dialog, ad
 
 - Default editor copy is plain press-kit language in `config/locales/en.yml`, so a host can override the subtitle and help text.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.5...v0.7.0
 [0.6.5]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.4...v0.6.5
 [0.6.4]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.3...v0.6.4

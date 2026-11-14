@@ -3,11 +3,10 @@
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
 
 find_or_record_child = lambda do |recordable, root_recording, parent_recording, actor|
-  RecordingStudio::Recording.find_by(
+  RecordingStudio::Recording.kept.find_by(
     root_recording: root_recording,
     parent_recording: parent_recording,
-    recordable: recordable,
-    trashed_at: nil
+    recordable: recordable
   ) || RecordingStudio.record!(
     action: "created",
     recordable: recordable,

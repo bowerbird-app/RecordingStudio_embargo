@@ -5,9 +5,7 @@ module RecordingStudioEmbargo
     def embargo_child_recording
       return unless respond_to?(:child_recordings)
 
-      relation = child_recordings.of_type(RecordingStudioEmbargo::Embargo)
-      relation = relation.where(trashed_at: nil) if relation.respond_to?(:where) && trashed_column?
-      relation.first
+      child_recordings.of_type(RecordingStudioEmbargo::Embargo).kept.first
     end
 
     def current_embargo
@@ -35,14 +33,6 @@ module RecordingStudioEmbargo
       return RecordingStudio::Event.none unless child
 
       child.events.order(occurred_at: :asc, created_at: :asc)
-    end
-
-    private
-
-    def trashed_column?
-      RecordingStudio::Recording.column_names.include?("trashed_at")
-    rescue StandardError
-      false
     end
   end
 end

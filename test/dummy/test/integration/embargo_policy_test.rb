@@ -105,9 +105,52 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
     @page.embargo_cancel!(actor: @owner)
 
     assert_equal %w[embargo_created embargo_updated embargo_cancelled], history_actions
-    assert_equal 1, @page.child_recordings.of_type(RecordingStudioEmbargo::Embargo).where(trashed_at: nil).count
+    assert_equal 1, @page.child_recordings.of_type(RecordingStudioEmbargo::Embargo).kept.count
     refute @page.reload.embargo_active?
     assert @page.current_embargo.present?
+  end
+
+  test "embargo child lookup follows Recording.kept" do
+    activate!
+    child = @page.embargo_child_recording
+    child.update_columns(trashed_at: Time.current)
+
+    assert_equal child, @page.embargo_child_recording
+
+    RecordingStudio.register_recording_filter(
+      :embargo_test_kept,
+      sql: ->(table) { "#{table}.trashed_at IS NULL" }
+    ) { |recordings| recordings.where(trashed_at: nil) }
+
+    assert_nil @page.embargo_child_recording
+  ensure
+    RecordingStudio.unregister_recording_filter(:embargo_test_kept)
+  end
+
+  test "a trashed embargo does not block a new kept embargo" do
+    RecordingStudio.register_recording_filter(
+      :embargo_replacement_kept,
+      sql: ->(table) { "#{table}.trashed_at IS NULL" }
+    ) { |recordings| recordings.where(trashed_at: nil) }
+
+    activate!
+    trashed = @page.embargo_child_recording
+    trashed.update_columns(trashed_at: Time.current)
+
+    @page.embargo_set!(enabled_attributes, actor: @owner)
+
+    replacement = @page.embargo_child_recording
+    children = @page.child_recordings.of_type(RecordingStudioEmbargo::Embargo)
+    refute_equal trashed.id, replacement.id
+    assert_equal 1, children.kept.count
+    assert_equal 2, children.count
+    refute ActiveRecord::Base.connection.index_exists?(
+      :recording_studio_recordings,
+      :parent_recording_id,
+      name: "index_rs_embargo_child_per_parent"
+    )
+  ensure
+    RecordingStudio.unregister_recording_filter(:embargo_replacement_kept)
   end
 
   test "lift notification is idempotent and ignores a rescheduled instant" do
