@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Dummy and root Gemfiles pin FlatPack GitHub tag `v0.1.356`. The dummy also pins Accessible `v0.31.0`, Root Switchable `v0.15.0`, Metrics `v0.8.0`, Cache `v0.6.3`, and Trashable `v0.14.0` (`require: false`). Recording Studio stays `v6.7.0`. The gemspec floors stay `flat_pack >= 0.1.335` and `recording_studio >= 6.7.0`.
+- Dummy and root Gemfiles pin Recording Studio GitHub tag `v6.10.0` and FlatPack `v0.1.366`. The dummy also pins Accessible `v0.37.0`, Root Switchable `v0.15.0`, Metrics `v0.8.0`, Cache `v0.6.3`, and Trashable `v0.14.1` (`require: false`). The gemspec floors stay `flat_pack >= 0.1.335` and `recording_studio >= 6.7.0`.
+- The dummy copies Recording Studio migration `20261114090000_add_root_recording_id_to_recording_studio_events`. Recording Studio 6.9 requires `recording_studio_events.root_recording_id`.
 - The dummy Gemfile no longer loads `widen_recording_studio_requirement`. Those sibling tags accept Recording Studio 6.
 - The dummy root-switch scope lists workspace roots the actor can view. Root Switchable 0.15 requires Accessible `:view` on the current root before the switch page renders.
 
