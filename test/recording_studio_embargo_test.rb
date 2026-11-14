@@ -71,10 +71,19 @@ class RecordingStudioEmbargoTest < Minitest::Test
     assert_includes extensions, ".kept.first"
     refute_includes extensions, "trashed_at"
     refute_includes extensions, "column_names"
+    drop_index = File.read(File.join(root, "db/migrate/20261114103000_remove_unique_embargo_child_per_parent.rb"))
+    dummy_drop_index = File.read(
+      File.join(root, "test/dummy/db/migrate/20261114103000_remove_unique_embargo_child_per_parent.rb")
+    )
+
     assert_equal migration, dummy_migration
-    assert_includes migration, "RecordingStudio.kept_sql('recording_studio_recordings')"
+    assert_equal drop_index, dummy_drop_index
+    refute_includes migration, "kept_sql"
     refute_includes migration, "column_exists?"
     refute_includes migration, "trashed_at"
+    refute_includes migration, "index_rs_embargo_child_per_parent"
+    refute_includes drop_index, "kept_sql"
+    assert_includes drop_index, "index_rs_embargo_child_per_parent"
     assert_includes home, "RecordingStudio::Recording.kept.find_by(recordable: page)"
     refute_includes home, "trashed_at"
     assert_includes seeds, "RecordingStudio::Recording.kept.find_by("

@@ -18,7 +18,7 @@ Publishable, Downloadable, and Presskits are optional. Embargo does not read the
 
 ## Schema
 
-`recording_studio_embargo_embargoes` stores `enabled`, `lifts_at`, `time_zone`, and `early_access` (boolean). The row is a child recordable. A partial unique index, `index_rs_embargo_child_per_parent`, allows one `RecordingStudioEmbargo::Embargo` recording per parent among rows that pass `RecordingStudio.kept_sql('recording_studio_recordings')`. With no recording filter registered, that SQL is `1=1`. A filter registered before this migration runs, such as Trashable `0.16.0`, is included in the predicate. Revisions reuse that recording. There is no production data to backfill. Preview and hidden are not stored here.
+`recording_studio_embargo_embargoes` stores `enabled`, `lifts_at`, `time_zone`, and `early_access` (boolean). The row is a child recordable. There is no unique index on the embargo recording. `Services::Embargoes::Upsert` locks the parent and uses `Recording.kept` to revise the kept embargo child, or to record a new one when none is kept. A trashed embargo does not block a new one once a filter excludes it from `kept`. With no filter registered, `kept` still includes that row and the save revises it. Revisions reuse the kept recording. `index_rs_embargo_child_per_parent` is dropped if an older install created it. There is no production data to backfill. Preview and hidden are not stored here.
 
 ## Manage gate
 
