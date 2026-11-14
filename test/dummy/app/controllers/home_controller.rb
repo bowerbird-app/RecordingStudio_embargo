@@ -13,6 +13,6 @@ class HomeController < ApplicationController
 
   def seeded_page_recording
     page = Page.find_by(title: "Getting Started")
-    page && RecordingStudio::Recording.find_by(recordable: page, trashed_at: nil)
+    page && RecordingStudio::Recording.kept.find_by(recordable: page)
   end
 end

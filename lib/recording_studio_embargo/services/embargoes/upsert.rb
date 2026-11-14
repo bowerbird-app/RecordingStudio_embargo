@@ -53,10 +53,10 @@ module RecordingStudioEmbargo
         end
 
         def write!(parsed)
-          existing = parent_recording.embargo_child_recording
-          return revise!(existing, parsed) if existing
-
-          create!(parsed)
+          parent_recording.with_lock do
+            existing = parent_recording.embargo_child_recording
+            existing ? revise!(existing, parsed) : create!(parsed)
+          end
         end
 
         def revise!(existing, parsed)
