@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Embargo child lookup, the dummy home page, and seeds use `RecordingStudio::Recording.kept`. Embargo no longer checks whether a `trashed_at` column exists.
 - The partial unique index `index_rs_embargo_child_per_parent` is gone. Saving an embargo locks the parent and uses `Recording.kept` to revise the kept child or record a new one. A trashed embargo does not block a new one once a filter excludes it from `kept`.
-- Require `recording_studio` `>= 6.14.0`. Dummy and root Gemfiles pin GitHub tag `v6.14.0`. FlatPack stays `v0.1.366`. The dummy still pins Accessible `v0.37.0`, Root Switchable `v0.15.0`, Metrics `v0.8.0`, Cache `v0.6.3`, and Trashable `v0.14.1` (`require: false`).
+- Require `recording_studio` `>= 6.14.0`. Dummy and root Gemfiles pin GitHub tag `v6.14.0`. FlatPack stays `v0.1.366`. The dummy pins Accessible `>= 0.42.0` at tag `v0.42.0`, Root Switchable `v0.15.0`, Metrics `v0.8.0`, and Cache `v0.6.3`. Accessible 0.42 requires Trashable `>= 0.16.0`, so the dummy pin is tag `v0.16.0` (`require: false`).
 - The dummy copies Recording Studio migration `20261114090000_add_root_recording_id_to_recording_studio_events`. Recording Studio 6.9 requires `recording_studio_events.root_recording_id`.
 - The dummy Gemfile no longer loads `widen_recording_studio_requirement`. Those sibling tags accept Recording Studio 6.
 - The dummy root-switch scope lists workspace roots the actor can view. Root Switchable 0.15 requires Accessible `:view` on the current root before the switch page renders.
@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Require `recording_studio` `>= 6.14.0`.
 
-Kept rows come from filters registered with core. This gem does not depend on `recording_studio_trashable` and does not register a filter. With none registered, `Recording.kept` matches every recording, so a save revises the existing embargo child. Trashable `0.16.0` registers the `trashed_at` filter; after that, a trashed embargo is not kept and a save can record a new one. The dummy pin stays `v0.14.1`.
+Kept rows come from filters registered with core. This gem does not depend on `recording_studio_trashable` and does not register a filter. With none registered, `Recording.kept` matches every recording, so a save revises the existing embargo child. Trashable `0.16.0` registers the `trashed_at` filter; after that, a trashed embargo is not kept and a save can record a new one. The dummy pins that tag.
 
 Run `bin/rails generate recording_studio_embargo:migrations` and migrate. That drops `index_rs_embargo_child_per_parent` if a previous install created it. The index is not rebuilt.
 

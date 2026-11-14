@@ -115,6 +115,7 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
     child = @page.embargo_child_recording
     child.update_columns(trashed_at: Time.current)
 
+    RecordingStudio.unregister_recording_filter(:trashable)
     assert_equal child, @page.embargo_child_recording
 
     RecordingStudio.register_recording_filter(
@@ -125,6 +126,9 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
     assert_nil @page.embargo_child_recording
   ensure
     RecordingStudio.unregister_recording_filter(:embargo_test_kept)
+    if defined?(RecordingStudioTrashable::RecordingFilter)
+      RecordingStudioTrashable::RecordingFilter.register!
+    end
   end
 
   test "a trashed embargo does not block a new kept embargo" do
