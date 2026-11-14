@@ -20,6 +20,9 @@ class RecordingStudioTemplateTest < ActiveSupport::TestCase
     connection = ActiveRecord::Base.connection
 
     assert connection.column_exists?(:recording_studio_recordings, :root_recording_id)
+    assert connection.column_exists?(:recording_studio_events, :root_recording_id)
+    assert connection.index_exists?(:recording_studio_events, %i[root_recording_id occurred_at created_at id],
+                                    name: "index_rs_events_on_root_and_timeline")
     assert connection.table_exists?(:recording_studio_accesses)
     assert connection.table_exists?(:recording_studio_access_constraints)
     assert connection.table_exists?(:recording_studio_access_rules)

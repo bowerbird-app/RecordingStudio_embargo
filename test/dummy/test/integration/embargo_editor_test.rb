@@ -96,7 +96,7 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     assert_select "p#embargo-enabled-description.fp-text", text: "Show preview only and mark as embargoed"
     enabled_classes = css_select("p#embargo-enabled-description").first["class"]
     assert_includes enabled_classes, "mt-1"
-    assert_includes enabled_classes, "text-[length:var(--text-xs)]"
+    assert_includes enabled_classes, "fp-type-body--xs"
     assert_includes enabled_classes, "text-[var(--surface-muted-content-color)]"
     refute_includes response.body, 'class="mt-1 text-xs text-[var(--surface-muted-content-color)]"'
     assert_select "li span.mr-2 svg[data-flat-pack--icon-name-value=lock-closed][aria-hidden=true]"
@@ -105,7 +105,7 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     assert_select "p#embargo-early-access-description.fp-text", text: "Allow people to request early access"
     early_classes = css_select("p#embargo-early-access-description").first["class"]
     assert_includes early_classes, "mt-1"
-    assert_includes early_classes, "text-[length:var(--text-xs)]"
+    assert_includes early_classes, "fp-type-body--xs"
     assert_includes early_classes, "text-[var(--surface-muted-content-color)]"
     assert_select "li span.mr-2 svg[data-flat-pack--icon-name-value=lock-open][aria-hidden=true]"
     assert_select "li span.ml-2 input#embargo-early-access[type=checkbox][aria-describedby=embargo-early-access-description]"
