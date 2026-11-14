@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioEmbargoTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.7.0", ::RecordingStudioEmbargo::VERSION
+    assert_equal "0.8.0", ::RecordingStudioEmbargo::VERSION
   end
 
   def test_editor_frame_support_does_not_know_about_modals
@@ -58,14 +58,38 @@ class RecordingStudioEmbargoTest < Minitest::Test
     assert_empty RecordingStudio::Layout.hardcoded_layout_paths(root)
   end
 
+  def test_kept_replaces_hand_written_trashed_filters
+    root = File.expand_path("..", __dir__)
+    extensions = File.read(File.join(root, "lib/recording_studio_embargo/recording_extensions.rb"))
+    migration = File.read(File.join(root, "db/migrate/20261012130000_create_recording_studio_embargo_embargoes.rb"))
+    dummy_migration = File.read(
+      File.join(root, "test/dummy/db/migrate/20261012130000_create_recording_studio_embargo_embargoes.rb")
+    )
+    home = File.read(File.join(root, "test/dummy/app/controllers/home_controller.rb"))
+    seeds = File.read(File.join(root, "test/dummy/db/seeds.rb"))
+
+    assert_includes extensions, ".kept.first"
+    refute_includes extensions, "trashed_at"
+    refute_includes extensions, "column_names"
+    assert_equal migration, dummy_migration
+    assert_includes migration, "RecordingStudio.kept_sql('recording_studio_recordings')"
+    refute_includes migration, "column_exists?"
+    refute_includes migration, "trashed_at"
+    assert_includes home, "RecordingStudio::Recording.kept.find_by(recordable: page)"
+    refute_includes home, "trashed_at"
+    assert_includes seeds, "RecordingStudio::Recording.kept.find_by("
+    refute_includes seeds, "trashed_at"
+  end
+
   def test_engine_exists
     assert_kind_of Class, ::RecordingStudioEmbargo::Engine
   end
 
-  def test_gemspec_requires_recording_studio_6_7
+  def test_gemspec_requires_recording_studio_6_14
     gemspec = File.read(File.expand_path("../recording_studio_embargo.gemspec", __dir__))
 
-    assert_includes gemspec, 'spec.add_dependency "recording_studio", ">= 6.7.0"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio", ">= 6.14.0"'
+    refute_includes gemspec, "recording_studio_trashable"
     assert_includes gemspec, 'spec.add_dependency "flat_pack", ">= 0.1.335"'
     refute_includes gemspec, 'spec.add_dependency "view_component"'
   end
@@ -97,7 +121,7 @@ class RecordingStudioEmbargoTest < Minitest::Test
   def test_dummy_gemfile_pins_current_github_tags
     gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
 
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v6.10.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v6.14.0"'
     refute_includes gemfile, 'tag: "v4.5.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.37.0"'
     refute_includes gemfile, 'tag: "v0.10.1"'
@@ -267,7 +291,7 @@ class RecordingStudioEmbargoTest < Minitest::Test
     readme = File.read(File.expand_path("../README.md", __dir__))
 
     assert_includes readme, "RecordingStudio"
-    assert_includes readme, "GitHub tag `v6.10.0`"
+    assert_includes readme, "GitHub tag `v6.14.0`"
     assert_includes readme, "FlatPack GitHub tag `v0.1.366`"
     refute_includes readme, "dummy GitHub tag `v4.5.0`"
     refute_includes readme, "dummy GitHub tag `v0.1.240`"

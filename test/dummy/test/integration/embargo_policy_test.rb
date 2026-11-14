@@ -105,9 +105,33 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
     @page.embargo_cancel!(actor: @owner)
 
     assert_equal %w[embargo_created embargo_updated embargo_cancelled], history_actions
-    assert_equal 1, @page.child_recordings.of_type(RecordingStudioEmbargo::Embargo).where(trashed_at: nil).count
+    assert_equal 1, @page.child_recordings.of_type(RecordingStudioEmbargo::Embargo).kept.count
     refute @page.reload.embargo_active?
     assert @page.current_embargo.present?
+  end
+
+  test "embargo child lookup follows Recording.kept" do
+    activate!
+    child = @page.embargo_child_recording
+    child.update_columns(trashed_at: Time.current)
+
+    assert_equal child, @page.embargo_child_recording
+
+    RecordingStudio.register_recording_filter(
+      :embargo_test_kept,
+      sql: ->(table) { "#{table}.trashed_at IS NULL" }
+    ) { |recordings| recordings.where(trashed_at: nil) }
+
+    assert_nil @page.embargo_child_recording
+    require Rails.root.join("db/migrate/20261012130000_create_recording_studio_embargo_embargoes.rb")
+    assert_equal(
+      "recordable_type = 'RecordingStudioEmbargo::Embargo' AND " \
+      "#{RecordingStudio.kept_sql('recording_studio_recordings')}",
+      CreateRecordingStudioEmbargoEmbargoes.new.child_index_where
+    )
+    assert_includes CreateRecordingStudioEmbargoEmbargoes.new.child_index_where, "trashed_at IS NULL"
+  ensure
+    RecordingStudio.unregister_recording_filter(:embargo_test_kept)
   end
 
   test "lift notification is idempotent and ignores a rescheduled instant" do

@@ -27,10 +27,6 @@ class CreateRecordingStudioEmbargoEmbargoes < ActiveRecord::Migration[8.1]
   end
 
   def child_index_where
-    if column_exists?(:recording_studio_recordings, :trashed_at)
-      "recordable_type = '#{RECORDABLE_TYPE}' AND trashed_at IS NULL"
-    else
-      "recordable_type = '#{RECORDABLE_TYPE}'"
-    end
+    "recordable_type = '#{RECORDABLE_TYPE}' AND #{RecordingStudio.kept_sql('recording_studio_recordings')}"
   end
 end

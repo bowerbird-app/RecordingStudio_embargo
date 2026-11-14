@@ -4,7 +4,7 @@
 
 - Ruby 3.3 or newer
 - Rails 8.1 or newer
-- Recording Studio `>= 6.7.0` (dummy GitHub tag `v6.10.0`). Recording Studio 6.7 requires Rails `>= 8.1.4.1`. Recording Studio 6.9 requires `recording_studio_events.root_recording_id`. The dummy copies core migration `20261114090000_add_root_recording_id_to_recording_studio_events`.
+- Recording Studio `>= 6.14.0` (dummy GitHub tag `v6.14.0`). Recording Studio 6.7 requires Rails `>= 8.1.4.1`. Recording Studio 6.9 requires `recording_studio_events.root_recording_id`. The dummy copies core migration `20261114090000_add_root_recording_id_to_recording_studio_events`. This gem does not depend on Trashable.
 - On Recording Studio 6.5 and newer, set `config.authorize_write` and pass an actor on each write. The dummy allows a write when the actor is present. A scheduled lift uses the actor stored on the embargo recording. Leave `allow_unauthorized_writes` unset.
 - Accessible, so the early-access switch and the editor's manage role resolve
 - FlatPack `>= 0.1.335` when the host renders the editor (`List::Item` `title:` / `subtitle:` slots and `FlatPack::Text`). The dummy pins GitHub tag `v0.1.366`. `render_embargo_notice` still needs FlatPack `>= 0.1.315` for Card `background:`, `border:`, and `shadow:`. The gemspec requires `flat_pack >= 0.1.335`.
@@ -18,7 +18,7 @@ Publishable, Downloadable, and Presskits are optional. Embargo does not read the
 
 ## Schema
 
-`recording_studio_embargo_embargoes` stores `enabled`, `lifts_at`, `time_zone`, and `early_access` (boolean). The row is a child recordable. A partial unique index, `index_rs_embargo_child_per_parent`, allows one untrashed `RecordingStudioEmbargo::Embargo` recording per parent. Revisions reuse that recording. There is no production data to backfill. Preview and hidden are not stored here.
+`recording_studio_embargo_embargoes` stores `enabled`, `lifts_at`, `time_zone`, and `early_access` (boolean). The row is a child recordable. A partial unique index, `index_rs_embargo_child_per_parent`, allows one `RecordingStudioEmbargo::Embargo` recording per parent among rows that pass `RecordingStudio.kept_sql('recording_studio_recordings')`. With no recording filter registered, that SQL is `1=1`. A filter registered before this migration runs, such as Trashable `0.16.0`, is included in the predicate. Revisions reuse that recording. There is no production data to backfill. Preview and hidden are not stored here.
 
 ## Manage gate
 
