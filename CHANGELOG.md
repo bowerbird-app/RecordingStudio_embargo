@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Require `recording_studio` `>= 7.0`, `< 8.0`. Dummy and root Gemfiles pin GitHub tag `v7.0.0`. FlatPack stays `v0.1.366`. Metrics stays `v0.8.0`. Cache stays `v0.6.3`.
 - Dummy pins move to Accessible `v0.43.1` (`>= 0.43.1`), Trashable `v0.16.1` (`require: false`), and Root Switchable `v0.15.1`. Those earlier tags stop before Recording Studio 7.
 - Seeds and tests create roots with `RecordingStudio.create_root_recording!`. The dummy root-switch scope still looks roots up with `root_recording_for`.
+- The dummy lockfile moves `msgpack` from `1.8.5` to `1.8.7` (CVE-2026-126366).
 
 ### Upgrade
 
