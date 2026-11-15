@@ -4,7 +4,7 @@
 
 - Ruby 3.3 or newer
 - Rails 8.1 or newer
-- Recording Studio `>= 6.14.0` (dummy GitHub tag `v6.14.0`). Recording Studio 6.7 requires Rails `>= 8.1.4.1`. Recording Studio 6.9 requires `recording_studio_events.root_recording_id`. The dummy copies core migration `20261114090000_add_root_recording_id_to_recording_studio_events`. This gem does not depend on Trashable.
+- Recording Studio `>= 7.0`, `< 8.0` (dummy and root GitHub tag `v7.0.0`). Recording Studio 6.7 requires Rails `>= 8.1.4.1`. Recording Studio 6.9 requires `recording_studio_events.root_recording_id`. The dummy copies core migration `20261114090000_add_root_recording_id_to_recording_studio_events`. Core 7 adds no migration for the root split. `root_recording_for` only finds a root and returns `nil` when it is missing. Create one with `create_root_recording!(recordable, actor:)`. A later call returns the existing root. This gem does not depend on Trashable.
 - On Recording Studio 6.5 and newer, set `config.authorize_write` and pass an actor on each write. The dummy allows a write when the actor is present. A scheduled lift uses the actor stored on the embargo recording. Leave `allow_unauthorized_writes` unset.
 - Accessible, so the early-access switch and the editor's manage role resolve
 - FlatPack `>= 0.1.335` when the host renders the editor (`List::Item` `title:` / `subtitle:` slots and `FlatPack::Text`). The dummy pins GitHub tag `v0.1.366`. `render_embargo_notice` still needs FlatPack `>= 0.1.315` for Card `background:`, `border:`, and `shadow:`. The gemspec requires `flat_pack >= 0.1.335`.

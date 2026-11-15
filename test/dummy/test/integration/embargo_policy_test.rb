@@ -16,7 +16,7 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
     @viewer = create_user("viewer")
     @editor = create_user("editor")
     @workspace = Workspace.create!(name: "Embargo #{SecureRandom.hex(4)}")
-    @root = RecordingStudio.root_recording_for(@workspace)
+    @root = RecordingStudio.create_root_recording!(@workspace, actor: @owner)
     @page = @root.record(Page, actor: @owner, parent_recording: @root) do |page|
       page.title = "Held page #{SecureRandom.hex(4)}"
     end

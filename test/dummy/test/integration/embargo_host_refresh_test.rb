@@ -14,7 +14,7 @@ class EmbargoHostRefreshTest < ActionDispatch::IntegrationTest
       password_confirmation: "Password123!"
     )
     workspace = Workspace.create!(name: "Refresh #{SecureRandom.hex(4)}")
-    @root = RecordingStudio.root_recording_for(workspace)
+    @root = RecordingStudio.create_root_recording!(workspace, actor: @owner)
     @page = @root.record(Page, actor: @owner, parent_recording: @root) do |page|
       page.title = "Refresh page #{SecureRandom.hex(4)}"
     end

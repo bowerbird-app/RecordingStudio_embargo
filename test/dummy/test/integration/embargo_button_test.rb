@@ -10,7 +10,7 @@ class EmbargoHostLinkTest < ActionDispatch::IntegrationTest
     @owner = create_user("link-owner")
     @viewer = create_user("link-viewer")
     workspace = Workspace.create!(name: "Link #{SecureRandom.hex(4)}")
-    @root = RecordingStudio.root_recording_for(workspace)
+    @root = RecordingStudio.create_root_recording!(workspace, actor: @owner)
     @page = @root.record(Page, actor: @owner, parent_recording: @root) do |page|
       page.title = "Link page #{SecureRandom.hex(4)}"
     end
