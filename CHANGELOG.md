@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-15
+
+### Changed
+
+- Require `recording_studio` `>= 7.0`, `< 8.0`. Dummy and root Gemfiles pin GitHub tag `v7.0.0`. FlatPack stays `v0.1.366`. Metrics stays `v0.8.0`. Cache stays `v0.6.3`.
+- Dummy pins move to Accessible `v0.43.1` (`>= 0.43.1`), Trashable `v0.16.1` (`require: false`), and Root Switchable `v0.15.1`. Those earlier tags stop before Recording Studio 7.
+- Seeds and tests create roots with `RecordingStudio.create_root_recording!`. The dummy root-switch scope still looks roots up with `root_recording_for`.
+- The dummy lockfile moves `msgpack` from `1.8.5` to `1.8.7` (CVE-2026-126366).
+
+### Upgrade
+
+Require `recording_studio` `>= 7.0`, `< 8.0`.
+
+`RecordingStudio.root_recording_for` only finds a root. It returns `nil` when that recordable has none, and it does not write. Create a root with `RecordingStudio.create_root_recording!(recordable, actor:)`. A later call returns the existing root and does not append another event. Pass an actor, or set `config.actor`. No migration in this gem.
+
 ## [0.8.0] - 2026-11-14
 
 ### Changed
@@ -207,7 +222,8 @@ No change for hosts that open the editor as a page. To drop it into a dialog, ad
 
 - Default editor copy is plain press-kit language in `config/locales/en.yml`, so a host can override the subtitle and help text.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.5...v0.7.0
 [0.6.5]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.6.4...v0.6.5

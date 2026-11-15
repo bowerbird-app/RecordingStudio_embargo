@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioEmbargoTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.8.0", ::RecordingStudioEmbargo::VERSION
+    assert_equal "0.9.0", ::RecordingStudioEmbargo::VERSION
   end
 
   def test_editor_frame_support_does_not_know_about_modals
@@ -87,17 +87,22 @@ class RecordingStudioEmbargoTest < Minitest::Test
     assert_includes home, "RecordingStudio::Recording.kept.find_by(recordable: page)"
     refute_includes home, "trashed_at"
     assert_includes seeds, "RecordingStudio::Recording.kept.find_by("
+    assert_includes seeds, "RecordingStudio.create_root_recording!(workspace, actor: user)"
+    refute_includes seeds, "root_recording_for"
     refute_includes seeds, "trashed_at"
+    switcher = File.read(File.join(root, "test/dummy/config/initializers/recording_studio_root_switchable.rb"))
+    assert_includes switcher, "RecordingStudio.root_recording_for(workspace)"
+    refute_includes switcher, "create_root_recording!"
   end
 
   def test_engine_exists
     assert_kind_of Class, ::RecordingStudioEmbargo::Engine
   end
 
-  def test_gemspec_requires_recording_studio_6_14
+  def test_gemspec_requires_recording_studio_7
     gemspec = File.read(File.expand_path("../recording_studio_embargo.gemspec", __dir__))
 
-    assert_includes gemspec, 'spec.add_dependency "recording_studio", ">= 6.14.0"'
+    assert_includes gemspec, 'spec.add_dependency "recording_studio", ">= 7.0", "< 8.0"'
     refute_includes gemspec, "recording_studio_trashable"
     assert_includes gemspec, 'spec.add_dependency "flat_pack", ">= 0.1.335"'
     refute_includes gemspec, 'spec.add_dependency "view_component"'
@@ -130,16 +135,18 @@ class RecordingStudioEmbargoTest < Minitest::Test
   def test_dummy_gemfile_pins_current_github_tags
     gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
 
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v6.14.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v7.0.0"'
     refute_includes gemfile, 'tag: "v4.5.0"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.42.0"'
-    assert_includes gemfile, 'gem "recording_studio_accessible", ">= 0.42.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.43.1"'
+    assert_includes gemfile, 'gem "recording_studio_accessible", ">= 0.43.1"'
     refute_includes gemfile, 'tag: "v0.10.1"'
-    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.15.0"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_root_switchable", tag: "v0.15.1"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_metrics", tag: "v0.8.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_cache", tag: "v0.6.3"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_trashable"'
-    assert_includes gemfile, 'tag: "v0.16.0", require: false'
+    assert_includes gemfile, 'tag: "v0.16.1", require: false'
+    root_gemfile = File.read(File.expand_path("../Gemfile", __dir__))
+    assert_includes root_gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v7.0.0"'
     refute_includes gemfile, "widen_recording_studio_requirement"
     refute File.exist?(File.expand_path("support/widen_recording_studio_requirement.rb", __dir__))
     refute_includes gemfile, 'tag: "v0.6.0"'
@@ -301,19 +308,19 @@ class RecordingStudioEmbargoTest < Minitest::Test
     readme = File.read(File.expand_path("../README.md", __dir__))
 
     assert_includes readme, "RecordingStudio"
-    assert_includes readme, "GitHub tag `v6.14.0`"
+    assert_includes readme, "GitHub tag `v7.0.0`"
     assert_includes readme, "FlatPack GitHub tag `v0.1.366`"
     refute_includes readme, "dummy GitHub tag `v4.5.0`"
     refute_includes readme, "dummy GitHub tag `v0.1.240`"
     refute_includes readme, "dummy GitHub tag `v0.1.196`"
-    assert_includes readme, "Accessible GitHub tag `v0.42.0`"
+    assert_includes readme, "Accessible GitHub tag `v0.43.1`"
     refute_includes readme, "dummy GitHub tag `v0.10.1`"
-    assert_includes readme, "Root Switchable GitHub tag `v0.15.0`"
+    assert_includes readme, "Root Switchable GitHub tag `v0.15.1`"
     refute_includes readme, "dummy GitHub tag `v0.6.0`"
     refute_includes readme, "dummy GitHub tag `v0.5.1`"
     assert_includes readme, "Metrics GitHub tag `v0.8.0`"
     assert_includes readme, "Cache GitHub tag `v0.6.3`"
-    assert_includes readme, "Trashable GitHub tag `v0.16.0`"
+    assert_includes readme, "Trashable GitHub tag `v0.16.1`"
     refute_includes readme, "widens that requirement"
     refute_includes readme, "dummy GitHub tag `v4.4.0`"
     refute_includes readme, "dummy GitHub tag `v4.3.0`"

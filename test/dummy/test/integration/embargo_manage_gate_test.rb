@@ -17,7 +17,7 @@ class EmbargoManageGateTest < ActionDispatch::IntegrationTest
     @owner = create_user("gate-owner")
     @stranger = create_user("gate-stranger")
     workspace = Workspace.create!(name: "Gate #{SecureRandom.hex(4)}")
-    @root = RecordingStudio.root_recording_for(workspace)
+    @root = RecordingStudio.create_root_recording!(workspace, actor: @owner)
     @page = @root.record(Page, actor: @owner, parent_recording: @root) do |page|
       page.title = "Gate page #{SecureRandom.hex(4)}"
     end
