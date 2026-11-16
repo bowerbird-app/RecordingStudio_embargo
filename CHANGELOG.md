@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Dummy and root Gemfiles pin Recording Studio `v7.3.0` and FlatPack `v0.1.377`. The dummy pins Accessible `v0.45.1` (`>= 0.45.1`), Trashable `v1.0.0` (`require: false`), Root Switchable `v0.16.0`, Cache `v0.7.0`, and Metrics `v0.9.0`.
+
 ## [0.9.0] - 2026-11-15
 
 ### Changed
