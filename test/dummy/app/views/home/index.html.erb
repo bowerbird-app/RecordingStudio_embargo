@@ -1,6 +1,6 @@
 <% dummy_page_nav(
   title: "Embargo",
-  subtitle: "Hold a page until a release time, and optionally let people with access through early.",
+  subtitle: "Record a release time. People without access can ask for early access.",
   back_url: root_path
 ) %>
 <% turbo_refreshes_with(method: :morph, scroll: :preserve) if respond_to?(:turbo_refreshes_with) %>
@@ -69,9 +69,9 @@
 
       <% card.body do %>
         <ul class="space-y-3 text-sm leading-6">
-          <li>The editor holds a page private until a release date.</li>
-          <li>Early access lets people who already have access see it before the release date. Everyone else has to wait.</li>
-          <li>Expiry is read when the request is authorized.</li>
+          <li>The editor stores an embargo and a release time.</li>
+          <li>People without access can ask for early access. That does not change who can see the page.</li>
+          <li>The hold ends when the release time arrives.</li>
           <li>The dummy app exercises authentication, the Recording Studio default layout, and FlatPack.</li>
         </ul>
       <% end %>
@@ -91,8 +91,8 @@
         <ol class="space-y-3 text-sm leading-6 list-decimal pl-5">
           <li>Mount the engine and run the install generator.</li>
           <li>Copy the embargo migration into the host and migrate.</li>
-          <li>Opt a recordable in with <code>RecordingStudio::Capabilities::Embargo.to</code>.</li>
-          <li>Configure the same actions on Accessible, including view and download separately.</li>
+          <li>Opt a recordable in with <code>include RecordingStudio::Capabilities::Embargo</code>.</li>
+          <li>Press Kits decides who can see the page. This gem only stores the embargo.</li>
         </ol>
       <% end %>
     <% end %>

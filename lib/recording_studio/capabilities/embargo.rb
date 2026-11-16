@@ -5,14 +5,9 @@ module RecordingStudio
     module Embargo
       CHILD_TYPE = "RecordingStudioEmbargo::Embargo"
 
-      def self.to(actions: [], manage_role: :edit)
-        options = {
-          actions: normalize_actions(actions),
-          manage_role: manage_role.to_sym
-        }
-        RecordingStudio::Capabilities.include_for(:embargo, **options) do |_base|
-          ensure_child_recordable_registered!
-        end
+      def self.included(base)
+        RecordingStudio.enable_capability(:embargo, on: base)
+        ensure_child_recordable_registered!
       end
 
       def self.ensure_child_recordable_registered!
@@ -26,10 +21,6 @@ module RecordingStudio
       def self.registered_type?
         Array(RecordingStudio.configuration.recordable_types).map { |type| type.is_a?(Class) ? type.name : type.to_s }
                                                              .include?(CHILD_TYPE)
-      end
-
-      def self.normalize_actions(actions)
-        Array(actions).filter_map { |action| action.to_s.strip.presence&.to_sym }.uniq
       end
 
       module RecordingMethods

@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.authors     = ["Bowerbird"]
   spec.homepage    = "https://github.com/bowerbird-app/RecordingStudio_embargo"
   spec.summary     = "Time-based embargoes for Recording Studio recordings"
-  spec.description = "A Recording Studio capability that temporarily restricts named actions " \
-                     "until a release time, using Accessible audiences for early access."
+  spec.description = "A Recording Studio capability that stores an embargo window on a recording. " \
+                     "It does not decide who can see the recording."
   spec.license     = "MIT"
   spec.required_ruby_version = ">= 3.3.0"
 

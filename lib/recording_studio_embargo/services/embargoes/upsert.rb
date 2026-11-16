@@ -4,21 +4,20 @@ module RecordingStudioEmbargo
   module Services
     module Embargoes
       class Upsert < RecordingStudio::Services::BaseService
-        def initialize(parent_recording:, attributes:, actor: nil, check_manage_gate: true)
+        def initialize(parent_recording:, attributes:, actor: nil)
           super()
           @parent_recording = parent_recording
           @attributes = attributes
           @actor = actor
-          @check_manage_gate = check_manage_gate
         end
 
         private
 
-        attr_reader :parent_recording, :attributes, :actor, :check_manage_gate
+        attr_reader :parent_recording, :attributes, :actor
 
         def perform
           raise Unauthorized, Copy.t("errors.unauthorized") unless authorized?
-          raise Unauthorized, Copy.t("errors.unauthorized") if check_manage_gate && !manage_gate_allows?
+          raise Unauthorized, Copy.t("errors.unauthorized") unless manage_gate_allows?
           raise Invalid, Copy.t("errors.parent_required") if parent_recording.blank?
 
           success(persist!)
@@ -83,7 +82,7 @@ module RecordingStudioEmbargo
           if embargo.blank?
             return Embargo.new(
               enabled: false,
-              early_access: false,
+              accepts_early_access_requests: false,
               time_zone: RecordingStudioEmbargo.configuration.default_time_zone
             )
           end

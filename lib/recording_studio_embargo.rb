@@ -8,8 +8,6 @@ require "recording_studio_embargo/configuration"
 require "recording_studio_embargo/copy_policy"
 require "recording_studio_embargo/attributes"
 require "recording_studio_embargo/validator"
-require "recording_studio_embargo/restriction"
-require "recording_studio_embargo/composition"
 require "recording_studio_embargo/cache"
 require "recording_studio_embargo/return_to"
 require "recording_studio_embargo/manage_authorization"
@@ -55,18 +53,6 @@ module RecordingStudioEmbargo
 
     def manage_allowed?(recording:, actor:, **context)
       manage_decision(recording: recording, actor: actor, **context).allowed?
-    end
-
-    def restriction_for(...)
-      Restriction.for(...)
-    end
-
-    def action_permitted?(...)
-      Composition.action_permitted?(...)
-    end
-
-    def presskit_presentation(...)
-      Composition.presskit_presentation(...)
     end
 
     def cache_key(...)

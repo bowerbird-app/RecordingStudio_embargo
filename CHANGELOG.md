@@ -7,10 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-11-16
+
 ### Changed
 
 - Dummy and root Gemfiles pin Recording Studio `v7.3.0` and FlatPack `v0.1.377`. The dummy pins Accessible `v0.45.1` (`>= 0.45.1`), Trashable `v1.0.0` (`require: false`), Root Switchable `v0.16.0`, Cache `v0.7.0`, and Metrics `v0.9.0`.
 - Dummy and root lockfiles move `puma` from `8.0.2` to `8.1.1` so Bundler Audit clears the Puma advisories fixed in `>= 8.0.3`.
+- Embargo stores the window only. It does not decide who can see a recording.
+- `RecordingStudioEmbargo::Restriction`, `restriction_for`, `action_permitted?`, `presskit_presentation`, `configuration.actions_for`, and `RecordingStudio::Capabilities::Embargo.to` are gone.
+- Opt in with `include RecordingStudio::Capabilities::Embargo`.
+- The column and attribute `early_access` is `accepts_early_access_requests`.
+- `embargo_set!` and `embargo_cancel!` both consult `embargo.manage`.
+- `Cache.key(recording, at:)` is the embargo id, `enabled`, and `lifts_at`.
+- The scheduled lift does not consult the gate and does not take an actor. `embargo_lifted.recording_studio_embargo` is unchanged.
+
+### Upgrade
+
+Include the capability directly:
+
+```ruby
+include RecordingStudio::Capabilities::Embargo
+```
+
+Drop action lists. Drop `restriction_for`, `action_permitted?`, and `presskit_presentation`. Press Kits decides visibility.
+
+The create migration stores `accepts_early_access_requests`. A database that already has `early_access` renames it:
+
+```ruby
+rename_column :recording_studio_embargo_embargoes, :early_access, :accepts_early_access_requests
+```
+
+There is no compatibility alias. Locale keys `editor.early_access` and `editor.early_access_description` are `editor.accepts_early_access_requests` and `editor.accepts_early_access_requests_description`. Lifecycle payloads use `accepts_early_access_requests`.
+
+`embargo_cancel!` refuses when `embargo.manage` denies, including a lapsed plan or a missing actor. The scheduled lift does not consult that gate.
+
+`RecordingStudioEmbargo.cache_key` and `RecordingStudioEmbargo::Cache.key` take `(recording, at: Time.current)`.
 
 ## [0.9.0] - 2026-11-15
 

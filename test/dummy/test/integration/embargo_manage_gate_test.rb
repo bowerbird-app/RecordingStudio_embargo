@@ -8,8 +8,6 @@ class EmbargoManageGateTest < ActionDispatch::IntegrationTest
   include Devise::Test::IntegrationHelpers
   include ActiveJob::TestHelper
 
-  DOWNLOAD = :"pages.download"
-
   setup do
     RecordingStudio::Gates.reset!
     @previous_adapter = ActiveJob::Base.queue_adapter
@@ -28,7 +26,7 @@ class EmbargoManageGateTest < ActionDispatch::IntegrationTest
         enabled: true,
         lifts_at: @lifts_at,
         time_zone: "America/New_York",
-        early_access: true
+        accepts_early_access_requests: true
       },
       actor: @owner
     )
@@ -55,7 +53,7 @@ class EmbargoManageGateTest < ActionDispatch::IntegrationTest
     assert_equal "America/Chicago", @page.reload.current_embargo.time_zone
   end
 
-  test "a denying check blocks edit, update, and upsert, and cancel still clears the hold" do
+  test "a denying check blocks edit, update, upsert, and cancel" do
     register_check { false }
     sign_in @owner
 
@@ -73,10 +71,12 @@ class EmbargoManageGateTest < ActionDispatch::IntegrationTest
     assert_includes error.message, "not allowed"
     assert_equal @lifts_at, @page.reload.current_embargo.lifts_at
 
-    @page.embargo_cancel!(actor: @owner)
-
-    refute @page.reload.embargo_active?
-    assert @page.embargo_child_recording.events.exists?(action: "embargo_cancelled")
+    error = assert_raises(RecordingStudioEmbargo::Unauthorized) do
+      @page.embargo_cancel!(actor: @owner)
+    end
+    assert_includes error.message, "not allowed"
+    assert @page.reload.embargo_active?
+    refute @page.embargo_child_recording.events.exists?(action: "embargo_cancelled")
   end
 
   test "a same-origin redirect is followed and an off-site redirect is refused" do
@@ -133,43 +133,32 @@ class EmbargoManageGateTest < ActionDispatch::IntegrationTest
     assert @page.reload.embargo_active?
   end
 
-  test "an active embargo still restricts a public baseline and still lifts while the gate denies" do
-    RecordingStudioAccessible.set_audience!(
-      recording: @page,
-      action: DOWNLOAD,
-      audience: :public,
-      actor: @owner
-    )
-    register_check { false }
+  test "a lapsed plan refuses clearing and the scheduled lift still runs with no actor" do
+    RecordingStudio.register_gate(RecordingStudioEmbargo::MANAGE_GATE, "host.plan") do |actor:, **|
+      actor.present? && actor != @owner
+    end
+    Current.actor = nil
 
-    assert_equal :public, RecordingStudioAccessible.effective_audience(recording: @page, action: DOWNLOAD)
-    assert_equal :deny, RecordingStudioEmbargo.restriction_for(recording: @page, action: DOWNLOAD, actor: nil)
-    refute RecordingStudioEmbargo.action_permitted?(recording: @page, action: DOWNLOAD, actor: nil)
-    assert_equal :hidden, RecordingStudioEmbargo.presskit_presentation(
-      recording: @page,
-      actor: nil,
-      view_action: DOWNLOAD,
-      normal_fallback: :hidden
-    )
-    assert_includes RecordingStudioEmbargo.cache_key(@page, nil, DOWNLOAD), :deny
-    refute RecordingStudioEmbargo.manage_allowed?(recording: @page, actor: @owner)
-
-    get embargo_sample_download_path(@page)
-    assert_response :forbidden
-    assert_equal "DOWNLOAD_DENIED", response.body
+    assert_raises(RecordingStudioEmbargo::Unauthorized) do
+      @page.embargo_cancel!(actor: @owner)
+    end
+    assert_raises(RecordingStudioEmbargo::Unauthorized) do
+      @page.embargo_cancel!(actor: nil)
+    end
+    assert @page.reload.current_embargo.enabled?
+    assert @page.embargo_active?
+    refute @page.embargo_child_recording.events.exists?(action: "embargo_cancelled")
 
     travel_to(@lifts_at) do
-      assert_equal :not_applicable, RecordingStudioEmbargo.restriction_for(recording: @page, action: DOWNLOAD, actor: nil)
-      assert RecordingStudioEmbargo.action_permitted?(recording: @page, action: DOWNLOAD, actor: nil)
-
-      get embargo_sample_download_path(@page)
-      assert_response :success
-      assert_equal "DOWNLOAD_OK", response.body
-
       RecordingStudioEmbargo::LiftTransitionJob.perform_now(@page.id.to_s, @lifts_at.iso8601(6))
+      refute @page.reload.embargo_active?
     end
 
-    assert @page.embargo_child_recording.events.exists?(action: "embargo_lifted")
+    child = @page.embargo_child_recording
+    assert child.events.exists?(action: "embargo_lifted")
+    refute child.events.exists?(action: "embargo_cancelled")
+    assert @page.reload.current_embargo.enabled?
+    refute RecordingStudioEmbargo.manage_allowed?(recording: @page, actor: nil)
     refute RecordingStudioEmbargo.manage_allowed?(recording: @page, actor: @owner)
   end
 
@@ -215,7 +204,7 @@ class EmbargoManageGateTest < ActionDispatch::IntegrationTest
         enabled: "1",
         lifts_at: @lifts_at.strftime("%Y-%m-%dT%H:%M"),
         time_zone: time_zone,
-        early_access: "1"
+        accepts_early_access_requests: "1"
       }
     }
   end

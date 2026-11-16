@@ -116,8 +116,7 @@ class RecordingStudioDeclarationsTest < ActiveSupport::TestCase
     assert RecordingStudio.capability_enabled?(:embargo, for: "Page")
     refute RecordingStudio.capability_enabled?(:embargo, for: "Workspace")
     refute RecordingStudio.capability_enabled?(:embargo, for: "Folder")
-    assert_equal %i[pages.show pages.download],
-                 RecordingStudio.capability_options(:embargo, for: "Page").fetch(:actions)
+    assert_nil RecordingStudio.capability_options(:embargo, for: "Page")
   end
 
   private

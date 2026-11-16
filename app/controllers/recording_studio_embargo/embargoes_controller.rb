@@ -63,7 +63,7 @@ module RecordingStudioEmbargo
       @recording.current_embargo || Embargo.new(
         enabled: false,
         time_zone: RecordingStudioEmbargo.configuration.default_time_zone,
-        early_access: false
+        accepts_early_access_requests: false
       )
     end
 
@@ -77,7 +77,7 @@ module RecordingStudioEmbargo
     end
 
     def embargo_params
-      params.require(:embargo).permit(:enabled, :lifts_at, :time_zone, :early_access).to_h
+      params.require(:embargo).permit(:enabled, :lifts_at, :time_zone, :accepts_early_access_requests).to_h
     end
 
     def save_succeeded

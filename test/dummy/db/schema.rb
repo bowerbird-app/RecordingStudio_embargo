@@ -77,7 +77,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_14_103000) do
     t.boolean "enabled", default: false, null: false
     t.datetime "lifts_at"
     t.string "time_zone", default: "UTC", null: false
-    t.boolean "early_access", default: false, null: false
+    t.boolean "accepts_early_access_requests", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["lifts_at"], name: "index_recording_studio_embargo_embargoes_on_lifts_at"

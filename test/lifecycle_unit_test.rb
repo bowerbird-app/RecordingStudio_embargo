@@ -18,7 +18,7 @@ class LifecycleUnitTest < Minitest::Test
 
   def test_a_config_write_never_chooses_the_lift_event
     previous = snapshot(enabled: true, lifts_at: "2026-08-01T16:00:00Z")
-    current = snapshot(enabled: true, lifts_at: "2026-08-01T16:00:00Z", early_access: false)
+    current = snapshot(enabled: true, lifts_at: "2026-08-01T16:00:00Z", accepts_early_access_requests: false)
 
     refute_equal :embargo_lifted, RecordingStudioEmbargo::Lifecycle.event_for(previous, current)
   end
@@ -45,19 +45,19 @@ class LifecycleUnitTest < Minitest::Test
 
     assert_equal false, attributes[:enabled]
     assert_nil attributes[:lifts_at]
-    assert_equal false, attributes[:early_access]
+    assert_equal false, attributes[:accepts_early_access_requests]
   end
 
   private
 
-  def snapshot(enabled:, lifts_at:, early_access: true)
+  def snapshot(enabled:, lifts_at:, accepts_early_access_requests: true)
     Snapshot.new(
       embargo_id: "embargo",
       enabled: enabled,
       lifts_at: Time.iso8601(lifts_at),
       time_zone: "UTC",
-      early_access: early_access,
-      fingerprint: [enabled, lifts_at, early_access].join("|")
+      accepts_early_access_requests: accepts_early_access_requests,
+      fingerprint: [enabled, lifts_at, accepts_early_access_requests].join("|")
     )
   end
 end

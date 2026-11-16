@@ -2,7 +2,7 @@
 
 module RecordingStudioEmbargo
   class Attributes
-    KEYS = %i[enabled lifts_at time_zone early_access].freeze
+    KEYS = %i[enabled lifts_at time_zone accepts_early_access_requests].freeze
 
     def self.parse(parent_recording:, raw:)
       new(parent_recording, raw).parse
@@ -30,14 +30,14 @@ module RecordingStudioEmbargo
         enabled: current&.enabled || false,
         lifts_at: current&.lifts_at,
         time_zone: current&.time_zone.presence || RecordingStudioEmbargo.configuration.default_time_zone,
-        early_access: current&.early_access? || false
+        accepts_early_access_requests: current&.accepts_early_access_requests? || false
       }
     end
 
     def assign_provided(merged)
       assign_enabled(merged)
       assign_time_zone(merged)
-      assign_early_access(merged)
+      assign_accepts_early_access_requests(merged)
       merged[:lifts_at] = raw[:lifts_at] if raw.key?(:lifts_at)
     end
 
@@ -51,8 +51,10 @@ module RecordingStudioEmbargo
       merged[:time_zone] = raw[:time_zone].presence || merged[:time_zone]
     end
 
-    def assign_early_access(merged)
-      merged[:early_access] = boolean_cast(raw[:early_access]) if raw.key?(:early_access)
+    def assign_accepts_early_access_requests(merged)
+      return unless raw.key?(:accepts_early_access_requests)
+
+      merged[:accepts_early_access_requests] = boolean_cast(raw[:accepts_early_access_requests])
     end
 
     def coerce_time(value, time_zone)

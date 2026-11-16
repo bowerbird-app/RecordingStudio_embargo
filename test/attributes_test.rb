@@ -8,13 +8,13 @@ class AttributesTest < Minitest::Test
     I18n.backend.reload!
   end
 
-  FakeEmbargo = Struct.new(:enabled, :lifts_at, :time_zone, :early_access, keyword_init: true) do
+  FakeEmbargo = Struct.new(:enabled, :lifts_at, :time_zone, :accepts_early_access_requests, keyword_init: true) do
     def enabled?
       enabled
     end
 
-    def early_access?
-      early_access
+    def accepts_early_access_requests?
+      accepts_early_access_requests
     end
   end
 
@@ -28,14 +28,14 @@ class AttributesTest < Minitest::Test
         enabled: "1",
         lifts_at: "2026-07-04T09:00",
         time_zone: "America/New_York",
-        early_access: "1"
+        accepts_early_access_requests: "1"
       }
     )
 
     assert_equal true, parsed[:enabled]
     assert_equal Time.utc(2026, 7, 4, 13, 0, 0), parsed[:lifts_at]
     assert_equal "America/New_York", parsed[:time_zone]
-    assert_equal true, parsed[:early_access]
+    assert_equal true, parsed[:accepts_early_access_requests]
   end
 
   def test_spring_forward_gap_is_rejected
@@ -56,15 +56,18 @@ class AttributesTest < Minitest::Test
       enabled: true,
       lifts_at: Time.utc(2026, 8, 1, 16, 0, 0),
       time_zone: "America/Chicago",
-      early_access: true
+      accepts_early_access_requests: true
     )
     parent = FakeParent.new(current)
 
-    parsed = RecordingStudioEmbargo::Attributes.parse(parent_recording: parent, raw: { early_access: "0" })
+    parsed = RecordingStudioEmbargo::Attributes.parse(
+      parent_recording: parent,
+      raw: { accepts_early_access_requests: "0" }
+    )
 
     assert_equal true, parsed[:enabled]
     assert_equal Time.utc(2026, 8, 1, 16, 0, 0), parsed[:lifts_at]
     assert_equal "America/Chicago", parsed[:time_zone]
-    assert_equal false, parsed[:early_access]
+    assert_equal false, parsed[:accepts_early_access_requests]
   end
 end

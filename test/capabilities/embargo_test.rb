@@ -20,29 +20,12 @@ class EmbargoCapabilityTest < Minitest::Test
     RecordingStudio.configuration.instance_variable_set(:@capability_options, @original_capability_options)
   end
 
-  def test_to_is_the_include_for_wrapper
-    source = File.read(File.expand_path("../../lib/recording_studio/capabilities/embargo.rb", __dir__))
-
-    assert_includes source, "def self.to(actions: [], manage_role: :edit)"
-    assert_includes source, "RecordingStudio::Capabilities.include_for(:embargo, **options)"
-    refute_includes source, "enable_capability"
-    refute_includes source, "set_capability_options"
-  end
-
-  def test_including_to_enables_the_capability_and_stores_actions
-    Probe::HostType.include RecordingStudio::Capabilities::Embargo.to(
-      actions: %i[pages.show pages.download],
-      manage_role: :admin
-    )
+  def test_including_the_module_enables_embargo_without_an_action_list
+    Probe::HostType.include RecordingStudio::Capabilities::Embargo
 
     assert RecordingStudio.capability_enabled?(:embargo, for: Probe::HostType)
     refute RecordingStudio.capability_enabled?(:embargo, for: Probe::OtherType)
-    assert_equal(
-      {
-        actions: %i[pages.show pages.download],
-        manage_role: :admin
-      },
-      RecordingStudio.capability_options(:embargo, for: Probe::HostType)
-    )
+    assert_nil RecordingStudio.capability_options(:embargo, for: Probe::HostType)
+    refute_respond_to RecordingStudio::Capabilities::Embargo, :to
   end
 end

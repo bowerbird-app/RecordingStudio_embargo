@@ -20,7 +20,7 @@ module RecordingStudioEmbargo
       self.enabled = attrs.fetch(:enabled)
       self.lifts_at = attrs[:lifts_at]
       self.time_zone = attrs[:time_zone].presence || "UTC"
-      self.early_access = attrs[:early_access] ? true : false
+      self.accepts_early_access_requests = attrs[:accepts_early_access_requests] ? true : false
     end
 
     def effective_zone
