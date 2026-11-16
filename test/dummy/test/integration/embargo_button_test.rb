@@ -72,7 +72,7 @@ class EmbargoHostLinkTest < ActionDispatch::IntegrationTest
     refute @controller.view_context.embargoed?(@page)
 
     @page.embargo_set!(
-      { enabled: false, lifts_at: nil, time_zone: "UTC", early_access: false },
+      { enabled: false, lifts_at: nil, time_zone: "UTC", accepts_early_access_requests: false },
       actor: @owner
     )
     refute @controller.view_context.embargoed?(@page.reload)
@@ -130,7 +130,7 @@ class EmbargoHostLinkTest < ActionDispatch::IntegrationTest
 
   def activate!(lifts_at: 3.days.from_now)
     @page.embargo_set!(
-      { enabled: true, lifts_at: lifts_at, time_zone: "UTC", early_access: false },
+      { enabled: true, lifts_at: lifts_at, time_zone: "UTC", accepts_early_access_requests: false },
       actor: @owner
     )
   end

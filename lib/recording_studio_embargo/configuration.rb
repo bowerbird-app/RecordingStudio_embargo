@@ -47,18 +47,6 @@ module RecordingStudioEmbargo
       call_resolver(management_authorizer, recording: recording, actor: actor, controller: controller)
     end
 
-    def manage_role_for(recording)
-      options = capability_options_for(recording)
-      role = options[:manage_role] if options.is_a?(Hash)
-      (role.presence || manage_role).to_sym
-    rescue StandardError
-      manage_role.to_sym
-    end
-
-    def actions_for(recording)
-      stored_actions(recording).filter_map { |action| action.to_s.strip.presence&.to_sym }
-    end
-
     private
 
     def default_rails_time_zone
@@ -85,24 +73,10 @@ module RecordingStudioEmbargo
       RecordingStudioAccessible.authorized?(
         actor: actor,
         recording: recording,
-        role: manage_role_for(recording)
+        role: manage_role.to_sym
       )
     rescue StandardError
       false
-    end
-
-    def stored_actions(recording)
-      Array(capability_options_for(recording)[:actions])
-    rescue StandardError
-      []
-    end
-
-    def capability_options_for(recording)
-      return {} unless defined?(RecordingStudio)
-      return {} if recording.blank?
-
-      type = recording.respond_to?(:recordable_type) ? recording.recordable_type : recording
-      RecordingStudio.capability_options(:embargo, for: type) || {}
     end
 
     def call_resolver(resolver, **arguments)

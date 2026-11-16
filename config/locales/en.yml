@@ -6,19 +6,18 @@ en:
       explanation_paragraphs:
         - "An embargo lets you share your press kit with journalists before it's made public, giving them time to prepare their stories."
         - "Journalists who receive early access are expected to keep the information confidential and not publish anything until the embargo date and time."
-        - "Embargoes work on an honour system. This tool helps you communicate the embargo and control who has early access, but it cannot prevent someone from sharing or publishing the information early."
-        - "Only grant early access to people you trust."
+        - "Embargoes work on an honour system. This tool records the release time and lets people ask for early access. It cannot stop someone from sharing the information early."
+        - "Share early only with people you trust."
       what_is_an_embargo: What is an embargo
       saved: Embargo saved
       enable: Embargo
-      enable_description: Show preview only and mark as embargoed
+      enable_description: Mark this as embargoed until the release time
       lifts_at: Release date and time
       time_zone: Time zone
       time_zone_placeholder: Choose a time zone
-      early_access: Early access
-      early_access_description: Allow people to request early access
+      accepts_early_access_requests: Early access
+      accepts_early_access_requests_description: People without access can ask for early access
       save: Update
-      empty_actions: Nothing is set up to hold back yet.
     notice:
       title: Embargoed until %{time}
       subtitle: Not for publication until embargo lifts.

@@ -6,7 +6,7 @@
 - Rails 8.1 or newer
 - Recording Studio `>= 7.0`, `< 8.0` (dummy and root GitHub tag `v7.3.0`). Recording Studio 6.7 requires Rails `>= 8.1.4.1`. Recording Studio 6.9 requires `recording_studio_events.root_recording_id`. The dummy copies core migration `20261114090000_add_root_recording_id_to_recording_studio_events`. Core 7 adds no migration for the root split. `root_recording_for` only finds a root and returns `nil` when it is missing. Create one with `create_root_recording!(recordable, actor:)`. A later call returns the existing root. This gem does not depend on Trashable.
 - On Recording Studio 6.5 and newer, set `config.authorize_write` and pass an actor on each write. The dummy allows a write when the actor is present. A scheduled lift uses the actor stored on the embargo recording. Leave `allow_unauthorized_writes` unset.
-- Accessible, so the early-access switch and the editor's manage role resolve
+- Accessible, when the host uses the default editor authorizer. The gem does not read audiences, and it does not decide who can see a recording
 - FlatPack `>= 0.1.335` when the host renders the editor (`List::Item` `title:` / `subtitle:` slots and `FlatPack::Text`). The dummy pins GitHub tag `v0.1.377`. `render_embargo_notice` still needs FlatPack `>= 0.1.315` for Card `background:`, `border:`, and `shadow:`. The gemspec requires `flat_pack >= 0.1.335`.
 - `view_component` `>= 4.14, < 5`. The dummy locks `4.19.0`.
 
@@ -18,11 +18,11 @@ Publishable, Downloadable, and Presskits are optional. Embargo does not read the
 
 ## Schema
 
-`recording_studio_embargo_embargoes` stores `enabled`, `lifts_at`, `time_zone`, and `early_access` (boolean). The row is a child recordable. There is no unique index on the embargo recording. `Services::Embargoes::Upsert` locks the parent and uses `Recording.kept` to revise the kept embargo child, or to record a new one when none is kept. A trashed embargo does not block a new one once a filter excludes it from `kept`. With no filter registered, `kept` still includes that row and the save revises it. Revisions reuse the kept recording. `index_rs_embargo_child_per_parent` is dropped if an older install created it. There is no production data to backfill. Preview and hidden are not stored here.
+`recording_studio_embargo_embargoes` stores `enabled`, `lifts_at`, `time_zone`, and `accepts_early_access_requests` (boolean). `accepts_early_access_requests` means people without access can ask for early access. It does not change who can see the recording. The row is a child recordable. There is no unique index on the embargo recording. `Services::Embargoes::Upsert` locks the parent and uses `Recording.kept` to revise the kept embargo child, or to record a new one when none is kept. A trashed embargo does not block a new one once a filter excludes it from `kept`. With no filter registered, `kept` still includes that row and the save revises it. Revisions reuse the kept recording. `index_rs_embargo_child_per_parent` is dropped if an older install created it. There is no production data to backfill. Preview and hidden are not stored here.
 
 ## Manage gate
 
-`embargo.manage` runs before the editor is shown and before `Services::Embargoes::Upsert`, including `embargo_set!`. Embargo registers no check. With none registered, the gate allows. The Accessible manage role is a separate check, and both have to pass. `embargo_cancel!` does not consult the gate. It still requires the Accessible manage role, so a denied gate can clear an existing hold.
+`embargo.manage` runs before the editor is shown, before `embargo_set!`, and before `embargo_cancel!`. Embargo registers no check. With none registered, the gate allows. The Accessible manage role is a separate check, and both have to pass. A denied gate refuses a clear, including a lapsed plan or a missing actor. The scheduled lift does not consult the gate and does not take an actor.
 
 ```ruby
 RecordingStudio.register_gate("embargo.manage", "host.plan") do |actor:, recording:, **|
@@ -54,7 +54,7 @@ bin/rails generate recording_studio_embargo:migrations
 bin/rails db:migrate
 ```
 
-The install generator mounts the engine, copies `config/initializers/recording_studio_embargo.rb`, and adds the engine views to the Tailwind source when `app/assets/tailwind/application.css` imports Tailwind. Opt a recordable in with `RecordingStudio::Capabilities::Embargo.to` and configure the same actions on Accessible.
+The install generator mounts the engine, copies `config/initializers/recording_studio_embargo.rb`, and adds the engine views to the Tailwind source when `app/assets/tailwind/application.css` imports Tailwind. Opt a recordable in with `include RecordingStudio::Capabilities::Embargo`.
 
 Copying a parent recording must not copy an active embargo. Apply `RecordingStudioEmbargo.attributes_for_duplicate` on the new recording.
 

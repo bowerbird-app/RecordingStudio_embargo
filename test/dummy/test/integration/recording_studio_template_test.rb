@@ -69,25 +69,18 @@ class RecordingStudioTemplateTest < ActiveSupport::TestCase
   test "workspace opts into accessible and pages opt into embargo" do
     workspace_source = File.read(Rails.root.join("app/models/workspace.rb"))
     page_source = File.read(Rails.root.join("app/models/page.rb"))
-    capability_source = File.read(
-      RecordingStudioEmbargo::Engine.root.join("lib/recording_studio/capabilities/embargo.rb")
-    )
 
     assert_includes workspace_source, "RecordingStudio.enable_capability(:accessible, on: self)"
-    assert_includes page_source, "include RecordingStudio::Capabilities::Embargo.to("
-    assert_includes capability_source, "RecordingStudio::Capabilities.include_for(:embargo, **options)"
-    refute_includes capability_source, "enable_capability"
-    refute_includes capability_source, "set_capability_options"
+    assert_includes page_source, "include RecordingStudio::Capabilities::Embargo"
+    refute_includes page_source, "Embargo.to"
+    refute_respond_to RecordingStudio::Capabilities::Embargo, :to
 
     assert RecordingStudio.capability_enabled?(:accessible, for: Workspace)
     refute RecordingStudio.capability_enabled?(:accessible, for: Folder)
     refute RecordingStudio.capability_enabled?(:accessible, for: Page)
     assert RecordingStudio.capability_enabled?(:embargo, for: Page)
     refute RecordingStudio.capability_enabled?(:embargo, for: Workspace)
-    assert_equal(
-      [ :"pages.show", :"pages.download" ],
-      RecordingStudio.capability_options(:embargo, for: Page).fetch(:actions)
-    )
+    assert_nil RecordingStudio.capability_options(:embargo, for: Page)
     assert_equal [ "Page" ], RecordingStudio.configuration.enabled_recordable_types_for(:embargo)
     assert_respond_to ApplicationController, :recording_studio_layout
   end

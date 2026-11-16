@@ -4,7 +4,7 @@ require "test_helper"
 
 class RecordingStudioEmbargoTest < Minitest::Test
   def test_version_matches_release
-    assert_equal "0.9.0", ::RecordingStudioEmbargo::VERSION
+    assert_equal "0.10.0", ::RecordingStudioEmbargo::VERSION
   end
 
   def test_editor_frame_support_does_not_know_about_modals
@@ -220,13 +220,8 @@ class RecordingStudioEmbargoTest < Minitest::Test
     refute File.exist?(File.expand_path("../lib/recording_studio_embargo/services/example_service.rb", __dir__))
   end
 
-  def test_embargo_capability_wraps_include_for_and_is_not_enabled_globally
-    source = File.read(File.expand_path("../lib/recording_studio/capabilities/embargo.rb", __dir__))
-
-    assert_includes source, "def self.to(actions: [], manage_role: :edit)"
-    assert_includes source, "RecordingStudio::Capabilities.include_for(:embargo, **options)"
-    refute_includes source, "enable_capability"
-    refute_includes source, "set_capability_options"
+  def test_embargo_capability_is_a_plain_include_and_is_not_enabled_globally
+    refute_respond_to RecordingStudio::Capabilities::Embargo, :to
     assert_empty RecordingStudio.configuration.enabled_recordable_types_for(:embargo)
   end
 

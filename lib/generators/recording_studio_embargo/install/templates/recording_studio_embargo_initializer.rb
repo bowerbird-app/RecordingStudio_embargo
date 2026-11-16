@@ -1,15 +1,11 @@
 # frozen_string_literal: true
 
 # RecordingStudioEmbargo does not turn itself on for every recordable.
-# Opt in on the types that may carry an embargo, and list the actions the
-# editor is allowed to restrict. Those actions must already exist as
-# Accessible action audiences.
+# Opt in on the types that may carry an embargo. The gem stores the window.
+# It does not decide who can see the recording.
 #
-#   class Page < ApplicationRecord
-#     include RecordingStudio::Capabilities::Embargo.to(
-#       actions: [:"pages.show", :"pages.download"],
-#       manage_role: :edit
-#     )
+#   class PressKit < ApplicationRecord
+#     include RecordingStudio::Capabilities::Embargo
 #   end
 
 RecordingStudioEmbargo.configure do |config|

@@ -22,18 +22,11 @@
     ) %>
   <% end %>
 
-  <% if @editor.actions.empty? %>
-    <%= render FlatPack::Alert::Component.new(
-      description: t("recording_studio_embargo.editor.empty_actions"),
-      style: :warning
-    ) %>
-  <% end %>
-
   <%= render FlatPack::Grid::Component.new(cols: 1, gap: :md) do %>
     <%= form_with url: recording_embargo_path(@recording), method: :patch, id: "embargo-form" do %>
       <%= hidden_field_tag :return_to, @return_to if @return_to.present? %>
       <%= hidden_field_tag "embargo[enabled]", "0" %>
-      <%= hidden_field_tag "embargo[early_access]", "0" %>
+      <%= hidden_field_tag "embargo[accepts_early_access_requests]", "0" %>
 
       <%= render FlatPack::Grid::Component.new(cols: 1, gap: :lg) do %>
         <%= render FlatPack::Card::Component.new(padding: :none, border: :default) do %>
@@ -64,18 +57,18 @@
           <%= render FlatPack::List::Item.new(
             leading: render(FlatPack::Shared::IconComponent.new(name: "lock-open", size: :md)),
             trailing: render(FlatPack::Switch::Component.new(
-              name: "embargo[early_access]",
+              name: "embargo[accepts_early_access_requests]",
               id: "embargo-early-access",
-              checked: @editor.early_access?,
+              checked: @editor.accepts_early_access_requests?,
               aria: { describedby: "embargo-early-access-description" }
             ))
           ) do |item| %>
             <% item.with_title do %>
-              <%= label_tag "embargo-early-access", t("recording_studio_embargo.editor.early_access"), class: "font-medium" %>
+              <%= label_tag "embargo-early-access", t("recording_studio_embargo.editor.accepts_early_access_requests"), class: "font-medium" %>
             <% end %>
             <% item.with_subtitle do %>
               <%= render FlatPack::Text::Component.new(
-                text: t("recording_studio_embargo.editor.early_access_description"),
+                text: t("recording_studio_embargo.editor.accepts_early_access_requests_description"),
                 as: :p,
                 size: :xs,
                 style: :muted,

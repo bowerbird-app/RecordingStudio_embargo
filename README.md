@@ -1,41 +1,31 @@
 # RecordingStudio Embargo
 
-Recording Studio capability that holds listed actions until a release time. Early access is one switch for people who already have access. Embargo does not publish, grant access, or build downloads.
+Recording Studio capability that stores an embargo on a recording: whether it is on, when it lifts, the time zone, and whether people without access can ask for early access. It does not publish, grant access, decide who can see the recording, or build downloads. Press Kits owns visibility.
 
-## What it decides
+## What it stores
 
-`RecordingStudioEmbargo.restriction_for(recording:, action:, actor:)` returns:
+`recording.current_embargo` is the kept embargo child. It exposes `lifts_at`, `time_zone`, `enabled?`, `active?(at = Time.current)`, and `accepts_early_access_requests?`.
 
-- `:not_applicable` when the embargo is off, the action is not one the host listed, or `Time.current` is at or after `lifts_at`
-- `:allow` when early access is on and the actor satisfies Accessible's `:granted` audience for that action
-- `:deny` otherwise, including when the baseline audience is `:public` and when early access is off
+`recording.embargo_active?(at = Time.current)` is true while that embargo is enabled and `lifts_at` is still ahead. `RecordingStudioEmbargo.embargoed?(recording)` is the same check.
 
-`:allow` does not authorize the action. Hosts still enforce publication, the baseline audience, and domain rules. `:deny` does restrict the action. A public baseline is not combined with early access, because a public audience is true for every actor and would skip the embargo.
+`accepts_early_access_requests` means people without access can ask for early access. It does not change who can see the recording.
 
-```ruby
-RecordingStudioEmbargo.action_permitted?(recording:, action:, actor:)
-RecordingStudioEmbargo.presskit_presentation(recording:, actor:, view_action:)
-```
+`RecordingStudioEmbargo::Cache.key(recording, at: Time.current)` is the embargo id, `enabled`, and `lifts_at`. It has no actor, action, or visibility answer. `Cache.expires_in(recording, at:)` is the time left until `lifts_at` while the embargo is active.
 
-`action_permitted?` is false when Publishable says the recording is not currently published, when the embargo denies the actor, or when the baseline audience denies the actor. `presskit_presentation` keeps the Presskits order: unpublished stays `:unavailable` (editors with view access still get `:full`). An embargo denial uses the fallback the host passes in, which is the host's own preview or hidden setting.
-
-Expiry is read at authorization time. `LiftTransitionJob` only emits `:embargo_lifted`, and it no-ops unless the stored `lifts_at` still matches the scheduled instant.
+`LiftTransitionJob` emits `embargo_lifted.recording_studio_embargo` when the stored `lifts_at` has arrived. It does not consult `embargo.manage` and it does not take an actor. A reschedule does not emit the old instant.
 
 ## Opt in
 
 ```ruby
-class Page < ApplicationRecord
-  recording_studio_recordable label: "Page", root: false
-  include RecordingStudio::Capabilities::Embargo.to(
-    actions: [ :"pages.show", :"pages.download" ],
-    manage_role: :edit
-  )
+class PressKit < ApplicationRecord
+  recording_studio_recordable label: "Press kit", root: false
+  include RecordingStudio::Capabilities::Embargo
 end
 ```
 
-Configure those same actions on Accessible before enabling an embargo. Early access uses each action's granted roles, so a view grant does not include download. Copying a recording must call `RecordingStudioEmbargo.attributes_for_duplicate`, which clears the window and turns early access off.
+Copying a recording must call `RecordingStudioEmbargo.attributes_for_duplicate`, which clears the window and turns early-access requests off.
 
-The editor at `/recording_studio_embargo/recordings/:id/embargo/edit` is an enable switch, a release time, a time zone, and one early-access switch. Release date and time zone sit side by side and stack on a small screen. On a wide screen the editor stops at a medium width and stays full width below that. The explanation collapse sits below the form with space above it. Preview and hidden stay on the host. Default English copy lives in `config/locales/en.yml` under `recording_studio_embargo.editor`. The subtitle reads "Lock with embargo and set a release date". A collapse under the form, "What is an embargo", holds four paragraphs from `explanation_paragraphs`. The submit button reads "Update". The enable and early-access switches sit in the trailing slot of two Flatpack list rows, inside a Flatpack card with the card's default border and no extra card padding. A decorative lock icon leads the Embargo row, and a decorative open lock leads Early access. Each row name is a label that toggles its switch. Embargo's description is "Show preview only and mark as embargoed". Early access's description is "Allow people to request early access". A host overrides `subtitle`, `explanation`, `enable`, and `early_access` in its own locale file. The editor does not hardcode a recordable name.
+The editor at `/recording_studio_embargo/recordings/:id/embargo/edit` is an enable switch, a release time, a time zone, and one early-access switch. Release date and time zone sit side by side and stack on a small screen. On a wide screen the editor stops at a medium width and stays full width below that. The explanation collapse sits below the form with space above it. Preview and hidden stay on the host. Default English copy lives in `config/locales/en.yml` under `recording_studio_embargo.editor`. The subtitle reads "Lock with embargo and set a release date". A collapse under the form, "What is an embargo", holds four paragraphs from `explanation_paragraphs`. The submit button reads "Update". The enable and early-access switches sit in the trailing slot of two Flatpack list rows, inside a Flatpack card with the card's default border and no extra card padding. A decorative lock icon leads the Embargo row, and a decorative open lock leads Early access. Each row name is a label that toggles its switch. Embargo's description is "Mark this as embargoed until the release time". Early access's description is "People without access can ask for early access". A host overrides `subtitle`, `explanation`, `enable`, and `accepts_early_access_requests` in its own locale file. The editor does not hardcode a recordable name.
 
 ## Host link
 
@@ -51,7 +41,7 @@ Include `RecordingStudioEmbargo::ApplicationHelper` (the engine does this for ho
 
 ## Manage gate
 
-Showing the editor and saving an embargo both consult `embargo.manage`. Embargo does not register a check on that gate. With no checks registered, the gate allows, and existing hosts keep the current editor. Accessible's manage role stays a separate check. Both have to allow the change.
+Showing the editor, saving an embargo, and clearing one all consult `embargo.manage`. Embargo does not register a check on that gate. With no checks registered, the gate allows, and existing hosts keep the current editor. Accessible's manage role stays a separate check. Both have to allow the change.
 
 A host or another gem registers a check when it wants to refuse management. This plan check sends the visitor to a same-origin path. Embargo drops any other location and responds forbidden. A check that raises is a deny.
 
@@ -73,7 +63,7 @@ RecordingStudioEmbargo.manage_allowed?(recording: page_recording, actor: current
 
 `RecordingStudioEmbargo.manage_decision(recording:, actor:)` returns the `RecordingStudio::GateDecision` when the caller needs `redirect_to` or `reason`. Extra keywords are forwarded to each check.
 
-`recording_studio_embargo_management_path` and `embargoed?` do not consult the gate. The host decides whether to show the link. An active embargo still restricts listed actions while the gate denies. `embargo_cancel!` does not consult the gate. It still requires the Accessible manage role, so a denied gate can clear an existing hold. The scheduled lift does not consult the gate.
+`recording_studio_embargo_management_path` and `embargoed?` do not consult the gate. The host decides whether to show the link. `embargo_set!` and `embargo_cancel!` both consult the gate, and both still require the Accessible manage role. A denied gate refuses a clear, including a lapsed plan or a missing actor. The scheduled lift does not consult the gate.
 
 ## Host notice
 
@@ -121,7 +111,7 @@ Any of those changes also touches the parent recording, so a fragment cache keye
 
 ## Host follow-ups
 
-Publishable needs no code change. Downloadable and Presskits do. The exact call sites are in [`docs/integration_plan.md`](docs/integration_plan.md).
+Press Kits owns who can see a recording. This gem does not. The data a host reads is in [`docs/integration_plan.md`](docs/integration_plan.md).
 
 ## Install
 

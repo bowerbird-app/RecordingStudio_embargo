@@ -32,7 +32,7 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
         enabled: true,
         lifts_at: @lifts_at,
         time_zone: "America/New_York",
-        early_access: true
+        accepts_early_access_requests: true
       },
       actor: @owner
     )
@@ -55,7 +55,7 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     assert_select "#embargo-status", count: 0
     assert_select "#embargo-form"
     assert_select "input[name='embargo[enabled]']"
-    assert_select "input[name='embargo[early_access]']"
+    assert_select "input[name='embargo[accepts_early_access_requests]']"
     assert_select "input[name='embargo[lifts_at]']"
     assert_includes response.body, 'name="embargo[time_zone]"'
     assert_includes response.body, 'value="Eastern Time (US &amp; Canada)" selected="selected"'
@@ -74,8 +74,8 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
       assert_select "p", count: 4
       assert_select "p", text: "An embargo lets you share your press kit with journalists before it's made public, giving them time to prepare their stories."
       assert_select "p", text: "Journalists who receive early access are expected to keep the information confidential and not publish anything until the embargo date and time."
-      assert_select "p", text: "Embargoes work on an honour system. This tool helps you communicate the embargo and control who has early access, but it cannot prevent someone from sharing or publishing the information early."
-      assert_select "p", text: "Only grant early access to people you trust."
+      assert_select "p", text: "Embargoes work on an honour system. This tool records the release time and lets people ask for early access. It cannot stop someone from sharing the information early."
+      assert_select "p", text: "Share early only with people you trust."
     end
     assert_select "#embargo-form button[type=submit]", text: "Update"
     refute_includes response.body, "When it lifts"
@@ -93,7 +93,7 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
       refute_includes card["class"], "p-[var(--card-padding-lg)]"
     end
     assert_select "label[for=embargo-enabled]", text: "Embargo"
-    assert_select "p#embargo-enabled-description.fp-text", text: "Show preview only and mark as embargoed"
+    assert_select "p#embargo-enabled-description.fp-text", text: "Mark this as embargoed until the release time"
     enabled_classes = css_select("p#embargo-enabled-description").first["class"]
     assert_includes enabled_classes, "mt-1"
     assert_includes enabled_classes, "fp-type-body--xs"
@@ -102,7 +102,7 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     assert_select "li span.mr-2 svg[data-flat-pack--icon-name-value=lock-closed][aria-hidden=true]"
     assert_select "li span.ml-2 input#embargo-enabled[type=checkbox][aria-describedby=embargo-enabled-description]"
     assert_select "label[for=embargo-early-access]", text: "Early access"
-    assert_select "p#embargo-early-access-description.fp-text", text: "Allow people to request early access"
+    assert_select "p#embargo-early-access-description.fp-text", text: "People without access can ask for early access"
     early_classes = css_select("p#embargo-early-access-description").first["class"]
     assert_includes early_classes, "mt-1"
     assert_includes early_classes, "fp-type-body--xs"
@@ -120,7 +120,7 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     patch recording_studio_embargo.recording_embargo_path(@page), params: embargo_params(
       lifts_at: release.strftime("%Y-%m-%dT%H:%M"),
       time_zone: "America/Chicago",
-      early_access: "0"
+      accepts_early_access_requests: "0"
     )
 
     assert_redirected_to recording_studio_embargo.edit_recording_embargo_path(@page)
@@ -129,7 +129,11 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     assert_select "input[name='return_to']", count: 0
     embargo = @page.reload.current_embargo
     assert_equal "America/Chicago", embargo.time_zone
-    refute embargo.early_access?
+    refute embargo.accepts_early_access_requests?
+    assert_respond_to embargo, :accepts_early_access_requests?
+    refute_respond_to embargo, :early_access?
+    assert_includes RecordingStudioEmbargo::Embargo.column_names, "accepts_early_access_requests"
+    refute_includes RecordingStudioEmbargo::Embargo.column_names, "early_access"
     assert embargo.active?
 
     patch recording_studio_embargo.recording_embargo_path(@page), params: embargo_params(
@@ -207,7 +211,7 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
 
     travel 2.seconds do
       patch recording_studio_embargo.recording_embargo_path(@page),
-        params: embargo_params(enabled: "0", lifts_at: "", early_access: "0"),
+        params: embargo_params(enabled: "0", lifts_at: "", accepts_early_access_requests: "0"),
         headers: frame_headers(stream: true)
     end
 
@@ -261,39 +265,6 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test "sample responses follow embargo composition and drop the restriction after release" do
-    get embargo_sample_path(@page)
-    assert_response :not_found
-    assert_equal "hidden", response.body
-    assert_equal "private, no-store", response.headers["Cache-Control"]
-    assert response.headers["X-Embargo-Expires-In"].to_i.positive?
-    anonymous_key = response.headers["X-Embargo-Cache-Key"]
-
-    get embargo_sample_download_path(@page)
-    assert_response :forbidden
-    assert_equal "DOWNLOAD_DENIED", response.body
-
-    sign_in @owner
-    get embargo_sample_path(@page)
-    assert_equal "full", response.body
-    refute_equal anonymous_key, response.headers["X-Embargo-Cache-Key"]
-
-    get embargo_sample_download_path(@page)
-    assert_response :success
-    assert_equal "DOWNLOAD_OK", response.body
-
-    sign_out @owner
-    travel_to(@page.current_embargo.lifts_at) do
-      get embargo_sample_path(@page)
-      assert_equal "full", response.body
-      assert_nil response.headers["X-Embargo-Cache-Key"]
-
-      get embargo_sample_download_path(@page)
-      assert_response :success
-      assert_equal "DOWNLOAD_OK", response.body
-    end
-  end
-
   private
 
   def frame_headers(frame_id = "presskit_embargo", stream: false)
@@ -306,13 +277,13 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     headers
   end
 
-  def embargo_params(lifts_at:, time_zone: "America/New_York", early_access: "1", enabled: "1", return_to: nil)
+  def embargo_params(lifts_at:, time_zone: "America/New_York", accepts_early_access_requests: "1", enabled: "1", return_to: nil)
     params = {
       embargo: {
         enabled: enabled,
         lifts_at: lifts_at,
         time_zone: time_zone,
-        early_access: early_access
+        accepts_early_access_requests: accepts_early_access_requests
       }
     }
     params[:return_to] = return_to if return_to

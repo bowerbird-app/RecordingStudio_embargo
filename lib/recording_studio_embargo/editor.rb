@@ -30,16 +30,12 @@ module RecordingStudioEmbargo
       names.map { |name| zone_option(name) }
     end
 
-    def actions
-      RecordingStudioEmbargo.configuration.actions_for(recording)
-    end
-
     def enabled?
       embargo.enabled?
     end
 
-    def early_access?
-      embargo.early_access?
+    def accepts_early_access_requests?
+      embargo.accepts_early_access_requests?
     end
 
     private

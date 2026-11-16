@@ -6,9 +6,6 @@ require "active_job/test_helper"
 class EmbargoPolicyTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
 
-  SHOW = :"pages.show"
-  DOWNLOAD = :"pages.download"
-
   setup do
     @previous_adapter = ActiveJob::Base.queue_adapter
     ActiveJob::Base.queue_adapter = :test
@@ -28,70 +25,6 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
   teardown do
     ActiveJob::Base.queue_adapter = @previous_adapter
     Current.actor = nil
-  end
-
-  test "an active embargo denies a public baseline and admits a granted actor" do
-    activate!
-    set_baseline(SHOW, :public)
-
-    assert_equal :public, RecordingStudioAccessible.effective_audience(recording: @page, action: SHOW)
-    assert_equal :deny, restriction(actor: nil, action: SHOW)
-    assert_equal :allow, restriction(actor: @viewer, action: SHOW)
-    refute permitted?(actor: nil, action: SHOW)
-    assert permitted?(actor: @viewer, action: SHOW)
-  end
-
-  test "early access off denies a granted actor until the release" do
-    activate!(early_access: false)
-    set_baseline(SHOW, :public)
-
-    assert_equal :deny, restriction(actor: nil, action: SHOW)
-    assert_equal :deny, restriction(actor: @viewer, action: SHOW)
-    refute permitted?(actor: @viewer, action: SHOW)
-  end
-
-  test "a view grant does not satisfy download" do
-    activate!
-
-    assert_equal :allow, restriction(actor: @viewer, action: SHOW)
-    assert_equal :deny, restriction(actor: @viewer, action: DOWNLOAD)
-    assert_equal :allow, restriction(actor: @editor, action: DOWNLOAD)
-  end
-
-  test "an action the capability does not list stays on the baseline" do
-    activate!
-    set_baseline(DOWNLOAD, :public)
-
-    assert_equal :not_applicable, restriction(actor: nil, action: :"pages.other")
-    assert_equal :deny, restriction(actor: nil, action: DOWNLOAD)
-    refute permitted?(actor: nil, action: DOWNLOAD)
-  end
-
-  test "publishable withholding beats early access and expiry is a time read" do
-    lifts_at = Time.zone.parse("2026-12-01 12:00:00")
-    activate!(lifts_at: lifts_at)
-    @page.define_singleton_method(:currently_published?) { |*| false }
-
-    assert_equal :allow, restriction(actor: @viewer, action: SHOW)
-    refute permitted?(actor: @viewer, action: SHOW)
-    assert_equal :unavailable, presentation(actor: @viewer)
-    assert_equal :full, presentation(actor: @viewer, purpose: :editor)
-
-    @page.define_singleton_method(:currently_published?) { |*| true }
-    travel_to(lifts_at) do
-      assert_equal :not_applicable, restriction(actor: nil, action: SHOW)
-      assert permitted?(actor: nil, action: SHOW)
-      assert_equal :full, presentation(actor: nil)
-    end
-  end
-
-  test "press kit presentation uses the host fallback while access is denied" do
-    activate!
-    @page.define_singleton_method(:currently_published?) { |*| true }
-
-    assert_equal :hidden, presentation(actor: nil, normal_fallback: :hidden)
-    assert_equal :preview, presentation(actor: nil, normal_fallback: :preview)
-    assert_equal :full, presentation(actor: @viewer, normal_fallback: :hidden)
   end
 
   test "history keeps the actor and a cancel does not erase it" do
@@ -178,7 +111,7 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
     assert_equal @owner, lift_events.sole.actor
   end
 
-  test "duplicating attributes does not carry early access or an active window" do
+  test "duplicating attributes does not carry early access requests or an active window" do
     activate!
     copy = RecordingStudioEmbargo.attributes_for_duplicate(@page.current_embargo)
     @page.embargo_set!(copy, actor: @owner)
@@ -186,11 +119,11 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
     embargo = @page.reload.current_embargo
     refute embargo.enabled?
     assert_nil embargo.lifts_at
-    refute embargo.early_access?
-    assert_equal :not_applicable, restriction(actor: nil, action: SHOW)
+    refute embargo.accepts_early_access_requests?
+    assert_equal false, copy[:accepts_early_access_requests]
   end
 
-  test "enabling requires a future release and a known audience" do
+  test "enabling requires a future release and the manage role" do
     error = assert_raises(RecordingStudioEmbargo::Invalid) do
       activate!(lifts_at: 1.hour.ago)
     end
@@ -202,19 +135,23 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
     assert_includes error.message, "not allowed"
   end
 
-  test "cache identity includes the actor and stops at the release" do
+  test "cache key ignores who is asking and expires at the release" do
     lifts_at = 3.hours.from_now.change(usec: 0)
     activate!(lifts_at: lifts_at)
-    anonymous = RecordingStudioEmbargo.cache_key(@page, nil, SHOW)
-    viewer = RecordingStudioEmbargo.cache_key(@page, @viewer, SHOW)
+    embargo = @page.current_embargo
+    owner_key = RecordingStudioEmbargo.cache_key(@page, at: Time.current)
+    viewer_key = RecordingStudioEmbargo::Cache.key(@page, at: Time.current)
 
-    refute_equal anonymous, viewer
-    assert_includes anonymous, :deny
-    assert_includes viewer, :allow
+    assert_equal owner_key, viewer_key
+    assert_equal [embargo.id, true, embargo.lifts_at.utc.iso8601], owner_key
+    refute_includes owner_key, @owner.id
+    refute_includes owner_key, @viewer.id
+    refute_includes owner_key, nil
     assert_in_delta 3.hours, RecordingStudioEmbargo.cache_expires_in(@page), 5
 
     travel_to(lifts_at) do
       assert_nil RecordingStudioEmbargo.cache_expires_in(@page.reload)
+      assert_equal owner_key, RecordingStudioEmbargo.cache_key(@page, at: Time.current)
     end
   end
 
@@ -238,13 +175,13 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
     raise result.error if result.failure?
   end
 
-  def activate!(lifts_at: 3.days.from_now, early_access: true)
+  def activate!(lifts_at: 3.days.from_now, accepts_early_access_requests: true)
     @page.embargo_set!(
       {
         enabled: true,
         lifts_at: lifts_at,
         time_zone: "America/New_York",
-        early_access: early_access
+        accepts_early_access_requests: accepts_early_access_requests
       },
       actor: @owner
     )
@@ -255,35 +192,8 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
       enabled: true,
       lifts_at: 2.days.from_now,
       time_zone: "UTC",
-      early_access: true
+      accepts_early_access_requests: true
     }
-  end
-
-  def set_baseline(action, audience)
-    RecordingStudioAccessible.set_audience!(
-      recording: @page,
-      action: action,
-      audience: audience,
-      actor: @owner
-    )
-  end
-
-  def restriction(actor:, action:)
-    RecordingStudioEmbargo.restriction_for(recording: @page, action: action, actor: actor)
-  end
-
-  def permitted?(actor:, action:)
-    RecordingStudioEmbargo.action_permitted?(recording: @page, action: action, actor: actor)
-  end
-
-  def presentation(actor:, purpose: :public, normal_fallback: :hidden)
-    RecordingStudioEmbargo.presskit_presentation(
-      recording: @page,
-      actor: actor,
-      view_action: SHOW,
-      purpose: purpose,
-      normal_fallback: normal_fallback
-    )
   end
 
   def history_actions

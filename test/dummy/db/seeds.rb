@@ -51,7 +51,7 @@ begin
       enabled: true,
       lifts_at: 3.days.from_now,
       time_zone: "America/New_York",
-      early_access: true
+      accepts_early_access_requests: true
     },
     actor: user
   )

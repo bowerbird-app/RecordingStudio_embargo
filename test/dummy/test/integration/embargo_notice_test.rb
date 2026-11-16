@@ -59,7 +59,7 @@ class EmbargoNoticeTest < ActionDispatch::IntegrationTest
 
   test "a disabled embargo renders nothing" do
     @page.embargo_set!(
-      { enabled: false, lifts_at: nil, time_zone: "Australia/Sydney", early_access: false },
+      { enabled: false, lifts_at: nil, time_zone: "Australia/Sydney", accepts_early_access_requests: false },
       actor: @owner
     )
     sign_in @owner
@@ -163,7 +163,7 @@ class EmbargoNoticeTest < ActionDispatch::IntegrationTest
 
   def activate!
     @page.embargo_set!(
-      { enabled: true, lifts_at: @lifts_at, time_zone: "Australia/Sydney", early_access: false },
+      { enabled: true, lifts_at: @lifts_at, time_zone: "Australia/Sydney", accepts_early_access_requests: false },
       actor: @owner
     )
   end

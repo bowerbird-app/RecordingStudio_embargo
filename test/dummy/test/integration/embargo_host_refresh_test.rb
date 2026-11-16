@@ -30,7 +30,7 @@ class EmbargoHostRefreshTest < ActionDispatch::IntegrationTest
   test "a scheduled lift touches the parent and broadcasts a page refresh" do
     lifts_at = 2.hours.from_now.change(usec: 0)
     @page.embargo_set!(
-      { enabled: true, lifts_at: lifts_at, time_zone: "UTC", early_access: false },
+      { enabled: true, lifts_at: lifts_at, time_zone: "UTC", accepts_early_access_requests: false },
       actor: @owner
     )
     before = @page.reload.updated_at
@@ -50,7 +50,7 @@ class EmbargoHostRefreshTest < ActionDispatch::IntegrationTest
     RecordingStudioEmbargo.configuration.broadcast_page_refresh = false
     lifts_at = 2.hours.from_now.change(usec: 0)
     @page.embargo_set!(
-      { enabled: true, lifts_at: lifts_at, time_zone: "UTC", early_access: false },
+      { enabled: true, lifts_at: lifts_at, time_zone: "UTC", accepts_early_access_requests: false },
       actor: @owner
     )
     before = @page.reload.updated_at
@@ -68,7 +68,7 @@ class EmbargoHostRefreshTest < ActionDispatch::IntegrationTest
   test "saving broadcasts a refresh and does not target host markup" do
     sign_in @owner
     @page.embargo_set!(
-      { enabled: true, lifts_at: 3.days.from_now, time_zone: "UTC", early_access: false },
+      { enabled: true, lifts_at: 3.days.from_now, time_zone: "UTC", accepts_early_access_requests: false },
       actor: @owner
     )
 
@@ -78,7 +78,7 @@ class EmbargoHostRefreshTest < ActionDispatch::IntegrationTest
           enabled: "1",
           lifts_at: 5.days.from_now.strftime("%Y-%m-%dT%H:%M"),
           time_zone: "UTC",
-          early_access: "0"
+          accepts_early_access_requests: "0"
         }
       }
     end

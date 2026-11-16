@@ -7,8 +7,8 @@ This Rails app exists to validate Recording Studio Embargo in a real host applic
 - Devise authentication with a seeded admin user
 - `Current.actor` wiring for Recording Studio events
 - Root workspace plus seeded folder and page recordables
-- Page opt-in for `RecordingStudio::Capabilities::Embargo.to`
-- Accessible audiences for `pages.show` and `pages.download`
+- Page opt-in for `RecordingStudio::Capabilities::Embargo`
+- Accessible, for the editor's manage role
 - Recording Studio default layout, FlatPack assets, and Tailwind source scanning
 - Mounted `RecordingStudio::Engine` route behavior inside a host app
 - Dummy-only `/docs/*` pages for gem-specific onboarding
@@ -34,12 +34,10 @@ Then open the app and sign in with:
 - `/` - dummy app home page. The seeded page shows the embargo notice. More opens the editor in a host-owned Flatpack modal. "Open embargo page" opens the same editor as a page
 - `/recording_studio` - redirects to `/` while the mounted Recording Studio engine stays available under that prefix for non-root routes
 - `/recording_studio_embargo/recordings/:id/embargo/edit` - embargo editor
-- `/samples/recordings/:id` - public presentation sample
-- `/samples/recordings/:id/download` - download gate sample
 - `/users/sign_in` - Devise sign-in page
 - `/docs/install`, `/docs/config`, `/docs/recordable_types`, `/docs/recordings_tree`, `/docs/gem_views`, `/docs/methods` - dummy-only starter pages
 - `/up` - Rails health check
 
 ## Why This App Exists
 
-Use this app to verify embargo policy, the Flatpack editor, and host composition before changing Presskits or Downloadable. If a layout, route, asset source, or Recording Studio initializer change breaks here, the gem likely needs adjustment before a host upgrade.
+Use this app to verify the embargo record, the Flatpack editor, and the manage gate. If a layout, route, asset source, or Recording Studio initializer change breaks here, the gem likely needs adjustment before a host upgrade.

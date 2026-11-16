@@ -17,10 +17,9 @@ class EditorTest < Minitest::Test
       "giving them time to prepare their stories.",
       "Journalists who receive early access are expected to keep the information confidential " \
       "and not publish anything until the embargo date and time.",
-      "Embargoes work on an honour system. This tool helps you communicate the embargo and " \
-      "control who has early access, but it cannot prevent someone from sharing or " \
-      "publishing the information early.",
-      "Only grant early access to people you trust."
+      "Embargoes work on an honour system. This tool records the release time and lets people " \
+      "ask for early access. It cannot stop someone from sharing the information early.",
+      "Share early only with people you trust."
     ], RecordingStudioEmbargo::Copy.t("editor.explanation_paragraphs")
     refute I18n.exists?("recording_studio_embargo.editor.explanation")
     refute I18n.exists?("recording_studio_embargo.editor.fieldset")
