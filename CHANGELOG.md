@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-11-17
+
+### Removed
+
+- `RecordingStudioEmbargo.copy_onto!` and `attributes_for_duplicate` are gone. Embargo does not decide what a copied recording keeps. That belongs to the host, Press Kits, or Duplicatable.
+
+### Added
+
+- `RecordingStudioEmbargo.can_manage?(recording:, actor:)` is true when the actor passes the Accessible manage role and `embargo.manage`.
+
+### Upgrade
+
+`copy_onto!` and `attributes_for_duplicate` are gone. There is no copy helper to call instead. Check `RecordingStudioEmbargo.can_manage?(recording:, actor:)` before changing an embargo. To put a window on a copy, call `embargo_set!` with the source embargo's `lifts_at`, `time_zone`, and `accepts_early_access_requests`. `embargo_set!` and `embargo_cancel!` still require the manage role and `embargo.manage`. `manage_allowed?` is still only the gate.
+
 ## [0.10.2] - 2026-11-17
 
 ### Changed

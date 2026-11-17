@@ -70,6 +70,31 @@ class ManageGateTest < Minitest::Test
     assert RecordingStudioEmbargo.manage_allowed?(recording: recording, actor: actor)
   end
 
+  def test_can_manage_requires_the_role_and_the_gate
+    authorizer = RecordingStudioEmbargo.configuration.management_authorizer
+    RecordingStudioEmbargo.configuration.management_authorizer = ->(**) { true }
+
+    assert RecordingStudioEmbargo.can_manage?(recording: recording, actor: actor)
+
+    register_check { false }
+
+    refute RecordingStudioEmbargo.manage_allowed?(recording: recording, actor: actor)
+    refute RecordingStudioEmbargo.can_manage?(recording: recording, actor: actor)
+  ensure
+    RecordingStudioEmbargo.configuration.management_authorizer = authorizer
+  end
+
+  def test_can_manage_is_false_when_the_role_refuses
+    authorizer = RecordingStudioEmbargo.configuration.management_authorizer
+    RecordingStudioEmbargo.configuration.management_authorizer = ->(**) { false }
+
+    assert RecordingStudioEmbargo.manage_allowed?(recording: recording, actor: actor)
+    refute RecordingStudioEmbargo.can_manage?(recording: recording, actor: actor)
+    refute RecordingStudioEmbargo.can_manage?(recording: recording, actor: nil)
+  ensure
+    RecordingStudioEmbargo.configuration.management_authorizer = authorizer
+  end
+
   private
 
   def recording

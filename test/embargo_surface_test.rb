@@ -57,11 +57,11 @@ class EmbargoSurfaceTest < Minitest::Test
     assert_nil RecordingStudioEmbargo::Cache.expires_in(recording, at: lifts_at)
   end
 
-  def test_duplicate_attributes_use_the_renamed_flag
-    attributes = RecordingStudioEmbargo.attributes_for_duplicate
-
-    assert_equal false, attributes[:accepts_early_access_requests]
-    refute attributes.key?(:early_access)
+  def test_copy_helpers_are_gone
+    refute RecordingStudioEmbargo.const_defined?(:CopyPolicy)
+    refute_respond_to RecordingStudioEmbargo, :copy_onto!
+    refute_respond_to RecordingStudioEmbargo, :attributes_for_duplicate
+    assert_respond_to RecordingStudioEmbargo, :can_manage?
   end
 
   def test_create_migration_stores_the_renamed_column

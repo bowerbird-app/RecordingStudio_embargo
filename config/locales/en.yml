@@ -24,7 +24,6 @@ en:
       time_format: "%-d %b %Y, %-l:%M %p %Z"
     errors:
       unauthorized: You are not allowed to change this embargo.
-      actor_required: A person is required to copy an embargoed recording.
       parent_required: A recording is required.
       lifts_at_invalid: Enter a real release date and time in the selected time zone.
       lifts_at_required: A release time is required to enable an embargo.

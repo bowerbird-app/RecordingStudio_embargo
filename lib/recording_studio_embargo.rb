@@ -5,7 +5,6 @@ require "recording_studio_embargo/version"
 require "recording_studio_embargo/errors"
 require "recording_studio_embargo/copy"
 require "recording_studio_embargo/configuration"
-require "recording_studio_embargo/copy_policy"
 require "recording_studio_embargo/attributes"
 require "recording_studio_embargo/validator"
 require "recording_studio_embargo/cache"
@@ -56,20 +55,17 @@ module RecordingStudioEmbargo
       manage_decision(recording: recording, actor: actor, **context).allowed?
     end
 
+    def can_manage?(recording:, actor:)
+      configuration.authorize_management?(recording: recording, actor: actor) &&
+        manage_allowed?(recording: recording, actor: actor)
+    end
+
     def cache_key(...)
       Cache.key(...)
     end
 
     def cache_expires_in(...)
       Cache.expires_in(...)
-    end
-
-    def attributes_for_duplicate(embargo = nil, recording: nil, actor: nil)
-      CopyPolicy.attributes_for_duplicate(embargo, recording: recording, actor: actor)
-    end
-
-    def copy_onto!(source_recording:, copy_recording:, actor: nil)
-      CopyPolicy.copy_onto!(source_recording: source_recording, copy_recording: copy_recording, actor: actor)
     end
 
     def embargoed?(recording)

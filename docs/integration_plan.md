@@ -22,7 +22,7 @@ embargo.accepts_early_access_requests?
 
 `RecordingStudioEmbargo.embargoed?(recording)` is the same check as `embargo_active?`.
 
-`RecordingStudioEmbargo.copy_onto!(source_recording:, copy_recording:, actor:)` copies the embargo onto the new recording. The copy is cleared only when `actor` passes both the Accessible manage role and `embargo.manage` for the source. Only an active window is copied (`enabled`, `lifts_at`, `time_zone`, `accepts_early_access_requests`), and the lift job is scheduled for that copy. A window that has already lifted is not copied. An embargo already on the destination is left unchanged unless that actor passes the manage role and `embargo.manage` for both the source and the destination. A missing actor never writes. An active embargo raises `RecordingStudioEmbargo::Unauthorized`. With no embargo, or after the window has lifted, the call does nothing. `attributes_for_duplicate(embargo, recording:, actor:)` returns the window or the cleared hash. `revise` on the same child keeps history.
+Embargo does not decide what a copy keeps. `RecordingStudioEmbargo.can_manage?(recording:, actor:)` is true when the actor passes the Accessible manage role and `embargo.manage`. To keep the window, call `embargo_set!` on the copy with the source's `lifts_at`, `time_zone`, and `accepts_early_access_requests`. `revise` on the same child keeps history.
 
 ## Opt in
 
