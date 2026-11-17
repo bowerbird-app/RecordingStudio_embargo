@@ -40,12 +40,28 @@ class LifecycleUnitTest < Minitest::Test
     end
   end
 
-  def test_duplicate_attributes_clear_activation
-    attributes = RecordingStudioEmbargo.attributes_for_duplicate(Object.new)
+  def test_duplicate_attributes_keep_the_window_without_an_actor
+    lifts_at = Time.utc(2027, 8, 1, 16, 0, 0)
+    embargo = Struct.new(:enabled, :lifts_at, :time_zone, :accepts_early_access_requests) do
+      def enabled?
+        enabled
+      end
 
-    assert_equal false, attributes[:enabled]
-    assert_nil attributes[:lifts_at]
-    assert_equal false, attributes[:accepts_early_access_requests]
+      def accepts_early_access_requests?
+        accepts_early_access_requests
+      end
+
+      def active?(at = Time.current)
+        enabled? && lifts_at > at
+      end
+    end.new(true, lifts_at, "UTC", true)
+
+    attributes = RecordingStudioEmbargo.attributes_for_duplicate(embargo, actor: nil)
+
+    assert_equal true, attributes[:enabled]
+    assert_equal lifts_at, attributes[:lifts_at]
+    assert_equal "UTC", attributes[:time_zone]
+    assert_equal true, attributes[:accepts_early_access_requests]
   end
 
   private

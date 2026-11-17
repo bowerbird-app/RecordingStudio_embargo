@@ -1,7 +1,12 @@
 # frozen_string_literal: true
 
 module RecordingStudioEmbargo
-  # Identity of the stored embargo. Expiry is separate and does not change the key.
+  # Identity of one embargo row: embargo id, enabled, and lifts_at.
+  # The recording id is not part of the key. `key` passes `at:` through to
+  # `stamp`, and `stamp` ignores it, so `at:` does not change the key.
+  # Callers namespace the key with their own recording or resource identity.
+  # Use `expires_in` for the TTL. `at:` on `expires_in` is the moment the
+  # remaining time is measured from.
   module Cache
     module_function
 
