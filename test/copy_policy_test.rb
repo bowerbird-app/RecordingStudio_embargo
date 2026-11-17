@@ -6,6 +6,8 @@ class CopyPolicyTest < Minitest::Test
   def setup
     RecordingStudio::Gates.reset!
     @authorizer = RecordingStudioEmbargo.configuration.management_authorizer
+    I18n.load_path |= [File.expand_path("../config/locales/en.yml", __dir__)]
+    I18n.reload!
   end
 
   def teardown
@@ -13,7 +15,7 @@ class CopyPolicyTest < Minitest::Test
     RecordingStudioEmbargo.configuration.management_authorizer = @authorizer
   end
 
-  def test_a_missing_actor_keeps_the_window_when_the_gate_would_allow
+  def test_attributes_keep_the_window_for_a_missing_actor
     RecordingStudio.register_gate("embargo.manage", "copy.allow") { true }
 
     attributes = RecordingStudioEmbargo.attributes_for_duplicate(window, recording: Object.new, actor: nil)
@@ -49,6 +51,35 @@ class CopyPolicyTest < Minitest::Test
     assert_equal false, cleared[:enabled]
     assert_nil cleared[:lifts_at]
     assert_equal false, cleared[:accepts_early_access_requests]
+  end
+
+  def test_copy_onto_refuses_a_missing_actor_before_writing_an_active_window
+    source = Struct.new(:current_embargo).new(window)
+    copy = Object.new
+
+    error = assert_raises(RecordingStudioEmbargo::Unauthorized) do
+      RecordingStudioEmbargo.copy_onto!(source_recording: source, copy_recording: copy, actor: nil)
+    end
+
+    assert_equal "A person is required to copy an embargoed recording.", error.message
+  end
+
+  def test_copy_onto_with_a_missing_actor_does_nothing_without_an_embargo
+    source = Struct.new(:current_embargo).new(nil)
+    copy = Object.new
+
+    result = RecordingStudioEmbargo.copy_onto!(source_recording: source, copy_recording: copy, actor: nil)
+
+    assert_same copy, result
+  end
+
+  def test_copy_onto_with_a_missing_actor_does_nothing_after_the_window_lifts
+    source = Struct.new(:current_embargo).new(window_at(Time.utc(2026, 1, 1, 12, 0, 0)))
+    copy = Object.new
+
+    result = RecordingStudioEmbargo.copy_onto!(source_recording: source, copy_recording: copy, actor: nil)
+
+    assert_same copy, result
   end
 
   def test_a_lifted_window_is_not_copied

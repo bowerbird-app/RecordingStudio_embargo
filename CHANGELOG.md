@@ -11,12 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Copying a recording clears the embargo on the copy only when the actor passes both the Accessible manage role and `embargo.manage` for the source recording. A missing actor does not pass. An active window is kept (`enabled`, `lifts_at`, `time_zone`, `accepts_early_access_requests`) and the lift job is scheduled for the copy. A window that has already lifted is not copied. A missing actor is stored with no actor on the event.
+- Copying a recording clears the embargo on the copy only when the actor passes both the Accessible manage role and `embargo.manage` for the source recording. An active window is kept (`enabled`, `lifts_at`, `time_zone`, `accepts_early_access_requests`) and the lift job is scheduled for the copy. A window that has already lifted is not copied. A missing actor never writes. Copying an active embargo without a person raises `RecordingStudioEmbargo::Unauthorized`. With no embargo, or after the window has lifted, the call does nothing.
 - The `Cache` contract is documented as it behaves. `Cache.key` is the embargo id, `enabled`, and `lifts_at`. It does not include the recording id. `at:` does not change the key, because `stamp` ignores that argument. Callers namespace the key with their own recording or resource identity and use `Cache.expires_in` for the TTL.
 
 ### Upgrade
 
-Call `RecordingStudioEmbargo.copy_onto!(source_recording:, copy_recording:, actor:)` when a recording is duplicated. `attributes_for_duplicate(embargo, recording:, actor:)` returns the cleared hash only when that actor passes the Accessible manage role and `embargo.manage` for `recording`, or when the window is no longer active. With no actor, an active window is kept and the event has no actor.
+Call `RecordingStudioEmbargo.copy_onto!(source_recording:, copy_recording:, actor:)` when a recording is duplicated. Pass the person who is copying. A missing actor raises `RecordingStudioEmbargo::Unauthorized` when the source embargo is still active, and does nothing when there is no embargo or the window has already lifted. `attributes_for_duplicate(embargo, recording:, actor:)` returns the cleared hash only when that actor passes the Accessible manage role and `embargo.manage` for `recording`, or when the window is no longer active.
 
 Do not write a kept window with `embargo_set!`. That call still requires the manage gate, so an actor who must keep the embargo cannot use it.
 
