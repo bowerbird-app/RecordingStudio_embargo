@@ -240,6 +240,34 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
     assert_embargo_unchanged(from_lifted)
   end
 
+  test "managing the source does not change an embargo on a destination the actor cannot manage" do
+    source = record_page("Managed source")
+    other_workspace = Workspace.create!(name: "Other #{SecureRandom.hex(4)}")
+    other_root = RecordingStudio.create_root_recording!(other_workspace, actor: @owner)
+    RecordingStudioAccessible.bootstrap_owner_access!(recording: other_root, actor: @owner)
+    destination = other_root.record(Page, actor: @owner, parent_recording: other_root) do |page|
+      page.title = "Other destination #{SecureRandom.hex(4)}"
+    end
+    destination.embargo_set!(enabled_attributes(lifts_at: 5.days.from_now.change(usec: 0)), actor: @owner)
+    destination.reload
+    embargo_id = destination.current_embargo.id
+    lifts_at = destination.current_embargo.lifts_at
+    events = destination.embargo_child_recording.events.count
+    assert RecordingStudioEmbargo.configuration.authorize_management?(recording: source, actor: @editor)
+    refute RecordingStudioEmbargo.configuration.authorize_management?(recording: destination, actor: @editor)
+
+    assert_no_enqueued_jobs only: RecordingStudioEmbargo::LiftTransitionJob do
+      RecordingStudioEmbargo.copy_onto!(source_recording: source, copy_recording: destination, actor: @editor)
+    end
+
+    current = destination.reload.current_embargo
+    assert_equal embargo_id, current.id
+    assert current.enabled?
+    assert_equal lifts_at, current.lifts_at
+    assert destination.embargo_active?
+    assert_equal events, destination.embargo_child_recording.events.count
+  end
+
   test "a manager who passes the check can clear an existing destination embargo" do
     allow_manage_only(@owner)
     source = record_page("Clearable source")

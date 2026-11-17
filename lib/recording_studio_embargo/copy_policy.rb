@@ -3,7 +3,8 @@
 module RecordingStudioEmbargo
   # A copy keeps an active window unless the actor may manage the source.
   # That is the Accessible manage role and `embargo.manage` on the source.
-  # An embargo already on the destination is revised only when that passes.
+  # An embargo already on the destination is revised only when that passes
+  # for the source and for the destination.
   # A missing actor never writes. A lifted window is not copied.
   module CopyPolicy
     CLEARED = {
@@ -41,15 +42,8 @@ module RecordingStudioEmbargo
     def may_clear?(recording, actor)
       return false if actor.nil? || recording.blank?
 
-      manage_role?(recording, actor) && manage_gate?(recording, actor)
-    end
-
-    def manage_role?(recording, actor)
-      RecordingStudioEmbargo.configuration.authorize_management?(recording: recording, actor: actor)
-    end
-
-    def manage_gate?(recording, actor)
-      RecordingStudioEmbargo.manage_allowed?(recording: recording, actor: actor)
+      RecordingStudioEmbargo.configuration.authorize_management?(recording: recording, actor: actor) &&
+        RecordingStudioEmbargo.manage_allowed?(recording: recording, actor: actor)
     end
 
     def embargo_on(recording)
@@ -75,9 +69,15 @@ module RecordingStudioEmbargo
 
     def write_copy!(copy_recording, attributes, actor, source_recording: nil)
       raise Invalid, Copy.t("errors.parent_required") if copy_recording.blank?
-      return if embargo_on(copy_recording).present? ? !may_clear?(source_recording, actor) : attributes == CLEARED
+      return if skip_write?(copy_recording, attributes, actor, source_recording)
 
       record_copy!(copy_recording, attributes, actor)
+    end
+
+    def skip_write?(copy_recording, attributes, actor, source_recording)
+      return attributes == CLEARED unless embargo_on(copy_recording)
+
+      !(may_clear?(source_recording, actor) && may_clear?(copy_recording, actor))
     end
 
     def record_copy!(copy_recording, attributes, actor)
