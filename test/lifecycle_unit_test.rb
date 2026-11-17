@@ -41,7 +41,7 @@ class LifecycleUnitTest < Minitest::Test
   end
 
   def test_duplicate_attributes_keep_the_window_without_an_actor
-    lifts_at = Time.utc(2026, 8, 1, 16, 0, 0)
+    lifts_at = Time.utc(2027, 8, 1, 16, 0, 0)
     embargo = Struct.new(:enabled, :lifts_at, :time_zone, :accepts_early_access_requests) do
       def enabled?
         enabled
@@ -49,6 +49,10 @@ class LifecycleUnitTest < Minitest::Test
 
       def accepts_early_access_requests?
         accepts_early_access_requests
+      end
+
+      def active?(at = Time.current)
+        enabled? && lifts_at > at
       end
     end.new(true, lifts_at, "UTC", true)
 

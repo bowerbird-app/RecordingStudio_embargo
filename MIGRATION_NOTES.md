@@ -56,7 +56,7 @@ bin/rails db:migrate
 
 The install generator mounts the engine, copies `config/initializers/recording_studio_embargo.rb`, and adds the engine views to the Tailwind source when `app/assets/tailwind/application.css` imports Tailwind. Opt a recordable in with `include RecordingStudio::Capabilities::Embargo`.
 
-Copy a parent recording with `RecordingStudioEmbargo.copy_onto!(source_recording:, copy_recording:, actor:)`. The embargo is cleared on the copy only when the actor passes `embargo.manage` on the source. A missing actor does not pass, so the copy keeps the window and gets its own scheduled lift.
+Copy a parent recording with `RecordingStudioEmbargo.copy_onto!(source_recording:, copy_recording:, actor:)`. The embargo is cleared on the copy only when the actor passes the Accessible manage role and `embargo.manage` on the source. A missing actor does not pass. An active window is kept and gets its own scheduled lift. A window that has already lifted is not copied. A missing actor is stored as a system write, with no actor on the event.
 
 ## Verification
 

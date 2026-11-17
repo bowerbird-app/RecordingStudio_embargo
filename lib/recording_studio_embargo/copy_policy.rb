@@ -1,9 +1,13 @@
 # frozen_string_literal: true
 
 module RecordingStudioEmbargo
-  # A copy keeps the source window unless the copying actor passes
-  # `embargo.manage` on the source recording. A missing actor does not pass.
-  # The kept window is written onto the copy, and the scheduled lift follows it.
+  # A copy keeps an active window unless the actor may manage the source.
+  # That requires the Accessible manage role and `embargo.manage` on the
+  # source recording. A missing actor may not clear. A window that has
+  # already lifted is not copied. A missing actor is a system write: core
+  # stores a nil actor only while `allow_unauthorized_writes` is on and
+  # `require_actor` is off, so the copy turns those on for that write and
+  # restores them.
   module CopyPolicy
     CLEARED = {
       enabled: false,
@@ -14,8 +18,8 @@ module RecordingStudioEmbargo
     module_function
 
     def attributes_for_duplicate(embargo = nil, recording: nil, actor: nil)
-      return CLEARED if passes_manage_gate?(recording, actor)
-      return CLEARED unless copyable_window?(embargo)
+      return CLEARED if may_clear?(recording, actor)
+      return CLEARED unless active_window?(embargo)
 
       window_attributes(embargo)
     end
@@ -26,13 +30,21 @@ module RecordingStudioEmbargo
         recording: source_recording,
         actor: actor
       )
-      write_copy!(copy_recording, attributes, writer_for(source_recording, actor))
+      write_copy!(copy_recording, attributes, actor)
       copy_recording
     end
 
-    def passes_manage_gate?(recording, actor)
+    def may_clear?(recording, actor)
       return false if actor.nil? || recording.blank?
 
+      manage_role?(recording, actor) && manage_gate?(recording, actor)
+    end
+
+    def manage_role?(recording, actor)
+      RecordingStudioEmbargo.configuration.authorize_management?(recording: recording, actor: actor)
+    end
+
+    def manage_gate?(recording, actor)
       RecordingStudioEmbargo.manage_allowed?(recording: recording, actor: actor)
     end
 
@@ -40,8 +52,8 @@ module RecordingStudioEmbargo
       recording.current_embargo if recording.respond_to?(:current_embargo)
     end
 
-    def copyable_window?(embargo)
-      embargo.respond_to?(:lifts_at) && embargo.respond_to?(:enabled?)
+    def active_window?(embargo)
+      embargo.respond_to?(:active?) && embargo.active?(Time.current)
     end
 
     def window_attributes(embargo)
@@ -49,30 +61,19 @@ module RecordingStudioEmbargo
         enabled: embargo.enabled? || false,
         lifts_at: embargo.lifts_at,
         time_zone: embargo.respond_to?(:time_zone) ? embargo.time_zone : nil,
-        accepts_early_access_requests: early_access_requests?(embargo)
+        accepts_early_access_requests: early_access?(embargo)
       }
     end
 
-    def early_access_requests?(embargo)
+    def early_access?(embargo)
       embargo.respond_to?(:accepts_early_access_requests?) && embargo.accepts_early_access_requests?
-    end
-
-    def writer_for(source_recording, actor)
-      return actor unless actor.nil?
-
-      child = embargo_child(source_recording)
-      return if child.blank?
-
-      Lift.stored_actor(child)
-    end
-
-    def embargo_child(recording)
-      recording.embargo_child_recording if recording.respond_to?(:embargo_child_recording)
     end
 
     def write_copy!(copy_recording, attributes, actor)
       raise Invalid, Copy.t("errors.parent_required") if copy_recording.blank?
       return if attributes == CLEARED && embargo_on(copy_recording).blank?
+
+      return CopySystemWrite.call { record_copy!(copy_recording, attributes, nil) } if actor.nil?
 
       record_copy!(copy_recording, attributes, actor)
     end
@@ -110,6 +111,10 @@ module RecordingStudioEmbargo
       end
     end
 
+    def embargo_child(recording)
+      recording.embargo_child_recording if recording.respond_to?(:embargo_child_recording)
+    end
+
     def revise_copy!(root, existing, parsed, actor)
       root.revise(existing, actor: actor, metadata: copy_metadata) do |embargo|
         embargo.apply_configuration!(parsed)
@@ -124,6 +129,47 @@ module RecordingStudioEmbargo
 
     def copy_metadata
       { "source" => "recording_studio_embargo.copy" }
+    end
+  end
+
+  # Core stores a nil actor only when unauthorized writes are allowed and an
+  # actor is not required. This wraps that one copy write, then puts the
+  # host settings back.
+  module CopySystemWrite
+    module_function
+
+    def call
+      configuration = RecordingStudio.configuration
+      saved = settings(configuration)
+      apply(configuration)
+      yield
+    ensure
+      restore(configuration, saved)
+    end
+
+    def settings(configuration)
+      {
+        allow_unauthorized_writes: configuration.allow_unauthorized_writes,
+        require_actor: configuration.require_actor,
+        authorize_write: configuration.authorize_write,
+        actor: configuration.actor
+      }
+    end
+
+    def apply(configuration)
+      configuration.allow_unauthorized_writes = true
+      configuration.require_actor = false
+      configuration.actor = -> {}
+      configuration.authorize_write = ->(**) { true }
+    end
+
+    def restore(configuration, saved)
+      return if configuration.nil? || saved.nil?
+
+      configuration.allow_unauthorized_writes = saved.fetch(:allow_unauthorized_writes)
+      configuration.require_actor = saved.fetch(:require_actor)
+      configuration.actor = saved.fetch(:actor)
+      configuration.authorize_write = saved.fetch(:authorize_write)
     end
   end
 end

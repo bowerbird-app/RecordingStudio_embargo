@@ -111,11 +111,13 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
     assert_equal @owner, lift_events.sole.actor
   end
 
-  test "copying without the manage gate keeps the embargo and schedules the lift" do
-    allow_manage_only(@owner)
+  test "an editor who fails the manage gate keeps the embargo on the copy" do
+    checked = []
+    allow_manage_only(@owner) { |recording| checked << recording }
     lifts_at = 3.days.from_now.change(usec: 0)
     activate!(lifts_at: lifts_at)
     copy = record_page("Kept copy")
+    checked.clear
 
     assert_enqueued_jobs 1, only: RecordingStudioEmbargo::LiftTransitionJob do
       RecordingStudioEmbargo.copy_onto!(source_recording: @page, copy_recording: copy, actor: @editor)
@@ -123,9 +125,9 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
 
     copied = copy.reload.current_embargo
     source = @page.reload.current_embargo
+    assert_equal [@page], checked
     assert copy.embargo_active?
     assert @page.embargo_active?
-    assert source.active?
     assert_equal source.lifts_at, copied.lifts_at
     assert_equal "America/New_York", copied.time_zone
     assert copied.enabled?
@@ -136,7 +138,22 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
     RecordingStudio::Gates.reset!
   end
 
-  test "copying with a missing actor keeps the embargo on the copy" do
+  test "an actor without the manage role keeps the embargo on the copy" do
+    RecordingStudio::Gates.reset!
+    activate!
+    copy = record_page("Viewer copy")
+
+    assert_enqueued_jobs 1, only: RecordingStudioEmbargo::LiftTransitionJob do
+      RecordingStudioEmbargo.copy_onto!(source_recording: @page, copy_recording: copy, actor: @viewer)
+    end
+
+    assert copy.reload.embargo_active?
+    assert_equal @page.reload.current_embargo.lifts_at, copy.current_embargo.lifts_at
+  ensure
+    RecordingStudio::Gates.reset!
+  end
+
+  test "copying with a missing actor keeps the embargo and stores no actor" do
     RecordingStudio::Gates.reset!
     lifts_at = 4.days.from_now.change(usec: 0)
     activate!(lifts_at: lifts_at, accepts_early_access_requests: false)
@@ -151,12 +168,15 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
     assert_equal @page.reload.current_embargo.lifts_at.to_i, copied.lifts_at.to_i
     assert_equal "America/New_York", copied.time_zone
     refute copied.accepts_early_access_requests?
+    assert_nil copy.embargo_child_recording.events.order(:occurred_at, :created_at).first.actor
     assert_equal copy.id.to_s, lift_job_args(copy).first
+    refute RecordingStudio.configuration.allow_unauthorized_writes
+    refute RecordingStudio.configuration.authorize_write.call(actor: nil)
   ensure
     RecordingStudio::Gates.reset!
   end
 
-  test "copying with the manage gate clears the embargo on the copy" do
+  test "a manager who passes the role and the gate clears the embargo on the copy" do
     allow_manage_only(@owner)
     activate!
     copy = record_page("Cleared copy")
@@ -168,6 +188,28 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
     assert @page.reload.embargo_active?
     refute copy.reload.embargo_active?
     assert_nil copy.current_embargo
+  ensure
+    RecordingStudio::Gates.reset!
+  end
+
+  test "copying a lifted embargo does not raise for an editor or a missing actor" do
+    allow_manage_only(@owner)
+    lifts_at = 1.hour.from_now.change(usec: 0)
+    activate!(lifts_at: lifts_at)
+    editor_copy = record_page("Lifted editor")
+    anonymous_copy = record_page("Lifted anonymous")
+
+    travel_to(lifts_at + 1.minute) do
+      assert_no_enqueued_jobs only: RecordingStudioEmbargo::LiftTransitionJob do
+        RecordingStudioEmbargo.copy_onto!(source_recording: @page, copy_recording: editor_copy, actor: @editor)
+        RecordingStudioEmbargo.copy_onto!(source_recording: @page, copy_recording: anonymous_copy, actor: nil)
+      end
+    end
+
+    refute editor_copy.reload.embargo_active?
+    refute anonymous_copy.reload.embargo_active?
+    assert_nil editor_copy.current_embargo
+    assert_nil anonymous_copy.current_embargo
   ensure
     RecordingStudio::Gates.reset!
   end
@@ -262,7 +304,8 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
 
   def allow_manage_only(allowed)
     RecordingStudio::Gates.reset!
-    RecordingStudio.register_gate("embargo.manage", "embargo_policy.copy") do |actor:, **|
+    RecordingStudio.register_gate("embargo.manage", "embargo_policy.copy") do |actor:, recording:, **|
+      yield recording if block_given?
       actor == allowed
     end
   end
