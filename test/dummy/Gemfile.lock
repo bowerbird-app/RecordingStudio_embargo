@@ -74,7 +74,7 @@ GIT
 PATH
   remote: ../..
   specs:
-    recording_studio_embargo (0.10.0)
+    recording_studio_embargo (0.10.1)
       flat_pack (>= 0.1.335)
       rails (~> 8.1.0)
       recording_studio (>= 7.0, < 8.0)
@@ -629,7 +629,7 @@ CHECKSUMS
   recording_studio (7.3.0)
   recording_studio_accessible (0.45.1)
   recording_studio_cache (0.7.0)
-  recording_studio_embargo (0.10.0)
+  recording_studio_embargo (0.10.1)
   recording_studio_metrics (0.9.0)
   recording_studio_root_switchable (0.16.0)
   recording_studio_trashable (1.0.0)

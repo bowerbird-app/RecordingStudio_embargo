@@ -39,7 +39,7 @@ There is no action list. `RecordingStudio::Capabilities::Embargo.to` is gone.
 
 `recording.embargo_set!(attrs, actor:)` and `recording.embargo_cancel!(actor:)` both consult `RecordingStudioEmbargo::MANAGE_GATE` (`"embargo.manage"`) and the Accessible manage role. A host check can refuse either call, including a lapsed plan or a missing actor. Embargo registers no check. With none registered, the gate allows.
 
-The scheduled lift does not consult the gate and does not take an actor. `LiftTransitionJob` emits `embargo_lifted.recording_studio_embargo` when the stored `lifts_at` has arrived. A reschedule does not emit the old instant. The lift does not clear the row through `embargo_cancel!`.
+The scheduled lift does not consult the gate and does not take an actor. `LiftTransitionJob` emits `embargo_lifted.recording_studio_embargo` when the stored `lifts_at` has arrived. A reschedule does not emit the old instant. The lift does not clear the row through `embargo_cancel!`. If `lifts_at` arrives while the recording is trashed, the job records nothing because `current_embargo` follows `Recording.kept`. Restoring the recording emits that lift once when it is already due, or schedules the job when the release is still ahead. A cancelled embargo does not lift.
 
 ## Cache
 

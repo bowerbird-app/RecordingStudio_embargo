@@ -15,6 +15,29 @@ module RecordingStudioEmbargo
       LiftTransitionJob.set(wait_until: current.lifts_at).perform_later(parent.id.to_s, current.lifts_at.iso8601(6))
     end
 
+    def install_restore_hook!
+      return if @restore_hook_installed
+
+      hooks = RecordingStudio.configuration.hooks
+      return unless hooks.respond_to?(:after_record)
+
+      hooks.after_record { |event| after_restored(event) }
+      @restore_hook_installed = true
+    end
+
+    # Recording.kept hides the embargo child while the parent is trashed, so the
+    # job that runs at lifts_at records nothing. Trashable writes action
+    # "restored" through record!, which runs this core hook. This gem does not
+    # depend on Trashable, so the action name is the check.
+    def after_restored(event)
+      return unless restored_event?(event)
+
+      recording_id = event.recording_id
+      return if recording_id.blank?
+
+      after_commit { reconcile_restored!(recording_id) }
+    end
+
     def emit_if_due!(parent_recording_id:, expected_lifts_at:)
       parent = RecordingStudio::Recording.find_by(id: parent_recording_id)
       return if parent.blank?
@@ -71,6 +94,44 @@ module RecordingStudioEmbargo
         :embargo_lifted,
         Lifecycle.payload_for(parent, nil, Lifecycle.snapshot_for(parent), actor, "scheduled")
       )
+    end
+
+    def restored_event?(event)
+      event.respond_to?(:action) && event.action == "restored" && event.respond_to?(:recording_id)
+    end
+
+    def after_commit(&block)
+      if defined?(ActiveRecord) && ActiveRecord.respond_to?(:after_all_transactions_commit)
+        ActiveRecord.after_all_transactions_commit(&block)
+      else
+        block.call
+      end
+    end
+
+    def reconcile_restored!(recording_id)
+      parent = RecordingStudio::Recording.find_by(id: recording_id)
+      embargo = embargo_for(parent)
+      return unless catch_up?(embargo)
+
+      catch_up!(parent, embargo)
+    end
+
+    def embargo_for(parent)
+      return unless parent.respond_to?(:current_embargo)
+
+      parent.current_embargo
+    end
+
+    def catch_up?(embargo)
+      embargo.present? && embargo.enabled? && embargo.lifts_at.present?
+    end
+
+    def catch_up!(parent, embargo)
+      if Time.current >= embargo.lifts_at
+        emit_if_due!(parent_recording_id: parent.id, expected_lifts_at: embargo.lifts_at)
+      else
+        enqueue(parent, embargo)
+      end
     end
   end
 end
