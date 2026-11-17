@@ -23,7 +23,7 @@ class PressKit < ApplicationRecord
 end
 ```
 
-Copy a recording with `RecordingStudioEmbargo.copy_onto!(source_recording:, copy_recording:, actor:)`. The copy loses the embargo only when `actor` passes both the Accessible manage role and `embargo.manage` for the source recording. An active window is copied with `enabled`, `lifts_at`, `time_zone`, and `accepts_early_access_requests`, and the scheduled lift is enqueued for the copy. A window that has already lifted is not copied. An embargo already on the destination stays as it is unless that actor passes the manage role and `embargo.manage` for both the source and the destination. A missing actor never writes. Copying an active embargo without a person raises `RecordingStudioEmbargo::Unauthorized` ("A person is required to copy an embargoed recording.") and leaves no row. With no embargo, or after the window has lifted, that call does nothing. `attributes_for_duplicate(embargo, recording:, actor:)` returns the window or the cleared hash. Do not write a kept window with `embargo_set!`. That call still requires the manage role and the manage gate.
+Embargo does not copy an embargo onto a duplicate. The host, Press Kits, or Duplicatable decides what the copy keeps. `RecordingStudioEmbargo.can_manage?(recording:, actor:)` is true when the actor passes the Accessible manage role and `embargo.manage` for that recording. To keep the window, call `embargo_set!` on the copy with the source embargo's `lifts_at`, `time_zone`, and `accepts_early_access_requests`.
 
 The editor at `/recording_studio_embargo/recordings/:id/embargo/edit` is an enable switch, a release time, a time zone, and one early-access switch. Release date and time zone sit side by side and stack on a small screen. On a wide screen the editor stops at a medium width and stays full width below that. The explanation collapse sits below the form with space above it. Preview and hidden stay on the host. Default English copy lives in `config/locales/en.yml` under `recording_studio_embargo.editor`. The subtitle reads "Lock with embargo and set a release date". A collapse under the form, "What is an embargo", holds four paragraphs from `explanation_paragraphs`. The submit button reads "Update". The enable and early-access switches sit in the trailing slot of two Flatpack list rows, inside a Flatpack card with the card's default border and no extra card padding. A decorative lock icon leads the Embargo row, and a decorative open lock leads Early access. Each row name is a label that toggles its switch. Embargo's description is "Mark this as embargoed until the release time". Early access's description is "People without access can ask for early access". A host overrides `subtitle`, `explanation`, `enable`, and `accepts_early_access_requests` in its own locale file. The editor does not hardcode a recordable name.
 
@@ -59,9 +59,10 @@ A consumer hides its own Embargo menu item, and refuses its own API, with the sa
 
 ```ruby
 RecordingStudioEmbargo.manage_allowed?(recording: page_recording, actor: current_user)
+RecordingStudioEmbargo.can_manage?(recording: page_recording, actor: current_user)
 ```
 
-`RecordingStudioEmbargo.manage_decision(recording:, actor:)` returns the `RecordingStudio::GateDecision` when the caller needs `redirect_to` or `reason`. Extra keywords are forwarded to each check.
+`manage_allowed?` is only `embargo.manage`. `can_manage?` is that gate and the Accessible manage role together. `manage_decision(recording:, actor:)` returns the `RecordingStudio::GateDecision` when the caller needs `redirect_to` or `reason`. Extra keywords on `manage_decision` and `manage_allowed?` are forwarded to each check.
 
 `recording_studio_embargo_management_path` and `embargoed?` do not consult the gate. The host decides whether to show the link. `embargo_set!` and `embargo_cancel!` both consult the gate, and both still require the Accessible manage role. A denied gate refuses a clear, including a lapsed plan or a missing actor. The scheduled lift does not consult the gate.
 
