@@ -64,8 +64,12 @@ module RecordingStudioEmbargo
       Cache.expires_in(...)
     end
 
-    def attributes_for_duplicate(embargo = nil)
-      CopyPolicy.attributes_for_duplicate(embargo)
+    def attributes_for_duplicate(embargo = nil, recording: nil, actor: nil)
+      CopyPolicy.attributes_for_duplicate(embargo, recording: recording, actor: actor)
+    end
+
+    def copy_onto!(source_recording:, copy_recording:, actor: nil)
+      CopyPolicy.copy_onto!(source_recording: source_recording, copy_recording: copy_recording, actor: actor)
     end
 
     def embargoed?(recording)

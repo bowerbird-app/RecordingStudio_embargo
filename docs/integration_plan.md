@@ -22,7 +22,7 @@ embargo.accepts_early_access_requests?
 
 `RecordingStudioEmbargo.embargoed?(recording)` is the same check as `embargo_active?`.
 
-`RecordingStudioEmbargo.attributes_for_duplicate` returns `enabled: false`, `lifts_at: nil`, and `accepts_early_access_requests: false`. A copied recording starts from that hash. `revise` on the same child keeps history.
+`RecordingStudioEmbargo.copy_onto!(source_recording:, copy_recording:, actor:)` copies the embargo onto the new recording. The copy is cleared only when `actor` passes `embargo.manage` for the source. A missing actor does not pass. Otherwise the copy keeps `enabled`, `lifts_at`, `time_zone`, and `accepts_early_access_requests`, and the lift job is scheduled for the copy. `attributes_for_duplicate(embargo, recording:, actor:)` returns that decision. `revise` on the same child keeps history.
 
 ## Opt in
 
@@ -48,7 +48,7 @@ RecordingStudioEmbargo::Cache.key(recording, at: Time.current)
 RecordingStudioEmbargo::Cache.expires_in(recording, at: Time.current)
 ```
 
-The key is the embargo id, `enabled`, and `lifts_at`. It does not include an actor, an action, or a visibility answer. `expires_in` is the time left until `lifts_at` while the embargo is active, and nil otherwise. The same helpers are `RecordingStudioEmbargo.cache_key` and `cache_expires_in`.
+The key is the embargo id, `enabled`, and `lifts_at`. It does not include the recording id, an actor, an action, or a visibility answer. `at:` does not change the key. `Cache.stamp` formats `lifts_at` and ignores the time it is given. Callers namespace the key with their own recording or resource identity. `expires_in` is the TTL: the seconds left until `lifts_at` while the embargo is active, and nil otherwise. `at:` on `expires_in` is the moment that remaining time is measured from. The same helpers are `RecordingStudioEmbargo.cache_key` and `cache_expires_in`.
 
 ## Editor
 
