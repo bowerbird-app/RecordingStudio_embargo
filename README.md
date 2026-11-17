@@ -12,7 +12,7 @@ Recording Studio capability that stores an embargo on a recording: whether it is
 
 `RecordingStudioEmbargo::Cache.key(recording, at: Time.current)` is the embargo id, `enabled`, and `lifts_at`. It has no actor, action, or visibility answer. `Cache.expires_in(recording, at:)` is the time left until `lifts_at` while the embargo is active.
 
-`LiftTransitionJob` emits `embargo_lifted.recording_studio_embargo` when the stored `lifts_at` has arrived. It does not consult `embargo.manage` and it does not take an actor. A reschedule does not emit the old instant.
+`LiftTransitionJob` emits `embargo_lifted.recording_studio_embargo` when the stored `lifts_at` has arrived. It does not consult `embargo.manage` and it does not take an actor. A reschedule does not emit the old instant. If that time arrives while the recording is trashed, `Recording.kept` hides the embargo child and the job records nothing. Restoring the recording emits that lift once when it is already due, or schedules the job when the release is still ahead. A cancelled embargo does not lift.
 
 ## Opt in
 

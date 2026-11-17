@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.1] - 2026-11-17
+
+### Fixed
+
+- Restoring a recording records an embargo lift that came due while the recording was trashed. `LiftTransitionJob` still finds the parent, but `current_embargo` uses `Recording.kept`, so a cascade-trashed embargo child is skipped and the job ends with no `embargo_lifted` event. After restore, a due enabled embargo emits that lift once. A future `lifts_at` schedules `LiftTransitionJob` again.
+
+### Upgrade
+
+No migration and no new dependency. `recording_studio_embargo` still does not depend on Trashable. The catch-up listens for a `"restored"` event on Recording Studio's `after_record` hook, which Trashable writes through `record!`. A cancelled embargo does not lift. A rescheduled embargo does not emit the old instant. The lift idempotency key is unchanged (`embargo-lifted-` plus `lifts_at`).
+
 ## [0.10.0] - 2026-11-16
 
 ### Changed

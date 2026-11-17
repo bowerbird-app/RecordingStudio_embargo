@@ -41,6 +41,7 @@ module RecordingStudioEmbargo
 
       RecordingStudio.apply_capabilities! if RecordingStudio.respond_to?(:apply_capabilities!)
       RecordingStudio::Capabilities::Embargo.ensure_child_recordable_registered!
+      Lift.install_restore_hook!
     end
 
     def subscribe(name, &)
