@@ -199,6 +199,63 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
     RecordingStudio::Gates.reset!
   end
 
+  test "an editor who fails the check leaves an existing destination embargo unchanged" do
+    allow_manage_only(@owner)
+    plain = record_page("Plain source")
+    lifted_at = 1.hour.from_now.change(usec: 0)
+    lifted = record_page("Lifted source")
+    lifted.embargo_set!(enabled_attributes(lifts_at: lifted_at), actor: @owner)
+    from_plain = embargo_recording!("Plain destination")
+    from_lifted = embargo_recording!("Lifted destination")
+
+    assert_no_enqueued_jobs only: RecordingStudioEmbargo::LiftTransitionJob do
+      RecordingStudioEmbargo.copy_onto!(source_recording: plain, copy_recording: from_plain, actor: @editor)
+      travel_to(lifted_at + 1.minute) do
+        RecordingStudioEmbargo.copy_onto!(source_recording: lifted, copy_recording: from_lifted, actor: @editor)
+      end
+    end
+
+    assert_embargo_unchanged(from_plain)
+    assert_embargo_unchanged(from_lifted)
+  ensure
+    RecordingStudio::Gates.reset!
+  end
+
+  test "a missing actor leaves an existing destination embargo unchanged" do
+    plain = record_page("Plain source")
+    lifted_at = 1.hour.from_now.change(usec: 0)
+    lifted = record_page("Lifted source")
+    lifted.embargo_set!(enabled_attributes(lifts_at: lifted_at), actor: @owner)
+    from_plain = embargo_recording!("Anonymous plain destination")
+    from_lifted = embargo_recording!("Anonymous lifted destination")
+
+    assert_no_enqueued_jobs only: RecordingStudioEmbargo::LiftTransitionJob do
+      RecordingStudioEmbargo.copy_onto!(source_recording: plain, copy_recording: from_plain, actor: nil)
+      travel_to(lifted_at + 1.minute) do
+        RecordingStudioEmbargo.copy_onto!(source_recording: lifted, copy_recording: from_lifted, actor: nil)
+      end
+    end
+
+    assert_embargo_unchanged(from_plain)
+    assert_embargo_unchanged(from_lifted)
+  end
+
+  test "a manager who passes the check can clear an existing destination embargo" do
+    allow_manage_only(@owner)
+    source = record_page("Clearable source")
+    destination = embargo_recording!("Clearable destination")
+
+    assert_no_enqueued_jobs only: RecordingStudioEmbargo::LiftTransitionJob do
+      RecordingStudioEmbargo.copy_onto!(source_recording: source, copy_recording: destination, actor: @owner)
+    end
+
+    refute destination.reload.embargo_active?
+    refute destination.current_embargo.enabled?
+    assert_nil destination.current_embargo.lifts_at
+  ensure
+    RecordingStudio::Gates.reset!
+  end
+
   test "copying a lifted embargo writes nothing for an editor or a missing actor" do
     allow_manage_only(@owner)
     lifts_at = 1.hour.from_now.change(usec: 0)
@@ -285,13 +342,32 @@ class EmbargoPolicyTest < ActiveSupport::TestCase
     )
   end
 
-  def enabled_attributes
+  def enabled_attributes(lifts_at: 2.days.from_now)
     {
       enabled: true,
-      lifts_at: 2.days.from_now,
+      lifts_at: lifts_at,
       time_zone: "UTC",
       accepts_early_access_requests: true
     }
+  end
+
+  def embargo_recording!(title)
+    recording = record_page(title)
+    recording.embargo_set!(enabled_attributes(lifts_at: 5.days.from_now.change(usec: 0)), actor: @owner)
+    recording.reload
+    recording.instance_variable_set(:@held_embargo_id, recording.current_embargo.id)
+    recording.instance_variable_set(:@held_lifts_at, recording.current_embargo.lifts_at)
+    recording.instance_variable_set(:@held_event_count, recording.embargo_child_recording.events.count)
+    recording
+  end
+
+  def assert_embargo_unchanged(recording)
+    current = recording.reload.current_embargo
+    assert recording.embargo_active?
+    assert_equal recording.instance_variable_get(:@held_embargo_id), current.id
+    assert_equal recording.instance_variable_get(:@held_lifts_at), current.lifts_at
+    assert current.enabled?
+    assert_equal recording.instance_variable_get(:@held_event_count), recording.embargo_child_recording.events.count
   end
 
   def history_actions

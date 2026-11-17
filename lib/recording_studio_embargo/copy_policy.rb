@@ -2,10 +2,9 @@
 
 module RecordingStudioEmbargo
   # A copy keeps an active window unless the actor may manage the source.
-  # That requires the Accessible manage role and `embargo.manage` on the
-  # source recording. A missing actor never clears a window and never
-  # writes one. Copying an active embargo needs a person. A window that
-  # has already lifted is not copied.
+  # That is the Accessible manage role and `embargo.manage` on the source.
+  # An embargo already on the destination is revised only when that passes.
+  # A missing actor never writes. A lifted window is not copied.
   module CopyPolicy
     CLEARED = {
       enabled: false,
@@ -29,7 +28,7 @@ module RecordingStudioEmbargo
       return copy_recording if actor.nil?
 
       attributes = attributes_for_duplicate(embargo, recording: source_recording, actor: actor)
-      write_copy!(copy_recording, attributes, actor)
+      write_copy!(copy_recording, attributes, actor, source_recording: source_recording)
       copy_recording
     end
 
@@ -74,9 +73,9 @@ module RecordingStudioEmbargo
       embargo.respond_to?(:accepts_early_access_requests?) && embargo.accepts_early_access_requests?
     end
 
-    def write_copy!(copy_recording, attributes, actor)
+    def write_copy!(copy_recording, attributes, actor, source_recording: nil)
       raise Invalid, Copy.t("errors.parent_required") if copy_recording.blank?
-      return if attributes == CLEARED && embargo_on(copy_recording).blank?
+      return if embargo_on(copy_recording).present? ? !may_clear?(source_recording, actor) : attributes == CLEARED
 
       record_copy!(copy_recording, attributes, actor)
     end
