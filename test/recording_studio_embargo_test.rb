@@ -141,7 +141,7 @@ class RecordingStudioEmbargoTest < Minitest::Test
     refute_includes gemfile, 'tag: "v7.3.0"'
     refute_includes gemfile, 'tag: "v4.5.0"'
     assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio_accessible", tag: "v0.55.0"'
-    assert_includes gemfile, 'gem "recording_studio_accessible", ">= 0.45.1"'
+    assert_includes gemfile, 'gem "recording_studio_accessible", "~> 0.55"'
     refute_includes gemfile, 'tag: "v0.54.0"'
     refute_includes gemfile, 'tag: "v0.45.1"'
     refute_includes gemfile, 'tag: "v0.10.1"'
