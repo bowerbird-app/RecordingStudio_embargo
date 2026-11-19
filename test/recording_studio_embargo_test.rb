@@ -135,7 +135,8 @@ class RecordingStudioEmbargoTest < Minitest::Test
   def test_dummy_gemfile_pins_current_github_tags
     gemfile = File.read(File.expand_path("dummy/Gemfile", __dir__))
 
-    assert_includes gemfile, 'gem "recording_studio", "~> 7.8", github: "bowerbird-app/RecordingStudio", tag: "v7.8.0"'
+    assert_includes gemfile, 'gem "recording_studio", "~> 7.8"'
+    assert_includes gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v7.8.0"'
     refute_includes gemfile, 'tag: "v7.7.1"'
     refute_includes gemfile, 'tag: "v7.3.0"'
     refute_includes gemfile, 'tag: "v4.5.0"'
@@ -155,13 +156,16 @@ class RecordingStudioEmbargoTest < Minitest::Test
     refute_includes gemfile, 'tag: "v1.2.0"'
     refute_includes gemfile, 'tag: "v1.0.0"'
     root_gemfile = File.read(File.expand_path("../Gemfile", __dir__))
-    assert_includes root_gemfile, 'gem "recording_studio", "~> 7.8", github: "bowerbird-app/RecordingStudio", tag: "v7.8.0"'
-    assert_includes root_gemfile, 'gem "flat_pack", "~> 0.2", github: "bowerbird-app/flatpack", tag: "v0.2.0"'
+    assert_includes root_gemfile, 'gem "recording_studio", "~> 7.8"'
+    assert_includes root_gemfile, 'github: "bowerbird-app/RecordingStudio", tag: "v7.8.0"'
+    assert_includes root_gemfile, 'gem "flat_pack", "~> 0.2"'
+    assert_includes root_gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.2.0"'
     refute_includes gemfile, "widen_recording_studio_requirement"
     refute File.exist?(File.expand_path("support/widen_recording_studio_requirement.rb", __dir__))
     refute_includes gemfile, 'tag: "v0.6.0"'
     refute_includes gemfile, 'tag: "v0.5.1"'
-    assert_includes gemfile, 'gem "flat_pack", "~> 0.2", github: "bowerbird-app/flatpack", tag: "v0.2.0"'
+    assert_includes gemfile, 'gem "flat_pack", "~> 0.2"'
+    assert_includes gemfile, 'github: "bowerbird-app/flatpack", tag: "v0.2.0"'
     refute_includes gemfile, 'tag: "v0.1.378"'
     refute_includes gemfile, 'tag: "v0.1.377"'
     assert_includes gemfile, 'gem "view_component", "4.19.0"'
