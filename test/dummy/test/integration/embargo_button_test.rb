@@ -62,7 +62,8 @@ class EmbargoHostLinkTest < ActionDispatch::IntegrationTest
 
     menu = css("#embargo-menu-item")
     assert_includes menu, "Embargoed"
-    assert_includes menu, 'data-flat-pack--icon-name-value="lock-closed"'
+    assert_lock_closed_svg menu
+    refute_includes menu, "data-flat-pack--icon-name-value"
     assert @controller.view_context.embargoed?(@page)
   end
 
@@ -108,6 +109,13 @@ class EmbargoHostLinkTest < ActionDispatch::IntegrationTest
 
   def css(selector)
     Nokogiri::HTML(response.body).at_css(selector)&.to_html.to_s
+  end
+
+  def assert_lock_closed_svg(html)
+    svg = Nokogiri::HTML.fragment(html).at_css("svg[aria-hidden=true]")
+    assert svg, "expected a rendered lock icon"
+    assert_includes svg["class"].to_s, "w-4"
+    assert_includes svg.to_html, "M16.5 10.5V6.75"
   end
 
   def create_user(prefix)

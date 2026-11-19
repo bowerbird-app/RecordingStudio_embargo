@@ -136,7 +136,9 @@ class EmbargoNoticeTest < ActionDispatch::IntegrationTest
     assert_includes html, "p-[calc(var(--card-padding-sm)*1.5)]"
     refute_includes html, "p-[var(--card-padding-sm)]"
     assert_includes html, 'data-background="default"'
-    assert_includes html, 'data-flat-pack--icon-name-value="lock-closed"'
+    assert_includes html, "<svg"
+    assert_includes html, "M16.5 10.5V6.75"
+    refute_includes html, "data-flat-pack--icon-name-value"
     assert_includes html, 'aria-hidden="true"'
     assert_includes html, icon_size
     assert_includes html, title_class
