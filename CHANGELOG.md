@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-11-19
+
+### Changed
+
+- Dummy and root Gemfiles pin Recording Studio `v7.8.0` (`~> 7.8`) and FlatPack `v0.2.0` (`~> 0.2`). The dummy pins Accessible `v0.55.0` (`>= 0.45.1`), Trashable `v1.2.3` (`require: false`), Root Switchable `v0.16.1`, Cache `v0.7.1`, and Metrics `v0.9.2`.
+
+### Upgrade
+
+Hosts MUST run the Recording Studio 7.4, 7.5, and 7.7 migrations if they have not.
+
+flat_pack 0.2.0 is supported; hosts moving to 0.2 must remove the manual `flat_pack/heroicons` importmap pin and any `flat-pack--icon` controller registration.
+
 ## [0.11.1] - 2026-11-18
 
 ### Changed
@@ -303,7 +315,8 @@ No change for hosts that open the editor as a page. To drop it into a dialog, ad
 
 - Default editor copy is plain press-kit language in `config/locales/en.yml`, so a host can override the subtitle and help text.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.11.1...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.11.1...v0.12.0
 [0.11.1]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.11.0...v0.11.1
 [0.9.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.7.0...v0.8.0
