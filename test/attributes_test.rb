@@ -69,6 +69,15 @@ class AttributesTest < Minitest::Test
     assert_equal Time.utc(2026, 12, 1, 1, 0, 0), parsed[:lifts_at]
   end
 
+  def test_offset_instant_in_dst_gap_is_accepted
+    parsed = RecordingStudioEmbargo::Attributes.parse(
+      parent_recording: FakeParent.new(nil),
+      raw: { lifts_at: "2026-03-08T02:30:00-05:00", time_zone: "America/New_York" }
+    )
+
+    assert_equal Time.utc(2026, 3, 8, 7, 30, 0), parsed[:lifts_at]
+  end
+
   def test_parses_a_zoneless_wall_time_in_time_zone
     parsed = RecordingStudioEmbargo::Attributes.parse(
       parent_recording: FakeParent.new(nil),
