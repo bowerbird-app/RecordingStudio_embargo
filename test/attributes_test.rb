@@ -48,7 +48,45 @@ class AttributesTest < Minitest::Test
       )
     end
 
-    assert_includes error.message, "real release date"
+    assert_includes error.message, "YYYY-MM-DD HH:MM"
+  end
+
+  def test_parses_iso8601_z_as_the_named_instant
+    parsed = RecordingStudioEmbargo::Attributes.parse(
+      parent_recording: FakeParent.new(nil),
+      raw: { lifts_at: "2026-12-01T01:00:00Z", time_zone: "Asia/Manila" }
+    )
+
+    assert_equal Time.utc(2026, 12, 1, 1, 0, 0), parsed[:lifts_at]
+  end
+
+  def test_parses_iso8601_offset_as_the_named_instant
+    parsed = RecordingStudioEmbargo::Attributes.parse(
+      parent_recording: FakeParent.new(nil),
+      raw: { lifts_at: "2026-12-01T09:00:00+08:00", time_zone: "Asia/Manila" }
+    )
+
+    assert_equal Time.utc(2026, 12, 1, 1, 0, 0), parsed[:lifts_at]
+  end
+
+  def test_parses_a_zoneless_wall_time_in_time_zone
+    parsed = RecordingStudioEmbargo::Attributes.parse(
+      parent_recording: FakeParent.new(nil),
+      raw: { lifts_at: "2026-12-01 09:00", time_zone: "Asia/Manila" }
+    )
+
+    assert_equal Time.utc(2026, 12, 1, 1, 0, 0), parsed[:lifts_at]
+  end
+
+  def test_invalid_lifts_at_string_is_rejected
+    error = assert_raises(RecordingStudioEmbargo::Invalid) do
+      RecordingStudioEmbargo::Attributes.parse(
+        parent_recording: FakeParent.new(nil),
+        raw: { lifts_at: "not-a-date", time_zone: "Asia/Manila" }
+      )
+    end
+
+    assert_includes error.message, "ISO 8601"
   end
 
   def test_partial_update_keeps_unspecified_fields

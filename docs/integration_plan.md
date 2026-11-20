@@ -66,4 +66,6 @@ recording.embargo_set!(
   },
   actor: current_actor
 )
+
+`lifts_at` as a string is `YYYY-MM-DD HH:MM` in `time_zone`, or ISO 8601 with `Z` or an offset. Offset and `Z` values are the instant they name. A zoneless time in a DST gap is rejected.
 ```
