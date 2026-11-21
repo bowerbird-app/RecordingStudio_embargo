@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.1] - 2026-11-20
+
+### Fixed
+
+- `lifts_at` strings with an explicit ISO 8601 offset or `Z` parse as that instant. The DST gap check still applies to zoneless wall times in the selected time zone.
+
+### Upgrade
+
+No migration. `embargo_set!` still stores UTC. A zoneless `YYYY-MM-DD HH:MM` is still that wall clock in `time_zone`. `2026-12-01T01:00:00Z` and `2026-12-01T09:00:00+08:00` are accepted even when `time_zone` is not UTC. Invalid strings still raise `RecordingStudioEmbargo::Invalid`.
+
 ## [0.12.0] - 2026-11-19
 
 ### Changed
@@ -315,7 +325,8 @@ No change for hosts that open the editor as a page. To drop it into a dialog, ad
 
 - Default editor copy is plain press-kit language in `config/locales/en.yml`, so a host can override the subtitle and help text.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.12.1...HEAD
+[0.12.1]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.11.1...v0.12.0
 [0.11.1]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.11.0...v0.11.1
 [0.9.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.8.0...v0.9.0

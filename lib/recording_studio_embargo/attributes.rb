@@ -76,6 +76,8 @@ module RecordingStudioEmbargo
 
     def shifted_wall_time?(parsed, value, zone)
       text = value.to_s
+      return false if Date._parse(text).key?(:offset)
+
       date = text[/\d{4}-\d{2}-\d{2}/]
       clock = text[/(\d{2}:\d{2})/, 1]
       return false if date.blank? || clock.blank?

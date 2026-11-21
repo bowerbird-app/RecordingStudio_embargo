@@ -25,7 +25,7 @@ en:
     errors:
       unauthorized: You are not allowed to change this embargo.
       parent_required: A recording is required.
-      lifts_at_invalid: Enter a real release date and time in the selected time zone.
+      lifts_at_invalid: Enter a real release date and time as YYYY-MM-DD HH:MM in the selected time zone, or ISO 8601 with Z or an offset.
       lifts_at_required: A release time is required to enable an embargo.
       lifts_at_future: The release time must be in the future.
       time_zone_invalid: Choose a known time zone.
