@@ -8,6 +8,11 @@ module RecordingStudioEmbargo
       new(parent_recording, raw).parse
     end
 
+    def self.calendar_date?(value)
+      parts = Date._parse(value.to_s)
+      %i[year mon mday].all? { |key| parts.key?(key) }
+    end
+
     def initialize(parent_recording, raw)
       @parent_recording = parent_recording
       @raw = hashify(raw).symbolize_keys
@@ -67,8 +72,11 @@ module RecordingStudioEmbargo
     def parse_time(value, time_zone)
       return if value.blank?
 
+      text = value.to_s
+      raise Invalid, Copy.t("errors.lifts_at_invalid") unless self.class.calendar_date?(text)
+
       zone = ActiveSupport::TimeZone[time_zone.to_s] || ActiveSupport::TimeZone["UTC"]
-      parsed = zone.parse(value.to_s)
+      parsed = zone.parse(text)
       raise Invalid, Copy.t("errors.lifts_at_invalid") if parsed.blank? || shifted_wall_time?(parsed, value, zone)
 
       parsed.utc

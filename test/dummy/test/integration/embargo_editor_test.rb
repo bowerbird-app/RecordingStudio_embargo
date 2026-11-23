@@ -151,6 +151,45 @@ class EmbargoEditorTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
     assert_includes response.body, "data-recording-studio-default-layout"
     assert_includes response.body, "future"
+    refute_includes response.body, "Lifts at"
+  end
+
+  test "a weekday phrase is an invalid format not a past time" do
+    sign_in @owner
+
+    patch recording_studio_embargo.recording_embargo_path(@page), params: embargo_params(
+      lifts_at: "next tuesday"
+    )
+
+    assert_response :unprocessable_entity
+    assert_includes response.body, "ISO 8601"
+    refute_includes response.body, "future"
+    refute_includes response.body, "Lifts at"
+  end
+
+  test "a junk lifts_at string is an invalid format not a past time" do
+    sign_in @owner
+
+    patch recording_studio_embargo.recording_embargo_path(@page), params: embargo_params(
+      lifts_at: "whenever"
+    )
+
+    assert_response :unprocessable_entity
+    assert_includes response.body, "ISO 8601"
+    refute_includes response.body, "future"
+    refute_includes response.body, "Lifts at"
+  end
+
+  test "a past ISO instant still must be in the future" do
+    sign_in @owner
+
+    patch recording_studio_embargo.recording_embargo_path(@page), params: embargo_params(
+      lifts_at: 2.days.ago.utc.iso8601
+    )
+
+    assert_response :unprocessable_entity
+    assert_includes response.body, "future"
+    refute_includes response.body, "Lifts at"
   end
 
   test "a turbo frame edit renders the editor without the page layout" do
