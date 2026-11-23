@@ -4,10 +4,8 @@ require "test_helper"
 require "active_model"
 
 class ValidatorTest < Minitest::Test
-  def setup
-    I18n.load_path << File.expand_path("../config/locales/en.yml", __dir__)
-    I18n.backend.reload!
-  end
+  I18n.load_path << File.expand_path("../config/locales/en.yml", __dir__)
+  I18n.backend.reload!
 
   class FakeEmbargo
     extend ActiveModel::Naming

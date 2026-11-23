@@ -123,6 +123,42 @@ class AttributesTest < Minitest::Test
     refute_includes error.message, "future"
   end
 
+  def test_yearless_date_is_rejected_as_invalid
+    error = assert_raises(RecordingStudioEmbargo::Invalid) do
+      RecordingStudioEmbargo::Attributes.parse(
+        parent_recording: FakeParent.new(nil),
+        raw: { lifts_at: "July 4", time_zone: "UTC" }
+      )
+    end
+
+    assert_includes error.message, "ISO 8601"
+    refute_includes error.message, "future"
+  end
+
+  def test_time_only_string_is_rejected_as_invalid
+    error = assert_raises(RecordingStudioEmbargo::Invalid) do
+      RecordingStudioEmbargo::Attributes.parse(
+        parent_recording: FakeParent.new(nil),
+        raw: { lifts_at: "09:00", time_zone: "UTC" }
+      )
+    end
+
+    assert_includes error.message, "ISO 8601"
+    refute_includes error.message, "future"
+  end
+
+  def test_out_of_range_calendar_date_is_rejected_as_invalid
+    error = assert_raises(RecordingStudioEmbargo::Invalid) do
+      RecordingStudioEmbargo::Attributes.parse(
+        parent_recording: FakeParent.new(nil),
+        raw: { lifts_at: "2026-13-01", time_zone: "UTC" }
+      )
+    end
+
+    assert_includes error.message, "ISO 8601"
+    refute_includes error.message, "future"
+  end
+
   def test_partial_update_keeps_unspecified_fields
     current = FakeEmbargo.new(
       enabled: true,

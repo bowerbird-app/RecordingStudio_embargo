@@ -69,7 +69,7 @@ module RecordingStudioEmbargo
       parse_time(value, time_zone)
     end
 
-    def parse_time(value, time_zone)
+    def parse_time(value, time_zone) # rubocop:disable Metrics/AbcSize
       return if value.blank?
 
       text = value.to_s
@@ -80,6 +80,8 @@ module RecordingStudioEmbargo
       raise Invalid, Copy.t("errors.lifts_at_invalid") if parsed.blank? || shifted_wall_time?(parsed, value, zone)
 
       parsed.utc
+    rescue ArgumentError
+      raise Invalid, Copy.t("errors.lifts_at_invalid")
     end
 
     def shifted_wall_time?(parsed, value, zone)

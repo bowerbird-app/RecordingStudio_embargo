@@ -7,16 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.12.2] - 2026-11-23
+## [0.13.0] - 2026-11-23
 
 ### Fixed
 
-- `lifts_at` strings that are not a calendar date (for example `next tuesday`) are rejected as invalid before the future check. Weekday-only phrases no longer parse into a time and then fail as “must be in the future”.
+- A `lifts_at` string must include year, month and day. Strings that are not a full calendar date (for example `next tuesday`, a yearless date, a time-only string, or an ISO week or ordinal) are rejected as invalid before the future check. Weekday-only phrases no longer parse into a time and then fail as “must be in the future”.
 - Validation errors raised from `Validator` use the message text only, without the attribute name prefix.
+
+### Changed (dev/CI)
+
+- Dummy and root lockfiles move `puma` to `8.1.2`, dummy `net-ssh` to `7.3.10`, dummy `brakeman` to `8.1.1`, and Ruby to `3.3.14`.
 
 ### Upgrade
 
-No migration. `embargo_set!` still stores UTC. ISO 8601 `Z` and offset instants, and zoneless wall times in `time_zone`, are unchanged. Relative phrases and other non-dates raise `RecordingStudioEmbargo::Invalid` with the existing `lifts_at_invalid` copy. A real past timestamp still uses `lifts_at_future`.
+No migration. `embargo_set!` still stores UTC. ISO 8601 `Z` and offset instants, and zoneless wall times in `time_zone`, are unchanged. A `lifts_at` string must include year, month and day. Yearless, time-only and ISO week or ordinal strings raise `RecordingStudioEmbargo::Invalid` with `lifts_at_invalid`. Relative phrases and other non-dates still use that copy. A real past timestamp still uses `lifts_at_future`.
 
 ## [0.12.1] - 2026-11-20
 
@@ -336,8 +340,8 @@ No change for hosts that open the editor as a page. To drop it into a dialog, ad
 
 - Default editor copy is plain press-kit language in `config/locales/en.yml`, so a host can override the subtitle and help text.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.12.2...HEAD
-[0.12.2]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.12.1...v0.12.2
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.12.1...v0.13.0
 [0.12.1]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.11.1...v0.12.0
 [0.11.1]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.11.0...v0.11.1
