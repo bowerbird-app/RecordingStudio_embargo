@@ -39,10 +39,21 @@ module RecordingStudioEmbargo
     def lifts_at_is_usable
       return unless enabled?
 
-      errors.add(:lifts_at, Copy.t("errors.lifts_at_required")) if lifts_at.blank?
-      return if lifts_at.blank? || lifts_at > Time.current
+      message = lifts_at_error
+      errors.add(:lifts_at, message) if message
+    end
 
-      errors.add(:lifts_at, Copy.t("errors.lifts_at_future"))
+    def lifts_at_error
+      return Copy.t("errors.lifts_at_invalid") if unusable_lifts_at_text?
+      return Copy.t("errors.lifts_at_required") if lifts_at.blank?
+      return Copy.t("errors.lifts_at_future") unless lifts_at > Time.current
+
+      nil
+    end
+
+    def unusable_lifts_at_text?
+      raw = lifts_at_before_type_cast
+      raw.is_a?(String) && raw.present? && !Attributes.calendar_date?(raw)
     end
   end
 end

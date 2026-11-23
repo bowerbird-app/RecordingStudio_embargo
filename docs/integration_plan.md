@@ -67,5 +67,5 @@ recording.embargo_set!(
   actor: current_actor
 )
 
-`lifts_at` as a string is `YYYY-MM-DD HH:MM` in `time_zone`, or ISO 8601 with `Z` or an offset. Offset and `Z` values are the instant they name. Zone words such as `UTC` or `EST` count as an explicit zone too, so they are treated as absolute. A zoneless time in a DST gap is rejected.
+`lifts_at` as a string is `YYYY-MM-DD HH:MM` in `time_zone`, or ISO 8601 with `Z` or an offset. The string must include year, month and day. Offset and `Z` values are the instant they name. Zone words such as `UTC` or `EST` count as an explicit zone too, so they are treated as absolute. A zoneless time in a DST gap is rejected. Yearless dates, time-only strings, ISO week or ordinal dates, and a weekday phrase without a calendar date raise `lifts_at_invalid`.
 ```

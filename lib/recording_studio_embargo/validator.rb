@@ -13,7 +13,7 @@ module RecordingStudioEmbargo
 
     def call
       embargo.apply_configuration!(@attributes)
-      raise Invalid, embargo.errors.full_messages.to_sentence unless embargo.valid?
+      raise Invalid, embargo.errors.map(&:message).to_sentence unless embargo.valid?
     end
 
     private
