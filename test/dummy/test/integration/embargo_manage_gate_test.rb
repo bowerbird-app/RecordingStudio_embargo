@@ -69,12 +69,14 @@ class EmbargoManageGateTest < ActionDispatch::IntegrationTest
       @page.embargo_set!({ lifts_at: 5.days.from_now }, actor: @owner)
     end
     assert_includes error.message, "not allowed"
+    refute_kind_of RecordingStudio::Denial, error
     assert_equal @lifts_at, @page.reload.current_embargo.lifts_at
 
     error = assert_raises(RecordingStudioEmbargo::Unauthorized) do
       @page.embargo_cancel!(actor: @owner)
     end
     assert_includes error.message, "not allowed"
+    refute_kind_of RecordingStudio::Denial, error
     assert @page.reload.embargo_active?
     refute @page.embargo_child_recording.events.exists?(action: "embargo_cancelled")
   end
@@ -115,6 +117,42 @@ class EmbargoManageGateTest < ActionDispatch::IntegrationTest
     end
     assert_equal @lifts_at, @page.reload.current_embargo.lifts_at
     assert @page.current_embargo.active?
+  end
+
+  test "a paywall gate deny raises a billing Denial on set and cancel" do
+    register_check do
+      RecordingStudio::GateDecision.deny(
+        redirect_to: "/plans",
+        code: :paywall_locked,
+        details: { message: "Embargoes are on a paid plan.", feature: "embargo" }
+      )
+    end
+
+    error = assert_raises(RecordingStudioEmbargo::Unauthorized) do
+      @page.embargo_set!({ lifts_at: 5.days.from_now }, actor: @owner)
+    end
+    assert_kind_of RecordingStudio::Denial, error
+    assert_equal :paywall_locked, error.code
+    assert_equal({ message: "Embargoes are on a paid plan.", feature: "embargo" }, error.details)
+    assert_equal @lifts_at, @page.reload.current_embargo.lifts_at
+
+    error = assert_raises(RecordingStudioEmbargo::Unauthorized) do
+      @page.embargo_cancel!(actor: @owner)
+    end
+    assert_kind_of RecordingStudio::Denial, error
+    assert_equal :paywall_locked, error.code
+    assert @page.reload.embargo_active?
+  end
+
+  test "a missing manage role still raises the permission Unauthorized" do
+    register_check { true }
+
+    error = assert_raises(RecordingStudioEmbargo::Unauthorized) do
+      @page.embargo_set!({ lifts_at: 5.days.from_now }, actor: @stranger)
+    end
+    refute_kind_of RecordingStudio::Denial, error
+    assert_equal RecordingStudioEmbargo::Copy.t("errors.unauthorized"), error.message
+    assert @page.reload.embargo_active?
   end
 
   test "accessible still forbids an editor when the gate allows" do
