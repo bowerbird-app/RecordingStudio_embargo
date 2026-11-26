@@ -29,10 +29,16 @@ RecordingStudio.register_gate("embargo.manage", "host.plan") do |actor:, recordi
   if plan_allows_embargo?(actor)
     true
   else
-    RecordingStudio::GateDecision.deny(redirect_to: "/plans")
+    RecordingStudio::GateDecision.deny(
+      redirect_to: "/plans",
+      code: :paywall_locked,
+      details: { message: "Embargoes are on a paid plan.", feature: "embargo" }
+    )
   end
 end
 ```
+
+When the deny includes a `code`, `embargo_set!` and `embargo_cancel!` raise `Unauthorized` that is also a `RecordingStudio::Denial` with that code and details. A deny with no code, or a missing Accessible manage role, still raises the permission `Unauthorized`.
 
 `redirect_to` has to be a same-origin path. Consumers call `RecordingStudioEmbargo.manage_allowed?(recording:, actor:)` when they should hide their own Embargo control or refuse their own API. `manage_decision(recording:, actor:)` returns the gate decision. `recording_studio_embargo_management_path` does not hide itself.
 

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.1] - 2026-11-26
+
+### Fixed
+
+- When `embargo.manage` denies with a `GateDecision` that carries a `code` (the Stripe/paywall billing shape), `embargo_set!` and `embargo_cancel!` raise `RecordingStudioEmbargo::Unauthorized` that is also a `RecordingStudio::Denial` with that code and details. MCP and the API can then interpret it as billing. A missing Accessible manage role, or a deny with no code, still raises the same permission `Unauthorized` and is not a Denial.
+
+### Upgrade
+
+No migration. Hosts and billing gems that refuse embargo changes should keep returning `RecordingStudio::GateDecision.deny(code: :paywall_locked, details: { message: "..." })` (or another registered billing code). Embargo now raises that denial instead of replacing it with the permission copy. Plain permission denials are unchanged.
+
 ## [0.13.0] - 2026-11-23
 
 ### Fixed
@@ -340,7 +350,8 @@ No change for hosts that open the editor as a page. To drop it into a dialog, ad
 
 - Default editor copy is plain press-kit language in `config/locales/en.yml`, so a host can override the subtitle and help text.
 
-[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.13.1...HEAD
+[0.13.1]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.13.0...v0.13.1
 [0.13.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.12.1...v0.13.0
 [0.12.1]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/bowerbird-app/RecordingStudio_embargo/compare/v0.11.1...v0.12.0

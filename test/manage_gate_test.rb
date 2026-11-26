@@ -84,6 +84,29 @@ class ManageGateTest < Minitest::Test
     RecordingStudioEmbargo.configuration.management_authorizer = authorizer
   end
 
+  def test_from_decision_marks_a_coded_deny_as_a_denial
+    decision = RecordingStudio::GateDecision.deny(
+      code: :paywall_locked,
+      details: { message: "Embargoes are on a paid plan.", feature: "embargo" }
+    )
+    error = RecordingStudioEmbargo::Unauthorized.from_decision(decision)
+
+    assert_instance_of RecordingStudioEmbargo::Unauthorized, error
+    assert_kind_of RecordingStudio::Denial, error
+    assert_equal :paywall_locked, error.code
+    assert_equal({ message: "Embargoes are on a paid plan.", feature: "embargo" }, error.details)
+    assert_equal RecordingStudioEmbargo::Copy.t("errors.unauthorized"), error.message
+  end
+
+  def test_from_decision_keeps_a_plain_deny_as_permission
+    decision = RecordingStudio::GateDecision.deny(redirect_to: "/plans", reason: "plan")
+    error = RecordingStudioEmbargo::Unauthorized.from_decision(decision)
+
+    assert_instance_of RecordingStudioEmbargo::Unauthorized, error
+    refute_kind_of RecordingStudio::Denial, error
+    assert_equal RecordingStudioEmbargo::Copy.t("errors.unauthorized"), error.message
+  end
+
   def test_can_manage_is_false_when_the_role_refuses
     authorizer = RecordingStudioEmbargo.configuration.management_authorizer
     RecordingStudioEmbargo.configuration.management_authorizer = ->(**) { false }

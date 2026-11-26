@@ -45,14 +45,18 @@ Include `RecordingStudioEmbargo::ApplicationHelper` (the engine does this for ho
 
 Showing the editor, saving an embargo, and clearing one all consult `embargo.manage`. Embargo does not register a check on that gate. With no checks registered, the gate allows, and existing hosts keep the current editor. Accessible's manage role stays a separate check. Both have to allow the change.
 
-A host or another gem registers a check when it wants to refuse management. This plan check sends the visitor to a same-origin path. Embargo drops any other location and responds forbidden. A check that raises is a deny.
+A host or another gem registers a check when it wants to refuse management. This plan check sends the visitor to a same-origin path. Put the billing `code` and `details` on the deny so `embargo_set!` and `embargo_cancel!` raise a `RecordingStudio::Denial` MCP and the API already interpret. Embargo drops any other location and responds forbidden. A check that raises, or a deny with no code, is still the permission error.
 
 ```ruby
 RecordingStudio.register_gate("embargo.manage", "host.plan") do |actor:, recording:, **|
   if plan_allows_embargo?(actor)
     true
   else
-    RecordingStudio::GateDecision.deny(redirect_to: "/plans")
+    RecordingStudio::GateDecision.deny(
+      redirect_to: "/plans",
+      code: :paywall_locked,
+      details: { message: "Embargoes are on a paid plan.", feature: "embargo" }
+    )
   end
 end
 ```
@@ -66,7 +70,7 @@ RecordingStudioEmbargo.can_manage?(recording: page_recording, actor: current_use
 
 `manage_allowed?` is only `embargo.manage`. `can_manage?` is that gate and the Accessible manage role together. `manage_decision(recording:, actor:)` returns the `RecordingStudio::GateDecision` when the caller needs `redirect_to` or `reason`. Extra keywords on `manage_decision` and `manage_allowed?` are forwarded to each check.
 
-`recording_studio_embargo_management_path` and `embargoed?` do not consult the gate. The host decides whether to show the link. `embargo_set!` and `embargo_cancel!` both consult the gate, and both still require the Accessible manage role. A denied gate refuses a clear, including a lapsed plan or a missing actor. The scheduled lift does not consult the gate.
+`recording_studio_embargo_management_path` and `embargoed?` do not consult the gate. The host decides whether to show the link. `embargo_set!` and `embargo_cancel!` both consult the gate, and both still require the Accessible manage role. A denied gate refuses a clear, including a lapsed plan or a missing actor. When that deny carries a billing `code`, the raised error is a `RecordingStudio::Denial` with the decision's code and details. A missing role or a deny with no code stays `RecordingStudioEmbargo::Unauthorized` with the permission copy. The scheduled lift does not consult the gate.
 
 ## Host notice
 
